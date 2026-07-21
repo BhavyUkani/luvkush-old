@@ -1,0 +1,393 @@
+@use "../../../../../styles/variables" as *;
+@use "../../../../../styles/mixins" as *;
+
+// ─── Keyframes ─────────────────────────────────────────────────────────────
+@keyframes shimmer {
+  from { background-position: 200% center; }
+  to   { background-position: -200% center; }
+}
+
+@keyframes cardReveal {
+  from { opacity: 0; transform: translateY(32px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+// ─── Section ───────────────────────────────────────────────────────────────
+.cat-grid {
+  padding: clamp(3.5rem, 7vw, 5.5rem) clamp(1.25rem, 4vw, 3rem);
+  background: linear-gradient(160deg, #FAF7F2 0%, #F1E8D8 40%, #EDE0CC 100%);
+  position: relative;
+  overflow: hidden;
+
+  // Top decorative line
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent 0%, #B88447 30%, #E2C97E 50%, #B88447 70%, transparent 100%);
+  }
+
+  // Subtle decorative dot pattern background
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, rgba(#B88447, 0.06) 1px, transparent 1px);
+    background-size: 28px 28px;
+    pointer-events: none;
+  }
+
+  &__header {
+    text-align: center;
+    margin-bottom: clamp(2rem, 4vw, 3.5rem);
+    position: relative;
+    z-index: 1;
+  }
+
+  &__eyebrow {
+    font-family: $font-display;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #B88447;
+    margin: 0 0 0.875rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+
+    &::before, &::after {
+      content: '';
+      display: block;
+      width: 36px;
+      height: 1px;
+      background: #B88447;
+      opacity: 0.45;
+    }
+  }
+
+  &__title {
+    font-family: $font-heading;
+    font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+    font-weight: $fw-semibold;
+    color: $color-charcoal-true;
+    margin: 0 0 $space-3;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+  }
+
+  &__sub {
+    font-family: $font-body;
+    font-size: $fs-base;
+    color: #666;
+    margin: 0;
+    max-width: 480px;
+    margin-inline: auto;
+    line-height: 1.65;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: clamp(0.875rem, 2vw, 1.5rem);
+    max-width: 1400px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+
+    @include respond-to("sm") { grid-template-columns: repeat(3, 1fr); }
+    @include respond-to("lg") { grid-template-columns: repeat(6, 1fr); }
+  }
+
+  &__empty {
+    text-align: center;
+    color: $color-text-muted;
+    font-family: $font-body;
+    font-size: $fs-sm;
+    padding: $space-8 0;
+    position: relative;
+    z-index: 1;
+  }
+}
+
+// ─── Category Card ─────────────────────────────────────────────────────────
+.cat-card {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  border-radius: 20px;
+  overflow: hidden;
+  background: rgba(#FFFFFF, 0.6);
+  border: 1px solid rgba(#B88447, 0.15);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition:
+    box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.25s ease;
+  box-shadow: 0 2px 12px rgba(#2D1A12, 0.06), 0 0 0 0 rgba(#B88447, 0);
+
+  &:hover {
+    box-shadow:
+      0 16px 48px rgba(#2D1A12, 0.12),
+      0 0 0 1.5px rgba(#B88447, 0.3);
+    transform: translateY(-6px) scale(1.02);
+    border-color: rgba(#B88447, 0.35);
+
+    .cat-card__image  { transform: scale(1.08); }
+    .cat-card__overlay { opacity: 1; }
+    .cat-card__name { color: #B88447; }
+    .cat-card__shop-icon { transform: translateX(3px); }
+  }
+
+  &__image-wrap {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    background: linear-gradient(135deg, #EDE0CC, #F1E8D8);
+  }
+
+  &__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    transition: transform 500ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  &__placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #B88447;
+    opacity: 0.4;
+  }
+
+  &__overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to top,
+      rgba(#20362A, 0.82) 0%,
+      rgba(#20362A, 0.4) 50%,
+      transparent 100%
+    );
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 14px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  &__shop {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: $font-ui;
+    font-size: 10px;
+    font-weight: $fw-bold;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #E2C97E;
+  }
+
+  &__shop-icon {
+    transition: transform 0.25s ease;
+  }
+
+  &__info {
+    padding: 14px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    text-align: center;
+  }
+
+  &__name {
+    font-family: $font-body;
+    font-size: 0.8125rem;
+    font-weight: $fw-semibold;
+    color: $color-charcoal-true;
+    transition: color 0.22s ease;
+    line-height: 1.3;
+  }
+
+  &__count {
+    font-family: $font-ui;
+    font-size: 10px;
+    color: $color-text-muted;
+    letter-spacing: 0.02em;
+  }
+
+  // Skeleton state
+  &--skel {
+    pointer-events: none;
+    background: rgba(#EDE0CC, 0.5);
+    &:hover { box-shadow: none; transform: none; border-color: rgba(#B88447, 0.15); }
+  }
+
+  &__skel-img {
+    aspect-ratio: 1 / 1;
+    width: 100%;
+  }
+
+  &__skel-name {
+    height: 14px;
+    width: 65%;
+    margin: 14px auto;
+    border-radius: $radius-sm;
+  }
+}
+
+.skel-block {
+  background: linear-gradient(90deg,
+    rgba(#B88447, 0.08) 25%,
+    rgba(#B88447, 0.18) 50%,
+    rgba(#B88447, 0.08) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: $radius-md;
+}
+
+// ─── Mobile Circular Layout (Amazon & Blinkit style) ──────────────────────────
+@media (max-width: 575px) {
+  .cat-grid {
+    padding: 1.5rem 1rem;
+    background: #FAF7F2; // Cleaner background on mobile
+
+    &::before { display: none; } // Remove top divider line on mobile
+    
+    &__header {
+      text-align: left;
+      margin-bottom: 1.25rem;
+    }
+
+    &__eyebrow {
+      justify-content: flex-start;
+      margin-bottom: 4px;
+      font-size: 9px;
+      letter-spacing: 0.15em;
+      &::before, &::after { display: none; }
+    }
+
+    &__title {
+      font-size: 1.25rem;
+      margin-bottom: 2px;
+      font-weight: $fw-bold;
+    }
+
+    &__sub {
+      text-align: left;
+      margin-inline: 0;
+      font-size: 0.75rem;
+      opacity: 0.8;
+    }
+
+    &__grid {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      gap: 1.25rem;
+      padding: 0.5rem 0.25rem 1rem;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none; // hide scrollbar Firefox
+      -ms-overflow-style: none; // hide scrollbar IE/Edge
+      
+      &::-webkit-scrollbar {
+        display: none; // hide scrollbar Chrome/Safari
+      }
+    }
+  }
+
+  .cat-card {
+    flex: 0 0 74px; // small circular size
+    background: transparent;
+    border: none;
+    box-shadow: none !important;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    transform: none !important;
+    border-radius: 0;
+    scroll-snap-align: start;
+
+    &:hover {
+      background: transparent;
+      transform: none !important;
+      border: none;
+      box-shadow: none !important;
+      
+      .cat-card__image { transform: none; }
+      .cat-card__image-wrap {
+        border-color: #B88447;
+        box-shadow: 0 0 10px rgba(#B88447, 0.4);
+      }
+    }
+
+    &__image-wrap {
+      width: 74px;
+      height: 74px;
+      border-radius: 50% !important;
+      aspect-ratio: 1 / 1;
+      border: 2px solid rgba(#B88447, 0.2);
+      padding: 2px;
+      background: #FFFFFF;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+      }
+    }
+
+    &__overlay {
+      display: none !important; // hide overlay on mobile
+    }
+
+    &__info {
+      padding: 6px 0 0;
+      gap: 0;
+    }
+
+    &__name {
+      font-size: 11px;
+      font-weight: $fw-bold;
+      color: #333333;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      width: 100%;
+    }
+
+    &__count {
+      display: none; // hide count on mobile
+    }
+
+    // Skeleton on mobile
+    &--skel {
+      background: transparent;
+    }
+    
+    &__skel-img {
+      border-radius: 50% !important;
+      width: 74px;
+      height: 74px;
+    }
+
+    &__skel-name {
+      width: 80%;
+      height: 10px;
+      margin-top: 6px;
+    }
+  }
+}

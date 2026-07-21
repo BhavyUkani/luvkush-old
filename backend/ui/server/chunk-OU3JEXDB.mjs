@@ -1,0 +1,2 @@
+import './polyfills.server.mjs';
+import{a as t}from"./chunk-YHZ2EMLW.mjs";import{m as i}from"./chunk-NLMNAYQN.mjs";import{S as n}from"./chunk-XWLOA6GC.mjs";var d=(u,o)=>{let r=n(t),e=n(i);return console.log("[adminGuard] checking url:",o.url,"| isAdmin:",r.isAdmin(),"| isLoggedIn:",r.isLoggedIn()),r.isAdmin()?!0:r.isLoggedIn()?(console.log("[adminGuard] blocking customer \u2192 /403"),e.createUrlTree(["/403"])):(console.log("[adminGuard] blocking anonymous \u2192 /login"),e.createUrlTree(["/login"],{queryParams:{returnUrl:o.url}}))};export{d as a};
