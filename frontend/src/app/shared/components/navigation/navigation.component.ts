@@ -6,12 +6,14 @@ import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CartService } from '../../../core/services/cart.service';
+import { WishlistService } from '../../../core/services/wishlist.service';
 import { AuthService } from '../../../core/services/auth.service';
 
-interface NavItem {
+export interface NavItem {
   label: string;
   path: string;
   queryParams?: Record<string, string>;
+  badge?: string;
   children?: NavItem[];
 }
 
@@ -25,9 +27,10 @@ interface NavItem {
 })
 export class NavigationComponent implements OnInit, OnDestroy {
   private readonly platformId = inject(PLATFORM_ID);
-  private readonly router = inject(Router);
-  readonly cartService = inject(CartService);
-  readonly auth = inject(AuthService);
+  private readonly router     = inject(Router);
+  readonly cartService         = inject(CartService);
+  readonly wishlistService     = inject(WishlistService);
+  readonly auth                = inject(AuthService);
 
   isScrolled     = signal(false);
   isMobileOpen   = signal(false);
@@ -37,9 +40,10 @@ export class NavigationComponent implements OnInit, OnDestroy {
   searchQuery    = '';
 
   readonly announcementMessages = [
-    'Free delivery on orders above ₹499',
-    '100% Natural & Herbal Ingredients',
-    'Use code NATURAL10 for 10% off your first order',
+    '🌿 Free Pan-India Delivery on orders above ₹499',
+    '✨ 100% Authentic Cold-Pressed Ayurvedic Formulations',
+    '🎁 Special Offer: Use code NATURAL10 for 10% OFF your first order',
+    '✂️ Free Custom Fitting & Consultation for Hair Wigs & Patches'
   ];
   announcementIndex = signal(0);
   private announcementTimer: ReturnType<typeof setInterval> | null = null;
@@ -47,18 +51,27 @@ export class NavigationComponent implements OnInit, OnDestroy {
   readonly navItems: NavItem[] = [
     { label: 'Home', path: '/' },
     {
-      label: 'Shop',
+      label: 'Shop All',
       path: '/shop',
       children: [
         { label: 'All Products', path: '/shop' },
-        { label: 'Hair Care',    path: '/shop', queryParams: { category: 'hair-care' } },
-        { label: 'Hair Wigs',    path: '/shop', queryParams: { category: 'hair-wig' } },
-        { label: 'Hair Patches', path: '/shop', queryParams: { category: 'hair-patch' } },
+        { label: 'Hair Growth Oils', path: '/shop', queryParams: { category: 'hair-growth-oils' } },
+        { label: 'Herbal Shampoos', path: '/shop', queryParams: { category: 'herbal-shampoos' } },
+        { label: 'Scalp & Hair Serums', path: '/shop', queryParams: { category: 'scalp-hair-serums' } },
+        { label: 'Nourishing Hair Masks', path: '/shop', queryParams: { category: 'nourishing-hair-masks' } },
         { label: 'Best Sellers', path: '/shop', queryParams: { sort: 'sales_count' } },
         { label: 'New Arrivals', path: '/shop', queryParams: { sort: 'created_at' } },
       ]
     },
-    { label: 'About',   path: '/about' },
+    {
+      label: 'Hair Wigs',
+      path: '/hair-wigs'
+    },
+    {
+      label: 'Hair Patches',
+      path: '/hair-patches'
+    },
+    { label: 'About Us', path: '/about' },
     { label: 'Contact', path: '/contact' },
   ];
 
@@ -84,7 +97,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
   @HostListener('window:scroll')
   onScroll(): void {
     if (isPlatformBrowser(this.platformId)) {
-      this.isScrolled.set(window.scrollY > 60);
+      this.isScrolled.set(window.scrollY > 40);
     }
   }
 
@@ -92,7 +105,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
     if (isPlatformBrowser(this.platformId)) {
       this.announcementTimer = setInterval(() => {
         this.announcementIndex.update(i => (i + 1) % this.announcementMessages.length);
-      }, 4000);
+      }, 4500);
     }
   }
 

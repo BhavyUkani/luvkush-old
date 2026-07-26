@@ -2,12 +2,12 @@
 
   <div class="hl__header reveal">
     <div class="hl__header-left">
-      <p class="hl__eyebrow">{{ type === 'wig' ? 'Hair Wigs' : 'Hair Patches' }}</p>
+      <p class="hl__eyebrow">{{ type === 'wig' ? 'Natural Hair Wigs' : 'Custom Hair Patches' }}</p>
       <h2 class="hl__title">{{ title }}</h2>
       <p class="hl__sub">{{ subtitle }}</p>
     </div>
     <a class="hl__view-all" [routerLink]="viewAllLink">
-      View All
+      View All {{ type === 'wig' ? 'Wigs' : 'Patches' }}
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
         <path d="M3 7H11M8 4L11 7L8 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
@@ -28,22 +28,42 @@
         <a class="hl__card" [routerLink]="[viewAllLink, item.slug]">
           <div class="hl__card-img-wrap">
             <img [src]="imgUrl(item.primary_image)" [alt]="item.name" class="hl__card-img" loading="lazy" />
-            @if (item.gender) {
-              <span class="hl__card-gender">{{ item.gender | titlecase }}</span>
+            
+            <div class="hl__card-badges">
+              @if (item.gender) {
+                <span class="hl__card-gender">{{ item.gender | titlecase }}</span>
+              }
+              <span class="hl__card-tag">100% Virgin Hair</span>
+            </div>
+
+            @if (item.mrp && item.mrp > item.price) {
+              <span class="hl__card-discount">
+                {{ ((item.mrp - item.price) / item.mrp * 100) | number:'1.0-0' }}% OFF
+              </span>
             }
           </div>
+
           <div class="hl__card-body">
             <h3 class="hl__card-name">{{ item.name }}</h3>
+
+            <div class="hl__card-rating">
+              <span class="hl__card-stars">★★★★★</span>
+              <span class="hl__card-rating-text">4.9 (48)</span>
+            </div>
+
             @if (item.short_description) {
               <p class="hl__card-desc">{{ item.short_description }}</p>
             }
+
             <div class="hl__card-price-row">
-              <span class="hl__card-price">₹{{ item.price | number:'1.0-0' }}</span>
-              @if (item.mrp && item.mrp > item.price) {
-                <span class="hl__card-mrp">₹{{ item.mrp | number:'1.0-0' }}</span>
-              }
+              <div class="hl__card-prices">
+                <span class="hl__card-price">₹{{ item.price | number:'1.0-0' }}</span>
+                @if (item.mrp && item.mrp > item.price) {
+                  <span class="hl__card-mrp">₹{{ item.mrp | number:'1.0-0' }}</span>
+                }
+              </div>
+              <button class="hl__card-btn">Explore →</button>
             </div>
-            <button class="hl__card-btn">View Details</button>
           </div>
         </a>
       }

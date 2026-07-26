@@ -26,7 +26,7 @@ interface Ingredient {
 
     .is {
       background: linear-gradient(160deg, #20362A 0%, #1a3828 50%, #162b1e 100%);
-      padding: clamp(3.5rem, 7vw, 5.5rem) clamp(1.25rem, 4vw, 3rem);
+      padding: 2.25rem clamp(1.25rem, 4vw, 3rem) 2.5rem;
       position: relative;
       overflow: hidden;
     }
@@ -54,8 +54,8 @@ interface Ingredient {
 
     .is__header {
       text-align: center;
-      max-width: 620px;
-      margin: 0 auto 1.75rem;
+      max-width: 680px;
+      margin: 0 auto 1rem;
       position: relative;
       z-index: 1;
     }
@@ -66,7 +66,7 @@ interface Ingredient {
       letter-spacing: 0.28em;
       text-transform: uppercase;
       color: #B88447;
-      margin: 0 0 1.125rem;
+      margin: 0 0 0.5rem;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -83,11 +83,11 @@ interface Ingredient {
 
     .is__title {
       font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(2rem, 4vw, 2.875rem);
+      font-size: clamp(1.6rem, 3.5vw, 2.35rem);
       font-weight: 600;
       color: #FAF7F2;
       line-height: 1.15;
-      margin: 0 0 1rem;
+      margin: 0 0 0.5rem;
       letter-spacing: -0.01em;
     }
 
@@ -98,9 +98,9 @@ interface Ingredient {
 
     .is__sub {
       font-family: 'Manrope', sans-serif;
-      font-size: 0.9375rem;
+      font-size: 0.875rem;
       color: rgba(250, 247, 242, 0.6);
-      line-height: 1.7;
+      line-height: 1.5;
       margin: 0;
     }
 
@@ -109,28 +109,28 @@ interface Ingredient {
       align-items: center;
       gap: 1rem;
       justify-content: center;
-      margin: 2rem 0 3rem;
+      margin: 0.75rem 0 1.25rem;
       position: relative;
       z-index: 1;
     }
 
     .is__ornament-line {
       flex: 1;
-      max-width: 80px;
+      max-width: 60px;
       height: 1px;
       background: rgba(184,132,71,0.35);
     }
 
     .is__ornament-mark {
       color: rgba(226,201,126,0.6);
-      font-size: 0.875rem;
-      letter-spacing: 6px;
+      font-size: 0.75rem;
+      letter-spacing: 4px;
     }
 
     .is__grid {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
-      gap: 1.25rem;
+      gap: 1rem;
       max-width: 1200px;
       margin: 0 auto;
       position: relative;
@@ -142,18 +142,18 @@ interface Ingredient {
     }
 
     @media (max-width: 640px) {
-      .is__grid { grid-template-columns: repeat(2, 1fr); gap: 0.875rem; }
+      .is__grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
     }
 
     .is__card {
       background: rgba(255, 255, 255, 0.04);
       border: 1px solid rgba(226, 201, 126, 0.12);
-      border-radius: 18px;
-      padding: 2rem 1.25rem 1.75rem;
+      border-radius: 14px;
+      padding: 1.25rem 1rem 1.25rem;
       text-align: center;
       transition:
-        transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-        box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+        transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1),
         background 0.3s ease,
         border-color 0.3s ease;
       position: relative;
@@ -175,8 +175,8 @@ interface Ingredient {
     }
 
     .is__card:hover {
-      transform: translateY(-10px);
-      box-shadow: 0 28px 60px rgba(0,0,0,0.25), 0 8px 20px rgba(0,0,0,0.15);
+      transform: translateY(-6px);
+      box-shadow: 0 16px 36px rgba(0,0,0,0.2);
       background: rgba(255, 255, 255, 0.08);
       border-color: rgba(226, 201, 126, 0.3);
     }
@@ -184,84 +184,83 @@ interface Ingredient {
     .is__card:hover::before { transform: scaleX(1); }
 
     .is__icon-wrap {
-      width: 72px; height: 72px;
+      width: 52px; height: 52px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 0 auto 1.25rem;
-      font-size: 2.25rem;
-      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      margin: 0 auto 0.75rem;
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
       
       svg {
         display: block;
-        width: 28px;
-        height: 28px;
+        width: 22px;
+        height: 22px;
       }
     }
 
     .is__card:hover .is__icon-wrap {
-      transform: scale(1.12) rotate(8deg);
+      transform: scale(1.1) rotate(6deg);
     }
 
     .is__card-name {
       font-family: 'Cormorant Garamond', serif;
-      font-size: 1.4375rem;
+      font-size: 1.25rem;
       font-weight: 600;
       color: #FAF7F2;
-      margin: 0 0 0.25rem;
+      margin: 0 0 0.15rem;
       line-height: 1.2;
     }
 
     .is__card-sanskrit {
       font-family: 'Cormorant Garamond', serif;
-      font-size: 1rem;
+      font-size: 0.875rem;
       color: #E2C97E;
       font-style: italic;
-      margin: 0 0 0.2rem;
+      margin: 0 0 0.15rem;
     }
 
     .is__card-latin {
       font-family: 'Manrope', sans-serif;
-      font-size: 0.6875rem;
+      font-size: 0.65rem;
       color: rgba(250,247,242,0.4);
       font-style: italic;
-      margin: 0 0 1.125rem;
+      margin: 0 0 0.75rem;
       letter-spacing: 0.02em;
     }
 
     .is__card-divider {
-      width: 32px; height: 1px;
+      width: 28px; height: 1px;
       background: rgba(184,132,71,0.35);
-      margin: 0 auto 1rem;
+      margin: 0 auto 0.75rem;
       transition: width 0.35s ease;
     }
 
-    .is__card:hover .is__card-divider { width: 56px; }
+    .is__card:hover .is__card-divider { width: 44px; }
 
     .is__card-benefit {
       font-family: 'Manrope', sans-serif;
-      font-size: 0.8125rem;
+      font-size: 0.78125rem;
       font-weight: 600;
       color: rgba(122, 158, 126, 1);
-      line-height: 1.5;
-      margin: 0 0 0.875rem;
+      line-height: 1.4;
+      margin: 0 0 0.5rem;
     }
 
     .is__card-detail {
       font-family: 'Manrope', sans-serif;
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       color: rgba(250, 247, 242, 0.5);
-      line-height: 1.7;
+      line-height: 1.5;
       margin: 0;
       max-height: 0;
       overflow: hidden;
       opacity: 0;
-      transition: max-height 0.45s ease, opacity 0.35s ease 0.05s;
+      transition: max-height 0.4s ease, opacity 0.3s ease 0.05s;
     }
 
     .is__card:hover .is__card-detail {
-      max-height: 140px;
+      max-height: 120px;
       opacity: 1;
     }
   `],
@@ -269,7 +268,7 @@ interface Ingredient {
     <section class="is" aria-labelledby="is-heading">
       <div class="is__header reveal">
         <p class="is__eyebrow">Ancient Botanicals</p>
-        <h2 class="is__title" id="is-heading">The Wisdom of<br><em>Sacred Ingredients</em></h2>
+        <h2 class="is__title" id="is-heading">The Wisdom of <em>Sacred Ingredients</em></h2>
         <p class="is__sub">Five time-tested botanicals, each revered for centuries in herbal tradition for their transformative hair-care properties.</p>
       </div>
 

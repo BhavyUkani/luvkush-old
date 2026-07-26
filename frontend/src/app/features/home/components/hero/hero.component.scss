@@ -35,6 +35,14 @@
   overflow: hidden;
   display: block;
   background: linear-gradient(135deg, #f8f5f0 0%, #faf7f2 30%, #f3ead9 70%, #ede0cc 100%);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
 
   // Subtle warm radial accent
   &::before {
