@@ -7,19 +7,21 @@ class Database {
 
   constructor() {
     this.pool = mysql.createPool({
-      host:     config.db.host,
-      port:     config.db.port,
+      host: config.db.host,
+      port: config.db.port,
       database: config.db.name,
-      user:     config.db.user,
+      user: config.db.user,
       password: config.db.password,
       waitForConnections: true,
-      connectionLimit:    config.db.poolMax,
-      queueLimit:         0,
-      enableKeepAlive:    true,
+      connectionLimit: config.db.poolMax,
+      queueLimit: 0,
+      enableKeepAlive: true,
       keepAliveInitialDelay: 0,
       timezone: '+05:30',
       charset: 'utf8mb4',
     });
+
+
 
     this.pool.on('connection', () => {
       logger.debug('New MySQL connection established');

@@ -4,8 +4,7 @@ import { HeroComponent } from "./components/hero/hero.component";
 import { CategoryGridComponent } from "./components/category-grid/category-grid.component";
 import { BestSellersComponent } from "./components/best-sellers/best-sellers.component";
 import { HairSolutionsListComponent } from "./components/hair-solutions-list/hair-solutions-list.component";
-import { IngredientsShowcaseComponent } from "./components/ingredients-showcase/ingredients-showcase.component";
-import { WisdomSectionComponent } from "./components/wisdom-section/wisdom-section.component";
+import { PromoBannerComponent } from "./components/promo-banner/promo-banner.component";
 import { WhyChooseUsComponent } from "./components/why-choose-us/why-choose-us.component";
 import { TestimonialsComponent } from "./components/testimonials/testimonials.component";
 
@@ -18,8 +17,7 @@ import { TestimonialsComponent } from "./components/testimonials/testimonials.co
     CategoryGridComponent,
     BestSellersComponent,
     HairSolutionsListComponent,
-    IngredientsShowcaseComponent,
-    WisdomSectionComponent,
+    PromoBannerComponent,
     WhyChooseUsComponent,
     TestimonialsComponent
   ],
@@ -27,9 +25,7 @@ import { TestimonialsComponent } from "./components/testimonials/testimonials.co
     <lk-hero />
     <lk-category-grid />
     <lk-best-sellers />
-    <lk-ingredients-showcase />
-    <lk-wisdom-section />
-    <lk-why-choose-us />
+    <lk-promo-banner />
     <lk-hair-solutions-list
       title="Premium Hair Wigs"
       subtitle="Undetectable natural hairlines, custom-crafted for you"
@@ -42,6 +38,7 @@ import { TestimonialsComponent } from "./components/testimonials/testimonials.co
       type="patch"
       viewAllLink="/hair-patches"
     />
+    <lk-why-choose-us />
     <lk-testimonials />
   `
 })

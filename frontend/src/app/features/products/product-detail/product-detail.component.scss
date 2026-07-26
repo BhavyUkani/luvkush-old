@@ -599,20 +599,21 @@
 }
 
 .pd-section {
-  background: $color-white;
-  border: 1px solid $color-border-base;
-  border-radius: 16px;
-  overflow: hidden;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid $color-border-base;
+  border-radius: 0;
+  padding-bottom: 2.5rem;
   animation: fadeIn 0.4s ease both;
-  transition: box-shadow 0.2s;
-  &:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+
+  &:last-child { border-bottom: none; }
 
   &__header {
     display: flex;
     align-items: center;
     gap: 0.875rem;
-    padding: 1.5rem 2rem 1rem;
-    border-bottom: 1px solid $color-border-base;
+    padding: 0 0 1rem;
+    border-bottom: none;
   }
 
   &__icon {
@@ -652,7 +653,7 @@
   }
 
   &__body {
-    padding: 1.5rem 2rem;
+    padding: 0.5rem 0 0;
     color: $color-text-secondary;
     line-height: 1.75;
 

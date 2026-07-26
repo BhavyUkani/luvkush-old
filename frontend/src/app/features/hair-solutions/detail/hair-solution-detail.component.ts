@@ -170,156 +170,177 @@ import { Title } from '@angular/platform-browser';
           </div>
         </div>
 
-        <!-- Tabs -->
-        <div class="hsd-tabs" id="hsd-tabs-container">
-          <div class="hsd-tab-nav">
-            @for (tab of tabs; track tab) {
-              @if (hasTabContent(tab)) {
-                <button class="hsd-tab-btn" [class.active]="activeTab() === tab" (click)="activeTab.set(tab)">
-                  {{ tab === 'Reviews' ? 'Reviews (' + (product()?.rating_count ?? 0) + ')' : tab }}
-                </button>
-              }
-            }
-          </div>
-          <div class="hsd-tab-content">
-            @if (activeTab() === 'Description' && item()!.description) {
-              <div class="hsd-tab-text" [innerHTML]="item()!.description"></div>
-            }
-            @if (activeTab() === 'How To Use' && item()!.how_to_use) {
-              <div class="hsd-tab-text" style="white-space: pre-line">{{ item()!.how_to_use }}</div>
-            }
-            @if (activeTab() === 'Specifications') {
+        <!-- Stacked Sections (Sequential Layout - No Tabs) -->
+        <div class="hsd-sections">
+
+          <!-- Description -->
+          @if (item()!.description) {
+            <div class="hsd-section hsd-section--desc">
+              <div class="hsd-section__header">
+                <h2 class="hsd-section__title">Description</h2>
+              </div>
+              <div class="hsd-section__body hsd-tab-text" [innerHTML]="item()!.description"></div>
+            </div>
+          }
+
+          <!-- Specifications -->
+          <div class="hsd-section hsd-section--specs">
+            <div class="hsd-section__header">
+              <h2 class="hsd-section__title">Specifications & Details</h2>
+            </div>
+            <div class="hsd-section__body">
               <table class="hsd-spec-table">
                 @if (item()!.gender) { <tr><td>Gender</td><td>{{ item()!.gender | titlecase }}</td></tr> }
                 @if (item()!.size_info) { <tr><td>Available Sizes</td><td>{{ item()!.size_info }}</td></tr> }
                 @if (item()!.colour_info) { <tr><td>Colours</td><td>{{ item()!.colour_info }}</td></tr> }
                 @if (item()!.type) { <tr><td>Type</td><td>{{ item()!.type | titlecase }}</td></tr> }
+                @if (item()!.hair_type) { <tr><td>Hair Type</td><td>{{ item()!.hair_type }}</td></tr> }
+                @if (item()!.cap_construction) { <tr><td>Cap Construction</td><td>{{ item()!.cap_construction }}</td></tr> }
+                @if (item()!.density) { <tr><td>Hair Density</td><td>{{ item()!.density }}</td></tr> }
+                @if (item()!.maintenance_level) { <tr><td>Maintenance</td><td>{{ item()!.maintenance_level }}</td></tr> }
               </table>
-            }
-            @if (activeTab() === 'Reviews') {
-              <div class="hsd-reviews-panel">
-                @if (reviewsLoading()) {
-                  <div class="hsd-reviews__loading">
-                    @for (_ of [1,2,3]; track $index) {
-                      <div class="hsd-review-skeleton">
-                        <div class="hsd-review-skeleton__header shimmer"></div>
-                        <div class="hsd-review-skeleton__body shimmer"></div>
+            </div>
+          </div>
+
+          <!-- How To Use -->
+          @if (item()!.how_to_use) {
+            <div class="hsd-section hsd-section--howto">
+              <div class="hsd-section__header">
+                <h2 class="hsd-section__title">How to Use & Care</h2>
+              </div>
+              <div class="hsd-section__body hsd-tab-text" style="white-space: pre-line">{{ item()!.how_to_use }}</div>
+            </div>
+          }
+
+          <!-- Customer Reviews -->
+          <div class="hsd-section hsd-section--reviews" id="hsd-reviews-section">
+            <div class="hsd-section__header">
+              <h2 class="hsd-section__title">Customer Reviews <span class="hsd-section__count">({{ product()?.rating_count ?? 0 }})</span></h2>
+            </div>
+
+            <div class="hsd-section__body">
+              @if (reviewsLoading()) {
+                <div class="hsd-reviews__loading">
+                  @for (_ of [1,2,3]; track $index) {
+                    <div class="hsd-review-skeleton">
+                      <div class="hsd-review-skeleton__header shimmer"></div>
+                      <div class="hsd-review-skeleton__body shimmer"></div>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <!-- Rating Summary -->
+                @if (ratingSummary(); as summary) {
+                  <div class="hsd-rating-summary">
+                    <div class="hsd-rating-summary__avg">
+                      <span class="hsd-rating-summary__num">{{ summary.average }}</span>
+                      <div class="hsd-rating-summary__stars" aria-hidden="true">
+                        @for (s of stars; track s) {
+                          <svg width="20" height="20" viewBox="0 0 24 24"
+                            [attr.fill]="s <= summary.average ? 'currentColor' : 'none'"
+                            stroke="currentColor" stroke-width="1.5">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                          </svg>
+                        }
                       </div>
+                      <span class="hsd-rating-summary__total">{{ summary.total }} reviews</span>
+                    </div>
+                    <div class="hsd-rating-summary__bars">
+                      @for (s of [5,4,3,2,1]; track s) {
+                        <div class="hsd-rating-bar">
+                          <span class="hsd-rating-bar__label">{{ s }} ★</span>
+                          <div class="hsd-rating-bar__track">
+                            <div class="hsd-rating-bar__fill" [style.width.%]="getRatingPct(s)"></div>
+                          </div>
+                          <span class="hsd-rating-bar__count">{{ getStar(s) }}</span>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+
+                <!-- Review List -->
+                @if (reviews().length > 0) {
+                  <ul class="hsd-reviews__list" aria-label="Customer reviews">
+                    @for (rev of reviews(); track rev.id) {
+                      <li class="hsd-review">
+                        <div class="hsd-review__header">
+                          <span class="hsd-review__avatar" aria-hidden="true">{{ rev.user_name ? rev.user_name[0].toUpperCase() : 'A' }}</span>
+                          <div class="hsd-review__meta">
+                            <span class="hsd-review__author">{{ rev.user_name ?? 'Anonymous' }}</span>
+                            @if (rev.is_verified_purchase) {
+                              <span class="hsd-review__verified">Verified Purchase</span>
+                            }
+                            <time class="hsd-review__date" [attr.datetime]="rev.created_at">{{ rev.created_at | date:'MMM d, y' }}</time>
+                          </div>
+                          <div class="hsd-review__stars" aria-label="{{ rev.rating }} out of 5 stars">
+                            @for (s of stars; track s) {
+                              <svg width="14" height="14" viewBox="0 0 24 24"
+                                [attr.fill]="s <= rev.rating ? 'currentColor' : 'none'"
+                                stroke="currentColor" stroke-width="1.5">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                              </svg>
+                            }
+                          </div>
+                        </div>
+                        @if (rev.title) { <h4 class="hsd-review__title">{{ rev.title }}</h4> }
+                        <p class="hsd-review__body">{{ rev.body }}</p>
+                      </li>
+                    }
+                  </ul>
+                } @else {
+                  <div class="hsd-reviews__empty">
+                    <p>No reviews yet. Be the first to review this product!</p>
+                  </div>
+                }
+
+                <!-- Write a Review -->
+                @if (auth.isLoggedIn()) {
+                  <div class="hsd-review-form">
+                    <h3 class="hsd-review-form__title">Write a Review</h3>
+                    @if (reviewSubmitted()) {
+                      <div class="hsd-review-form__success">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+                        Thank you! Your review has been submitted.
+                      </div>
+                    } @else {
+                      <div class="hsd-review-form__stars">
+                        @for (s of stars; track s) {
+                          <button type="button" class="hsd-review-form__star"
+                            [class.active]="s <= (reviewHover() || reviewForm().rating)"
+                            (mouseenter)="reviewHover.set(s)"
+                            (mouseleave)="reviewHover.set(0)"
+                            (click)="setReviewRating(s)"
+                            [attr.aria-label]="s + ' star'">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                          </button>
+                        }
+                      </div>
+                      <div class="hsd-review-form__fields">
+                        <input type="text" [value]="reviewForm().title"
+                          (input)="setReviewTitle($any($event.target).value)"
+                          class="hsd-review-form__input" placeholder="Review title (optional)" maxlength="100" />
+                        <textarea [value]="reviewForm().body"
+                          (input)="setReviewBody($any($event.target).value)"
+                          class="hsd-review-form__textarea" rows="4" placeholder="Share your experience with this product..." maxlength="2000"></textarea>
+                      </div>
+                      @if (reviewError()) {
+                        <p class="hsd-review-form__error">{{ reviewError() }}</p>
+                      }
+                      <button class="hsd-review-form__submit" (click)="submitReview()" [disabled]="reviewSubmitting()">
+                        {{ reviewSubmitting() ? 'Submitting...' : 'Submit Review' }}
+                      </button>
                     }
                   </div>
                 } @else {
-                  <!-- Rating Summary -->
-                  @if (ratingSummary(); as summary) {
-                    <div class="hsd-rating-summary">
-                      <div class="hsd-rating-summary__avg">
-                        <span class="hsd-rating-summary__num">{{ summary.average }}</span>
-                        <div class="hsd-rating-summary__stars" aria-hidden="true">
-                          @for (s of stars; track s) {
-                            <svg width="20" height="20" viewBox="0 0 24 24"
-                              [attr.fill]="s <= summary.average ? 'currentColor' : 'none'"
-                              stroke="currentColor" stroke-width="1.5">
-                              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                            </svg>
-                          }
-                        </div>
-                        <span class="hsd-rating-summary__total">{{ summary.total }} reviews</span>
-                      </div>
-                      <div class="hsd-rating-summary__bars">
-                        @for (s of [5,4,3,2,1]; track s) {
-                          <div class="hsd-rating-bar">
-                            <span class="hsd-rating-bar__label">{{ s }} ★</span>
-                            <div class="hsd-rating-bar__track">
-                              <div class="hsd-rating-bar__fill" [style.width.%]="getRatingPct(s)"></div>
-                            </div>
-                            <span class="hsd-rating-bar__count">{{ getStar(s) }}</span>
-                          </div>
-                        }
-                      </div>
-                    </div>
-                  }
-
-                  <!-- Review List -->
-                  @if (reviews().length > 0) {
-                    <ul class="hsd-reviews__list" aria-label="Customer reviews">
-                      @for (rev of reviews(); track rev.id) {
-                        <li class="hsd-review">
-                          <div class="hsd-review__header">
-                            <span class="hsd-review__avatar" aria-hidden="true">{{ rev.user_name ? rev.user_name[0].toUpperCase() : 'A' }}</span>
-                            <div class="hsd-review__meta">
-                              <span class="hsd-review__author">{{ rev.user_name ?? 'Anonymous' }}</span>
-                              @if (rev.is_verified_purchase) {
-                                <span class="hsd-review__verified">Verified Purchase</span>
-                              }
-                              <time class="hsd-review__date" [attr.datetime]="rev.created_at">{{ rev.created_at | date:'MMM d, y' }}</time>
-                            </div>
-                            <div class="hsd-review__stars" aria-label="{{ rev.rating }} out of 5 stars">
-                              @for (s of stars; track s) {
-                                <svg width="14" height="14" viewBox="0 0 24 24"
-                                  [attr.fill]="s <= rev.rating ? 'currentColor' : 'none'"
-                                  stroke="currentColor" stroke-width="1.5">
-                                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                                </svg>
-                              }
-                            </div>
-                          </div>
-                          @if (rev.title) { <h4 class="hsd-review__title">{{ rev.title }}</h4> }
-                          <p class="hsd-review__body">{{ rev.body }}</p>
-                        </li>
-                      }
-                    </ul>
-                  } @else {
-                    <div class="hsd-reviews__empty">
-                      <p>No reviews yet. Be the first to review this product!</p>
-                    </div>
-                  }
-
-                  <!-- Write a Review -->
-                  @if (auth.isLoggedIn()) {
-                    <div class="hsd-review-form">
-                      <h3 class="hsd-review-form__title">Write a Review</h3>
-                      @if (reviewSubmitted()) {
-                        <div class="hsd-review-form__success">
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-                          Thank you! Your review has been submitted.
-                        </div>
-                      } @else {
-                        <div class="hsd-review-form__stars">
-                          @for (s of stars; track s) {
-                            <button type="button" class="hsd-review-form__star"
-                              [class.active]="s <= (reviewHover() || reviewForm().rating)"
-                              (mouseenter)="reviewHover.set(s)"
-                              (mouseleave)="reviewHover.set(0)"
-                              (click)="setReviewRating(s)"
-                              [attr.aria-label]="s + ' star'">
-                              <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                            </button>
-                          }
-                        </div>
-                        <div class="hsd-review-form__fields">
-                          <input type="text" [value]="reviewForm().title"
-                            (input)="setReviewTitle($any($event.target).value)"
-                            class="hsd-review-form__input" placeholder="Review title (optional)" maxlength="100" />
-                          <textarea [value]="reviewForm().body"
-                            (input)="setReviewBody($any($event.target).value)"
-                            class="hsd-review-form__textarea" rows="4" placeholder="Share your experience with this product..." maxlength="2000"></textarea>
-                        </div>
-                        @if (reviewError()) {
-                          <p class="hsd-review-form__error">{{ reviewError() }}</p>
-                        }
-                        <button class="hsd-review-form__submit" (click)="submitReview()" [disabled]="reviewSubmitting()">
-                          {{ reviewSubmitting() ? 'Submitting...' : 'Submit Review' }}
-                        </button>
-                      }
-                    </div>
-                  } @else {
-                    <div class="hsd-review-form__login-prompt">
-                      <a routerLink="/login" [queryParams]="{returnUrl: router.url}">Sign in</a> to write a review
-                    </div>
-                  }
+                  <div class="hsd-review-form__login-prompt">
+                    <a routerLink="/login" [queryParams]="{returnUrl: router.url}">Sign in</a> to write a review
+                  </div>
                 }
-              </div>
-            }
+              }
+            </div>
           </div>
+
         </div>
       </div>
     }
@@ -400,15 +421,17 @@ import { Title } from '@angular/platform-browser';
     .hsd-payment-note { display: flex; align-items: center; gap: 0.5rem; margin-top: 1rem; padding: 0.75rem; background: rgba(184,115,51,0.06); border: 1px solid rgba(184,115,51,0.15); border-radius: 6px; font-size: 0.8125rem; color: #B87333; font-weight: 500; }
     .hsd-payment-note svg { flex-shrink: 0; }
 
-    .hsd-tabs { border-top: 1.5px solid #EDE8E0; padding-top: 2rem; }
-    .hsd-tab-nav { display: flex; gap: 0; border-bottom: 1.5px solid #EDE8E0; margin-bottom: 1.5rem; }
-    .hsd-tab-btn { padding: 0.75rem 1.5rem; background: none; border: none; border-bottom: 2.5px solid transparent; font-size: 0.875rem; font-weight: 600; color: #888; cursor: pointer; margin-bottom: -1.5px; }
-    .hsd-tab-btn.active { border-bottom-color: #B87333; color: #B87333; }
-    .hsd-tab-content { font-size: 0.9375rem; color: #555; line-height: 1.7; }
-    .hsd-tab-text { max-width: 720px; }
-    .hsd-spec-table { width: 100%; max-width: 480px; border-collapse: collapse; }
+    /* Stacked Sections (Sequential Layout - No Cards, Open Flow) */
+    .hsd-sections { display: flex; flex-direction: column; gap: 2.5rem; border-top: 1px solid #EDE8E0; padding-top: 2.5rem; }
+    .hsd-section { background: transparent; border: none; border-bottom: 1px solid #EDE8E0; border-radius: 0; padding-bottom: 2.5rem; box-shadow: none; }
+    .hsd-section:last-child { border-bottom: none; }
+    .hsd-section__header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 0; border-bottom: none; }
+    .hsd-section__title { font-size: 1.125rem; font-weight: 700; color: #1C1C1C; margin: 0; }
+    .hsd-section__count { font-size: 0.875rem; color: #888; font-weight: 400; }
+    .hsd-tab-text { font-size: 0.9375rem; color: #555; line-height: 1.7; max-width: 100%; }
+    .hsd-spec-table { width: 100%; max-width: 600px; border-collapse: collapse; }
     .hsd-spec-table td { padding: 0.625rem 0.875rem; border-bottom: 1px solid #F0EDE8; font-size: 0.875rem; }
-    .hsd-spec-table td:first-child { font-weight: 600; color: #888; width: 160px; }
+    .hsd-spec-table td:first-child { font-weight: 600; color: #888; width: 180px; }
 
     /* Reviews and rating styles */
     .hsd-rating { display: inline-flex; align-items: center; gap: 0.5rem; background: none; border: none; padding: 0; cursor: pointer; color: inherit; margin-bottom: 1rem; }

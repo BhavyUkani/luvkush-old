@@ -1,5 +1,4 @@
-import { Component, ChangeDetectionStrategy, signal, OnInit, OnDestroy, PLATFORM_ID, inject } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 
 interface Testimonial {
   quote: string;
@@ -18,104 +17,53 @@ interface Testimonial {
   styles: [`
     :host { display: block; }
 
-    @keyframes slideInLeft {
-      from { opacity: 0; transform: translateX(-40px); }
-      to   { opacity: 1; transform: translateX(0); }
-    }
-
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes marqueeScroll {
-      from { transform: translateX(0); }
-      to   { transform: translateX(-50%); }
-    }
-
     .tm {
-      background: linear-gradient(160deg, #FAF7F2 0%, #F1E8D8 50%, #EDE0CC 100%);
-      padding: clamp(3.5rem, 7vw, 5.5rem) clamp(1.25rem, 4vw, 3rem);
+      background: #F7F8FA;
+      padding: clamp(2.5rem, 5vw, 4rem) clamp(1.25rem, 4vw, 3rem);
       position: relative;
-      overflow: hidden;
-    }
-
-    /* Top accent border */
-    .tm::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, #B88447 30%, #E2C97E 50%, #B88447 70%, transparent);
-    }
-
-    /* Background circle decoration */
-    .tm::after {
-      content: '';
-      position: absolute;
-      top: -120px; right: -100px;
-      width: 500px; height: 500px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(184,132,71,0.07) 0%, transparent 70%);
-      pointer-events: none;
     }
 
     .tm__header {
       text-align: center;
-      max-width: 540px;
-      margin: 0 auto 3.5rem;
-      position: relative;
-      z-index: 1;
+      max-width: 500px;
+      margin: 0 auto clamp(1.5rem, 3vw, 2.5rem);
     }
 
     .tm__eyebrow {
-      font-family: 'Cinzel', serif;
-      font-size: 10px;
-      letter-spacing: 0.22em;
+      font-family: 'Outfit', sans-serif;
+      font-size: 11px;
+      letter-spacing: 0.18em;
       text-transform: uppercase;
       color: #B88447;
-      margin: 0 0 1rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.75rem;
-    }
-
-    .tm__eyebrow::before, .tm__eyebrow::after {
-      content: '';
-      display: block;
-      width: 36px; height: 1px;
-      background: #B88447;
-      opacity: 0.4;
+      margin: 0 0 0.4rem;
+      font-weight: 600;
     }
 
     .tm__title {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(2rem, 4vw, 2.75rem);
-      font-weight: 600;
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(1.5rem, 3vw, 2.2rem);
+      font-weight: 400;
       color: #1E1E1E;
-      line-height: 1.18;
-      margin: 0 0 0.875rem;
+      line-height: 1.2;
+      margin: 0 0 0.5rem;
       letter-spacing: -0.01em;
     }
 
     .tm__sub {
-      font-family: 'Manrope', sans-serif;
-      font-size: 0.9375rem;
-      color: #666;
-      line-height: 1.65;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.875rem;
+      color: #888;
+      line-height: 1.55;
       margin: 0;
     }
 
-    /* ─── Grid of cards ─────────────────────────────────────── */
+    /* ─── Grid ─────────────────────────────────────── */
     .tm__grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 1.5rem;
+      gap: 1.25rem;
       max-width: 1200px;
       margin: 0 auto;
-      position: relative;
-      z-index: 1;
     }
 
     @media (max-width: 900px) {
@@ -123,113 +71,80 @@ interface Testimonial {
     }
 
     .tm__card {
-      background: rgba(255,255,255,0.75);
-      border: 1px solid rgba(184,132,71,0.12);
-      border-radius: 20px;
-      padding: 2.25rem 1.875rem;
+      background: #FFFFFF;
+      border: 1px solid #F0F0F0;
+      border-radius: 16px;
+      padding: 1.75rem 1.5rem;
       position: relative;
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1),
-                  box-shadow 0.38s cubic-bezier(0.22, 1, 0.36, 1),
-                  border-color 0.25s ease;
-      overflow: hidden;
-    }
-
-    .tm__card::after {
-      content: '';
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, #B88447 0%, #E2C97E 50%, #B88447 100%);
-      transform: scaleX(0);
-      transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-      transform-origin: left;
+      transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.25s ease;
     }
 
     .tm__card:hover {
-      transform: translateY(-8px);
-      box-shadow: 0 24px 64px rgba(32, 54, 42, 0.1), 0 4px 16px rgba(32, 54, 42, 0.06);
-      border-color: rgba(184, 132, 71, 0.3);
-    }
-
-    .tm__card:hover::after { transform: scaleX(1); }
-
-    .tm__quote-mark {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 5.5rem;
-      line-height: 0.8;
-      color: #E2C97E;
-      opacity: 0.35;
-      position: absolute;
-      top: 1rem;
-      left: 1.625rem;
-      pointer-events: none;
-      user-select: none;
+      transform: translateY(-4px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+      border-color: rgba(184, 132, 71, 0.2);
     }
 
     .tm__stars {
       display: flex;
-      gap: 0.2rem;
-      margin-bottom: 1.25rem;
-      margin-top: 0.75rem;
+      gap: 0.15rem;
+      margin-bottom: 1rem;
     }
 
     .tm__star {
       color: #C8891A;
-      font-size: 0.9375rem;
+      font-size: 0.875rem;
     }
 
     .tm__quote {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.125rem;
-      color: #2D2D2D;
-      line-height: 1.72;
-      font-style: italic;
-      margin: 0 0 1.75rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9375rem;
+      color: #333;
+      line-height: 1.65;
+      margin: 0 0 1.25rem;
     }
 
     .tm__divider {
       height: 1px;
-      background: linear-gradient(90deg, rgba(184,132,71,0.2) 0%, transparent 100%);
-      margin-bottom: 1.375rem;
+      background: #F0F0F0;
+      margin-bottom: 1rem;
     }
 
     .tm__author {
       display: flex;
       align-items: center;
-      gap: 0.875rem;
+      gap: 0.75rem;
     }
 
     .tm__avatar {
-      width: 44px; height: 44px;
+      width: 40px; height: 40px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-family: 'Manrope', sans-serif;
-      font-size: 0.875rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.8125rem;
       font-weight: 700;
       color: #E2C97E;
       flex-shrink: 0;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       transition: transform 0.3s ease;
     }
 
     .tm__card:hover .tm__avatar {
-      transform: scale(1.08);
+      transform: scale(1.06);
     }
 
     .tm__author-name {
-      font-family: 'Manrope', sans-serif;
-      font-size: 0.9375rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.875rem;
       font-weight: 700;
       color: #1E1E1E;
-      margin: 0 0 0.1875rem;
+      margin: 0 0 0.125rem;
     }
 
     .tm__author-meta {
-      font-family: 'Manrope', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 0.75rem;
       color: #888;
       margin: 0;
@@ -238,9 +153,9 @@ interface Testimonial {
     .tm__verified {
       display: flex;
       align-items: center;
-      gap: 0.375rem;
-      margin-top: 0.3rem;
-      font-family: 'Manrope', sans-serif;
+      gap: 0.3rem;
+      margin-top: 0.2rem;
+      font-family: 'DM Sans', sans-serif;
       font-size: 0.6875rem;
       color: #3D5A47;
       font-weight: 600;
@@ -248,26 +163,23 @@ interface Testimonial {
 
     .tm__verified svg { flex-shrink: 0; }
 
-    /* ─── Rating strip ────────────────────────────────────────── */
+    /* ─── Social proof strip ──────────────────────── */
     .tm__strip {
-      margin-top: 3.5rem;
+      margin-top: 2.5rem;
       text-align: center;
-      position: relative;
-      z-index: 1;
     }
 
     .tm__strip-inner {
       display: inline-flex;
       align-items: center;
       gap: 2rem;
-      background: rgba(255,255,255,0.6);
-      border: 1px solid rgba(184,132,71,0.15);
+      background: #FFFFFF;
+      border: 1px solid #F0F0F0;
       border-radius: 99px;
-      padding: 1rem 2.5rem;
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      padding: 0.875rem 2rem;
       flex-wrap: wrap;
       justify-content: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
     }
 
     .tm__strip-stat {
@@ -277,37 +189,36 @@ interface Testimonial {
     }
 
     .tm__strip-num {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.75rem;
-      font-weight: 600;
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.5rem;
+      font-weight: 400;
       color: #20362A;
       line-height: 1;
     }
 
     .tm__strip-label {
-      font-family: 'Manrope', sans-serif;
-      font-size: 0.75rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.6875rem;
       color: #888;
     }
 
     .tm__strip-sep {
       width: 1px;
-      height: 36px;
-      background: rgba(184,132,71,0.2);
+      height: 28px;
+      background: #F0F0F0;
     }
   `],
   template: `
     <section class="tm" aria-labelledby="tm-heading">
       <div class="tm__header reveal">
         <p class="tm__eyebrow">Real Results</p>
-        <h2 class="tm__title" id="tm-heading">Transformations That<br>Speak for Themselves</h2>
-        <p class="tm__sub">Thousands of happy customers trust Luv Kush Natural for their daily hair care rituals.</p>
+        <h2 class="tm__title" id="tm-heading">What Our Customers Say</h2>
+        <p class="tm__sub">Thousands of happy customers trust Luv Kush Natural for their daily hair care.</p>
       </div>
 
       <div class="tm__grid reveal-stagger">
         @for (t of testimonials; track t.name) {
           <div class="tm__card">
-            <span class="tm__quote-mark" aria-hidden="true">"</span>
             <div class="tm__stars" [attr.aria-label]="t.rating + ' out of 5 stars'">
               @for (s of starArray(t.rating); track $index) {
                 <span class="tm__star" aria-hidden="true">★</span>

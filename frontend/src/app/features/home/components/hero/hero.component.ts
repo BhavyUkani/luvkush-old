@@ -9,6 +9,19 @@ import { WishlistService } from "../../../../core/services/wishlist.service";
 import { AuthService } from "../../../../core/services/auth.service";
 import { imageUrl } from "../../../../shared/utils/image-url";
 
+export interface HeroSlide {
+  id: number;
+  title: string;
+  subtitle: string;
+  tag?: string;
+  desktopImage: string;
+  mobileImage?: string;
+  linkUrl: string;
+  ctaText?: string;
+  badge?: string;
+  product?: Product;
+}
+
 @Component({
   selector: "lk-hero",
   standalone: true,
@@ -25,11 +38,56 @@ export class HeroComponent implements OnInit {
   private readonly router     = inject(Router);
   readonly wishlist            = inject(WishlistService);
 
-  products    = signal<Product[]>([]);
   loading     = signal(true);
-  addedProductIds = signal<Set<number>>(new Set());
   swiperReady = signal(false);
   readonly imgUrl = imageUrl;
+
+  slides = signal<HeroSlide[]>([
+    {
+      id: 1,
+      title: '100% Natural Ayurvedic Hair Care',
+      subtitle: 'Rooted in 5000 years of herbal wisdom. Cold-pressed oils & pure botanical formulations.',
+      tag: 'Bestseller',
+      badge: 'Free Shipping Above ₹499',
+      desktopImage: '/assets/images/hero-image-1.png',
+      mobileImage: '/assets/images/hero-image-1.png',
+      linkUrl: '/shop',
+      ctaText: 'Shop All Products'
+    },
+    {
+      id: 2,
+      title: 'Bhringraj Intense Hair Growth Oil',
+      subtitle: '48-Hour slow cooked herbal oil to stop hair fall & activate dormant follicles.',
+      tag: 'Ayurvedic Elixir',
+      badge: 'Up to 30% OFF',
+      desktopImage: '/assets/images/ayurvedic_hair_oil.png',
+      mobileImage: '/assets/images/ayurvedic_hair_oil.png',
+      linkUrl: '/shop?category=hair-growth-oils',
+      ctaText: 'Explore Hair Oils'
+    },
+    {
+      id: 3,
+      title: 'Undetectable Premium Human Hair Wigs',
+      subtitle: 'Seamless HD Swiss lace fronts, 100% virgin hair, custom-crafted for you.',
+      tag: 'Premium Hair Wigs',
+      badge: 'Custom Fitted',
+      desktopImage: '/assets/images/premium_hair_wig.png',
+      mobileImage: '/assets/images/premium_hair_wig.png',
+      linkUrl: '/hair-wigs',
+      ctaText: 'Discover Hair Wigs'
+    },
+    {
+      id: 4,
+      title: '0.03mm Micro Thin Skin Hair Patches',
+      subtitle: 'Waterproof, breathable hairline patches for instant natural density.',
+      tag: 'Custom Hair Systems',
+      badge: 'Instant Results',
+      desktopImage: '/assets/images/hair_patch.png',
+      mobileImage: '/assets/images/hair_patch.png',
+      linkUrl: '/hair-patches',
+      ctaText: 'Explore Hair Patches'
+    }
+  ]);
 
   constructor() {
     afterNextRender(() => {
@@ -41,55 +99,35 @@ export class HeroComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.productApi.getBestSellers(5).subscribe({
+    // Optionally augment slides with live product data if available
+    this.productApi.getBestSellers(4).subscribe({
       next: (res) => {
-        this.products.set(res.data ?? []);
+        const prods = res.data ?? [];
+        if (prods.length > 0) {
+          this.slides.update(current => current.map((slide, idx) => {
+            if (prods[idx]) {
+              return {
+                ...slide,
+                product: prods[idx]
+              };
+            }
+            return slide;
+          }));
+        }
         this.loading.set(false);
       },
       error: () => this.loading.set(false)
     });
   }
 
-  getDiscount(p: Product): number {
-    if (!p || !p.mrp || p.mrp <= p.price) return 0;
-    return Math.round(((p.mrp - p.price) / p.mrp) * 100);
-  }
-
-  getRatingInt(p: Product): number {
-    return Math.round(p?.rating_avg ?? 0);
-  }
-
-  addToCart(product: Product): void {
-    if (!this.auth.isLoggedIn()) {
-      this.router.navigate(['/login'], { queryParams: { returnUrl: '/shop' } });
+  onSlideClick(slide: HeroSlide, event: MouseEvent): void {
+    // Prevent double trigger if user clicked directly on an interactive button/link
+    const target = event.target as HTMLElement;
+    if (target.closest('.hero__btn-action') || target.closest('a')) {
       return;
     }
-    this.cart.addItem({
-      productId: product.id, name: product.name,
-      price: product.price, mrp: product.mrp,
-      quantity: 1, image: product.primary_image ?? "", slug: product.slug
-    }).subscribe();
-
-    this.addedProductIds.update(set => {
-      const newSet = new Set(set);
-      newSet.add(product.id);
-      return newSet;
-    });
-
-    setTimeout(() => {
-      this.addedProductIds.update(set => {
-        const newSet = new Set(set);
-        newSet.delete(product.id);
-        return newSet;
-      });
-    }, 2200);
-  }
-
-  toggleWishlist(product: Product): void {
-    if (!this.auth.isLoggedIn()) {
-      this.router.navigate(['/login'], { queryParams: { returnUrl: '/shop' } });
-      return;
+    if (slide.linkUrl) {
+      this.router.navigateByUrl(slide.linkUrl);
     }
-    this.wishlist.toggle(product).subscribe();
   }
 }
