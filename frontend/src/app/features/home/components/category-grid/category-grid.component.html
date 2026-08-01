@@ -1,73 +1,53 @@
-<section class="cat-grid" aria-labelledby="cat-grid-heading">
+<section class="cats lk-section" aria-labelledby="cats-title">
+  <div class="lk-shell">
 
-  <div class="cat-grid__header reveal">
-    <p class="cat-grid__eyebrow">Explore</p>
-    <h2 class="cat-grid__title" id="cat-grid-heading">Shop by Category</h2>
-    <p class="cat-grid__sub">Browse our full range of natural hair &amp; beauty solutions</p>
-  </div>
-
-  @if (loading()) {
-    <div class="cat-grid__grid">
-      @for (n of [1,2,3,4,5,6]; track n) {
-        <div class="cat-card cat-card--skel">
-          <div class="cat-card__skel-img skel-block"></div>
-          <div class="cat-card__skel-name skel-block"></div>
-        </div>
-      }
+    <div class="lk-head">
+      <div>
+        <span class="lk-eyebrow">Shop by ritual</span>
+        <h2 class="lk-title" id="cats-title">Everything your <em>routine</em> asks for</h2>
+      </div>
+      <a class="lk-link" routerLink="/shop">
+        Browse all products
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
     </div>
-  }
 
-  @if (!loading() && categories().length > 0) {
-    <div class="cat-grid__grid reveal">
-      @for (cat of categories(); track trackById($index, cat)) {
-        <a class="cat-card"
-          [routerLink]="['/shop']"
-          [queryParams]="{ category: cat.slug }"
-          [attr.aria-label]="'Browse ' + cat.name">
-
-          <div class="cat-card__image-wrap">
-            @if (cat.image_url) {
+    @if (loading()) {
+      <div class="cats__grid">
+        @for (s of skeletons; track s) {
+          <div class="cats__card cats__card--skeleton" aria-hidden="true"></div>
+        }
+      </div>
+    } @else {
+      <div class="cats__grid">
+        @for (cat of categories(); track cat.id; let i = $index) {
+          <a class="cats__card" routerLink="/shop" [queryParams]="{ category: cat.slug }"
+             [lkReveal]="i" [attr.aria-label]="cat.name">
+            <div class="cats__media">
               <img
-                class="cat-card__image"
                 [src]="imgUrl(cat.image_url)"
                 [alt]="cat.name"
                 loading="lazy"
-                width="300"
-                height="300"
+                width="400" height="400"
                 (error)="$any($event.target).src='/assets/images/placeholder.webp'"
               />
-            } @else {
-              <div class="cat-card__placeholder" aria-hidden="true">
-                <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                  <path d="M16 2C16 2 8 10 4 16C8 22 16 30 16 30C16 30 24 22 28 16C24 10 16 2 16 2Z"
-                    stroke="currentColor" stroke-width="1" fill="rgba(184,132,71,0.1)"/>
-                  <circle cx="16" cy="16" r="4" fill="currentColor" opacity="0.5"/>
-                </svg>
-              </div>
-            }
-            <div class="cat-card__overlay" aria-hidden="true">
-              <span class="cat-card__shop">Shop Now
-                <svg class="cat-card__shop-icon" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                  <path d="M2 6H10M7 3L10 6L7 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </div>
+            <div class="cats__body">
+              <h3 class="cats__name">{{ cat.name }}</h3>
+              <p class="cats__blurb">{{ blurb(cat.slug) || cat.description }}</p>
+              <span class="cats__cta">
+                Shop now
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </span>
             </div>
-          </div>
+          </a>
+        }
+      </div>
+    }
 
-          <div class="cat-card__info">
-            <span class="cat-card__name">{{ cat.name }}</span>
-            @if ((cat.product_count ?? 0) > 0) {
-              <span class="cat-card__count">{{ cat.product_count }} products</span>
-            }
-          </div>
-
-        </a>
-      }
-    </div>
-  }
-
-  @if (!loading() && categories().length === 0) {
-    <p class="cat-grid__empty">No categories found.</p>
-  }
-
+  </div>
 </section>

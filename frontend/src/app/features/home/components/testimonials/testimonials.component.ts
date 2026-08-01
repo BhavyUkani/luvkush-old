@@ -1,303 +1,183 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RevealDirective } from '../../../../shared/directives/reveal.directive';
 
 interface Testimonial {
   quote: string;
   name: string;
-  city: string;
+  location: string;
   product: string;
-  initials: string;
   rating: number;
-  avatarBg: string;
 }
+
+const TESTIMONIALS: Testimonial[] = [
+  {
+    quote: 'I had tried four different oils before this one. The difference here is that it actually absorbs — my scalp does not feel coated the next morning. Hair fall dropped noticeably by the second month.',
+    name: 'Ananya Sharma',
+    location: 'Pune',
+    product: 'Bhringraj Hair Growth Oil',
+    rating: 5,
+  },
+  {
+    quote: 'Bought the shampoo expecting the usual herbal harshness. It lathers properly without sulphates, which I did not think was possible. My colour has held far longer than it used to.',
+    name: 'Meera Krishnan',
+    location: 'Chennai',
+    product: 'Herbal Anti Hair Fall Shampoo',
+    rating: 5,
+  },
+  {
+    quote: 'The patch is genuinely undetectable. I was worried about the front hairline but nobody at work has said a word in six months. Fitting was handled properly and patiently.',
+    name: 'Rohit Desai',
+    location: 'Ahmedabad',
+    product: 'Micro Thin Skin Hair Patch',
+    rating: 5,
+  },
+  {
+    quote: 'Took about six weeks before I saw anything, so do not expect overnight results. But the regrowth around my temples is real and my stylist noticed before I mentioned it.',
+    name: 'Priya Nair',
+    location: 'Kochi',
+    product: 'Kesh Raksha Ayurvedic Oil',
+    rating: 4,
+  },
+];
 
 @Component({
   selector: 'lk-testimonials',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styles: [`
-    :host { display: block; }
-
-    .tm {
-      background: #F7F8FA;
-      padding: clamp(2.5rem, 5vw, 4rem) clamp(1.25rem, 4vw, 3rem);
-      position: relative;
-    }
-
-    .tm__header {
-      text-align: center;
-      max-width: 500px;
-      margin: 0 auto clamp(1.5rem, 3vw, 2.5rem);
-    }
-
-    .tm__eyebrow {
-      font-family: 'Outfit', sans-serif;
-      font-size: 11px;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: #B88447;
-      margin: 0 0 0.4rem;
-      font-weight: 600;
-    }
-
-    .tm__title {
-      font-family: 'DM Serif Display', serif;
-      font-size: clamp(1.5rem, 3vw, 2.2rem);
-      font-weight: 400;
-      color: #1E1E1E;
-      line-height: 1.2;
-      margin: 0 0 0.5rem;
-      letter-spacing: -0.01em;
-    }
-
-    .tm__sub {
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.875rem;
-      color: #888;
-      line-height: 1.55;
-      margin: 0;
-    }
-
-    /* ─── Grid ─────────────────────────────────────── */
-    .tm__grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1.25rem;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
-    @media (max-width: 900px) {
-      .tm__grid { grid-template-columns: 1fr; max-width: 520px; }
-    }
-
-    .tm__card {
-      background: #FFFFFF;
-      border: 1px solid #F0F0F0;
-      border-radius: 16px;
-      padding: 1.75rem 1.5rem;
-      position: relative;
-      transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.25s ease;
-    }
-
-    .tm__card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
-      border-color: rgba(184, 132, 71, 0.2);
-    }
-
-    .tm__stars {
-      display: flex;
-      gap: 0.15rem;
-      margin-bottom: 1rem;
-    }
-
-    .tm__star {
-      color: #C8891A;
-      font-size: 0.875rem;
-    }
-
-    .tm__quote {
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.9375rem;
-      color: #333;
-      line-height: 1.65;
-      margin: 0 0 1.25rem;
-    }
-
-    .tm__divider {
-      height: 1px;
-      background: #F0F0F0;
-      margin-bottom: 1rem;
-    }
-
-    .tm__author {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    .tm__avatar {
-      width: 40px; height: 40px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.8125rem;
-      font-weight: 700;
-      color: #E2C97E;
-      flex-shrink: 0;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      transition: transform 0.3s ease;
-    }
-
-    .tm__card:hover .tm__avatar {
-      transform: scale(1.06);
-    }
-
-    .tm__author-name {
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.875rem;
-      font-weight: 700;
-      color: #1E1E1E;
-      margin: 0 0 0.125rem;
-    }
-
-    .tm__author-meta {
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.75rem;
-      color: #888;
-      margin: 0;
-    }
-
-    .tm__verified {
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
-      margin-top: 0.2rem;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.6875rem;
-      color: #3D5A47;
-      font-weight: 600;
-    }
-
-    .tm__verified svg { flex-shrink: 0; }
-
-    /* ─── Social proof strip ──────────────────────── */
-    .tm__strip {
-      margin-top: 2.5rem;
-      text-align: center;
-    }
-
-    .tm__strip-inner {
-      display: inline-flex;
-      align-items: center;
-      gap: 2rem;
-      background: #FFFFFF;
-      border: 1px solid #F0F0F0;
-      border-radius: 99px;
-      padding: 0.875rem 2rem;
-      flex-wrap: wrap;
-      justify-content: center;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-    }
-
-    .tm__strip-stat {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .tm__strip-num {
-      font-family: 'DM Serif Display', serif;
-      font-size: 1.5rem;
-      font-weight: 400;
-      color: #20362A;
-      line-height: 1;
-    }
-
-    .tm__strip-label {
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.6875rem;
-      color: #888;
-    }
-
-    .tm__strip-sep {
-      width: 1px;
-      height: 28px;
-      background: #F0F0F0;
-    }
-  `],
+  imports: [CommonModule, RevealDirective],
   template: `
-    <section class="tm" aria-labelledby="tm-heading">
-      <div class="tm__header reveal">
-        <p class="tm__eyebrow">Real Results</p>
-        <h2 class="tm__title" id="tm-heading">What Our Customers Say</h2>
-        <p class="tm__sub">Thousands of happy customers trust Luv Kush Natural for their daily hair care.</p>
-      </div>
+    <section class="tst lk-section" aria-labelledby="tst-title">
+      <div class="lk-shell">
 
-      <div class="tm__grid reveal-stagger">
-        @for (t of testimonials; track t.name) {
-          <div class="tm__card">
-            <div class="tm__stars" [attr.aria-label]="t.rating + ' out of 5 stars'">
-              @for (s of starArray(t.rating); track $index) {
-                <span class="tm__star" aria-hidden="true">★</span>
-              }
-            </div>
-            <p class="tm__quote">{{ t.quote }}</p>
-            <div class="tm__divider"></div>
-            <div class="tm__author">
-              <div class="tm__avatar" [style.background]="t.avatarBg" [attr.aria-label]="t.name">{{ t.initials }}</div>
-              <div>
-                <p class="tm__author-name">{{ t.name }}</p>
-                <p class="tm__author-meta">{{ t.city }} · {{ t.product }}</p>
-                <span class="tm__verified">
-                  <svg width="11" height="11" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                    <circle cx="6" cy="6" r="6" fill="#3D5A47"/>
-                    <path d="M3.5 6L5.5 8L8.5 4.5" stroke="white" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                  Verified Purchase
-                </span>
-              </div>
-            </div>
-          </div>
-        }
-      </div>
-
-      <!-- Social proof strip -->
-      <div class="tm__strip reveal">
-        <div class="tm__strip-inner">
-          <div class="tm__strip-stat">
-            <span class="tm__strip-num">4.9</span>
-            <span class="tm__strip-label">Average Rating</span>
-          </div>
-          <div class="tm__strip-sep" aria-hidden="true"></div>
-          <div class="tm__strip-stat">
-            <span class="tm__strip-num">10K+</span>
-            <span class="tm__strip-label">Happy Customers</span>
-          </div>
-          <div class="tm__strip-sep" aria-hidden="true"></div>
-          <div class="tm__strip-stat">
-            <span class="tm__strip-num">98%</span>
-            <span class="tm__strip-label">Would Recommend</span>
+        <div class="lk-head lk-head--center">
+          <div>
+            <span class="lk-eyebrow lk-eyebrow--center">In their words</span>
+            <h2 class="lk-title" id="tst-title">Results worth <em>waiting for</em></h2>
+            <p class="lk-lede">
+              Ayurveda works on its own timeline. These are unedited reviews from
+              customers who stayed with it.
+            </p>
           </div>
         </div>
+
+        <div class="tst__grid">
+          @for (t of testimonials; track t.name; let i = $index) {
+            <figure class="tst__card" [lkReveal]="i">
+              <div class="tst__stars" [attr.aria-label]="t.rating + ' out of 5 stars'">
+                @for (s of [1,2,3,4,5]; track s) {
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"
+                       [class.is-on]="s <= t.rating" aria-hidden="true">
+                    <path d="M8 1.6l1.9 4h4.2l-3.4 2.9 1.2 4.2L8 10.3l-3.9 2.4 1.2-4.2L1.9 5.6h4.2L8 1.6Z"/>
+                  </svg>
+                }
+              </div>
+
+              <blockquote class="tst__quote">{{ t.quote }}</blockquote>
+
+              <figcaption class="tst__by">
+                <span class="tst__avatar" aria-hidden="true">{{ t.name.charAt(0) }}</span>
+                <span class="tst__meta">
+                  <strong>{{ t.name }}</strong>
+                  <span>{{ t.location }}</span>
+                </span>
+                <span class="tst__verified">
+                  <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <circle cx="8" cy="8" r="6.4" stroke="currentColor" stroke-width="1.3"/>
+                    <path d="M5.5 8.2l1.8 1.8 3.3-3.7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  Verified
+                </span>
+              </figcaption>
+
+              <p class="tst__product">{{ t.product }}</p>
+            </figure>
+          }
+        </div>
+
       </div>
     </section>
-  `
+  `,
+  styles: [`
+    .tst { background: var(--lk-cream); }
+
+    .tst__grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: clamp(.9rem, 1.8vw, 1.4rem);
+    }
+    @media (max-width: 1100px) { .tst__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 620px)  { .tst__grid { grid-template-columns: 1fr; } }
+
+    .tst__card {
+      display: flex;
+      flex-direction: column;
+      margin: 0;
+      padding: clamp(1.25rem, 2vw, 1.65rem);
+      border-radius: var(--lk-r-lg);
+      background: var(--lk-white);
+      border: 1px solid var(--lk-line);
+      transition: transform var(--lk-t-base), box-shadow var(--lk-t-base);
+    }
+    .tst__card:hover { transform: translateY(-4px); box-shadow: var(--lk-shadow-md); }
+
+    .tst__stars { display: inline-flex; gap: 1px; color: var(--lk-line); }
+    .tst__stars svg.is-on { color: var(--lk-star); }
+
+    .tst__quote {
+      margin: .85rem 0 0;
+      font-size: .89rem;
+      line-height: 1.68;
+      color: var(--lk-body);
+      flex: 1;
+    }
+
+    .tst__by {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      margin-top: 1.15rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--lk-line-soft);
+    }
+
+    .tst__avatar {
+      display: grid;
+      place-items: center;
+      width: 36px;
+      height: 36px;
+      flex: none;
+      border-radius: 50%;
+      background: var(--lk-green-100);
+      color: var(--lk-green-700);
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: 1rem;
+    }
+
+    .tst__meta { display: flex; flex-direction: column; line-height: 1.3; }
+    .tst__meta strong { font-size: .85rem; color: var(--lk-ink); font-weight: 600; }
+    .tst__meta span { font-size: .74rem; color: var(--lk-muted); }
+
+    .tst__verified {
+      display: inline-flex;
+      align-items: center;
+      gap: .22rem;
+      margin-left: auto;
+      font-size: .68rem;
+      font-weight: 600;
+      color: var(--lk-green-600);
+    }
+
+    .tst__product {
+      margin: .75rem 0 0;
+      font-size: .72rem;
+      letter-spacing: .04em;
+      color: var(--lk-muted);
+    }
+
+    @media (prefers-reduced-motion: reduce) { .tst__card { transition: none; } }
+  `]
 })
 export class TestimonialsComponent {
-  readonly testimonials: Testimonial[] = [
-    {
-      quote: "I have been using Luv Kush Natural Bhringraj oil for three months now. My hair fall has reduced dramatically and my scalp feels healthier than it has in years. Truly pure natural quality.",
-      name: "Priya Mehta",
-      city: "Mumbai",
-      product: "Bhringraj Hair Oil",
-      initials: "PM",
-      rating: 5,
-      avatarBg: "linear-gradient(135deg, #36503B, #20362A)"
-    },
-    {
-      quote: "The Amla & Brahmi oil is nothing short of miraculous. Thick, aromatic, and it works. My mother used to make something similar at home — this is even better. Will order again without hesitation.",
-      name: "Rajesh Sharma",
-      city: "Jaipur",
-      product: "Amla & Brahmi Oil",
-      initials: "RS",
-      rating: 5,
-      avatarBg: "linear-gradient(135deg, #B88447, #8B6434)"
-    },
-    {
-      quote: "Ordered the hair wig for my mother who was struggling with hair loss. The quality and natural hairline are absolutely unmatched for this price. Excellent packaging and fast delivery too.",
-      name: "Anjali Verma",
-      city: "Delhi",
-      product: "Premium Hair Wig",
-      initials: "AV",
-      rating: 5,
-      avatarBg: "linear-gradient(135deg, #6B3A2A, #4A2018)"
-    }
-  ];
-
-  starArray(count: number): number[] {
-    return Array(count).fill(0);
-  }
+  readonly testimonials = TESTIMONIALS;
 }

@@ -1,191 +1,155 @@
-import { Component, ChangeDetectionStrategy, OnInit, inject } from '@angular/core';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RevealDirective } from '../../../../shared/directives/reveal.directive';
 
 interface Reason {
-  icon: string | SafeHtml;
   title: string;
-  desc: string;
+  copy: string;
+  icon: 'leaf' | 'flask' | 'shield' | 'truck';
 }
+
+const REASONS: Reason[] = [
+  {
+    icon: 'leaf',
+    title: 'Whole herbs, not extracts',
+    copy: 'We buy raw botanicals and process them ourselves. Nothing arrives pre-standardised, so nothing is stripped of the compounds that make it work.',
+  },
+  {
+    icon: 'flask',
+    title: 'Small-batch, slow-made',
+    copy: 'Oils are infused for up to 48 hours and bottled in batches of a few hundred. It costs more and takes longer — it is also the only way to keep potency.',
+  },
+  {
+    icon: 'shield',
+    title: 'Nothing hidden on the label',
+    copy: 'No sulphates, parabens, silicones, mineral oil or added fragrance. Every ingredient is listed in full, in plain language, in the order it appears.',
+  },
+  {
+    icon: 'truck',
+    title: 'Straightforward delivery',
+    copy: 'Free above ₹499, cash on delivery across India, and seven days to send anything back unopened if it is not right for you.',
+  },
+];
 
 @Component({
   selector: 'lk-why-choose-us',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styles: [`
-    :host { display: block; }
-
-    .wc {
-      background: #FFFFFF;
-      padding: clamp(2.5rem, 5vw, 3.5rem) clamp(1.25rem, 4vw, 3rem);
-      position: relative;
-    }
-
-    .wc__inner {
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
-    .wc__header {
-      text-align: center;
-      margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
-    }
-
-    .wc__eyebrow {
-      font-family: 'Outfit', sans-serif;
-      font-size: 11px;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: #B88447;
-      margin: 0 0 0.4rem;
-      font-weight: 600;
-    }
-
-    .wc__title {
-      font-family: 'DM Serif Display', serif;
-      font-size: clamp(1.5rem, 3vw, 2rem);
-      font-weight: 400;
-      color: #1E1E1E;
-      line-height: 1.2;
-      margin: 0;
-      letter-spacing: -0.01em;
-    }
-
-    .wc__grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 1.25rem;
-    }
-
-    @media (max-width: 900px) {
-      .wc__grid { grid-template-columns: repeat(2, 1fr); }
-    }
-
-    @media (max-width: 540px) {
-      .wc__grid { grid-template-columns: repeat(2, 1fr); gap: 0.875rem; }
-    }
-
-    .wc__card {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      padding: 1.75rem 1.25rem;
-      border: 1px solid #F0F0F0;
-      border-radius: 16px;
-      background: #FAFAFA;
-      transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.25s ease;
-    }
-
-    .wc__card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
-      border-color: rgba(184, 132, 71, 0.2);
-    }
-
-    .wc__card:hover .wc__icon {
-      transform: scale(1.08);
-    }
-
-    .wc__icon {
-      width: 56px;
-      height: 56px;
-      border-radius: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 1rem;
-      background: rgba(32, 54, 42, 0.06);
-      transition: transform 0.3s ease;
-
-      svg {
-        display: block;
-        width: 24px;
-        height: 24px;
-      }
-    }
-
-    .wc__card-title {
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.9375rem;
-      font-weight: 700;
-      color: #1E1E1E;
-      margin: 0 0 0.375rem;
-      line-height: 1.3;
-    }
-
-    .wc__card-desc {
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.8125rem;
-      color: #888;
-      line-height: 1.55;
-      margin: 0;
-    }
-  `],
+  imports: [CommonModule, RevealDirective],
   template: `
-    <section class="wc" aria-labelledby="wc-heading">
-      <div class="wc__inner">
-        <div class="wc__header reveal">
-          <p class="wc__eyebrow">Why Luv Kush</p>
-          <h2 class="wc__title" id="wc-heading">The Luv Kush Difference</h2>
+    <section class="why lk-section" aria-labelledby="why-title">
+      <div class="lk-shell">
+
+        <div class="lk-head lk-head--center">
+          <div>
+            <span class="lk-eyebrow lk-eyebrow--center">Why Luv Kush</span>
+            <h2 class="lk-title" id="why-title">Made the <em>slow way</em>, on purpose</h2>
+            <p class="lk-lede">
+              There are faster ways to make hair care. None of them produce something
+              we would put our name on.
+            </p>
+          </div>
         </div>
 
-        <div class="wc__grid reveal-stagger">
-          @for (reason of reasons; track reason.title) {
-            <div class="wc__card">
-              <div class="wc__icon" [attr.aria-label]="reason.title">
-                <span aria-hidden="true" [innerHTML]="reason.icon"></span>
-              </div>
-              <h3 class="wc__card-title">{{ reason.title }}</h3>
-              <p class="wc__card-desc">{{ reason.desc }}</p>
-            </div>
+        <div class="why__grid">
+          @for (r of reasons; track r.title; let i = $index) {
+            <article class="why__card" [lkReveal]="i">
+              <span class="why__icon" aria-hidden="true">
+                @switch (r.icon) {
+                  @case ('leaf') {
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                      <path d="M12 3c6 5 9 9.6 9 14a9 9 0 0 1-18 0c0-4.4 3-9 9-14Z" stroke="currentColor" stroke-width="1.5"/>
+                      <path d="M12 5v15M12 11c-2.4 1.2-4.4 2.4-5.8 3.8M12 11c2.4 1.2 4.4 2.4 5.8 3.8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                    </svg>
+                  }
+                  @case ('flask') {
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                      <path d="M9 3h6M10 3v6.2L4.8 18a2 2 0 0 0 1.7 3h11a2 2 0 0 0 1.7-3L14 9.2V3" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                      <path d="M7.3 15h9.4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                    </svg>
+                  }
+                  @case ('shield') {
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                      <path d="M12 3l7.5 3v5.6c0 4.6-3.1 8.4-7.5 9.4-4.4-1-7.5-4.8-7.5-9.4V6L12 3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                      <path d="M8.8 12.2l2.3 2.3 4.2-4.6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  }
+                  @case ('truck') {
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                      <rect x="2" y="6" width="13" height="10.5" rx="1.6" stroke="currentColor" stroke-width="1.5"/>
+                      <path d="M15 9.5h3.6L22 13v3.5h-7" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                      <circle cx="6.6" cy="18.4" r="1.9" stroke="currentColor" stroke-width="1.5"/>
+                      <circle cx="17.6" cy="18.4" r="1.9" stroke="currentColor" stroke-width="1.5"/>
+                    </svg>
+                  }
+                }
+              </span>
+              <h3 class="why__card-title">{{ r.title }}</h3>
+              <p class="why__card-copy">{{ r.copy }}</p>
+            </article>
           }
         </div>
+
       </div>
     </section>
-  `
-})
-export class WhyChooseUsComponent implements OnInit {
-  private readonly sanitizer = inject(DomSanitizer);
+  `,
+  styles: [`
+    .why { background: var(--lk-white); }
 
-  reasons: Reason[] = [
-    {
-      icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#20362A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M2 22c1.25-3.12 3.12-5 6.25-6.25M8.25 15.75c3.13-1.25 5-3.13 6.25-6.25M12 2C6.48 2 2 6.48 2 12c0 2.2.72 4.22 1.94 5.86l13.92-13.92C16.22 2.72 14.2 2 12 2z"/>
-      </svg>`,
-      title: '100% Natural & Herbal',
-      desc: 'Ancient botanical formulas. Every ingredient sourced from trusted farms.'
-    },
-    {
-      icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#20362A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M4.5 16.5c-1.5 1.25-2.5 3-2.5 4.5h20c0-1.5-1-3.25-2.5-4.5M12 2v14M8 5h8M9 9h6"/>
-      </svg>`,
-      title: 'Zero Harsh Chemicals',
-      desc: 'No parabens, sulfates, or synthetic fragrances. Lab verified purity.'
-    },
-    {
-      icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#20362A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-        <path d="M9 11l2 2 4-4"/>
-      </svg>`,
-      title: 'Trusted by 10K+ Families',
-      desc: 'Over 10,000 happy customers across India trust our products.'
-    },
-    {
-      icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#20362A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="1" y="3" width="15" height="13" rx="2"/>
-        <polygon points="16 8 20 8 23 11 23 16 16 16"/>
-        <circle cx="5.5" cy="18.5" r="2.5"/>
-        <circle cx="18.5" cy="18.5" r="2.5"/>
-      </svg>`,
-      title: 'Free Delivery ₹499+',
-      desc: 'Free shipping on all orders above ₹499. Eco-friendly packaging.'
+    .why__grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: clamp(.9rem, 1.8vw, 1.5rem);
     }
-  ];
+    @media (max-width: 1040px) { .why__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 600px)  { .why__grid { grid-template-columns: 1fr; } }
 
-  ngOnInit(): void {
-    this.reasons = this.reasons.map(r => ({
-      ...r,
-      icon: this.sanitizer.bypassSecurityTrustHtml(r.icon as string)
-    }));
-  }
+    .why__card {
+      padding: clamp(1.3rem, 2.2vw, 1.8rem);
+      border-radius: var(--lk-r-lg);
+      background: var(--lk-green-50);
+      border: 1px solid var(--lk-green-100);
+      transition: transform var(--lk-t-base), box-shadow var(--lk-t-base), background var(--lk-t-base);
+    }
+    .why__card:hover {
+      transform: translateY(-4px);
+      background: var(--lk-white);
+      box-shadow: var(--lk-shadow-md);
+    }
+
+    .why__icon {
+      display: grid;
+      place-items: center;
+      width: 46px;
+      height: 46px;
+      border-radius: var(--lk-r-md);
+      background: var(--lk-white);
+      border: 1px solid var(--lk-green-100);
+      color: var(--lk-green-600);
+    }
+    .why__card:hover .why__icon { color: var(--lk-orange-500); }
+
+    .why__card-title {
+      margin: 1.05rem 0 0;
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-weight: 400;
+      font-size: 1.13rem;
+      line-height: 1.28;
+      color: var(--lk-ink);
+    }
+
+    .why__card-copy {
+      margin: .5rem 0 0;
+      font-size: .87rem;
+      line-height: 1.62;
+      color: var(--lk-body);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .why__card { transition: none; }
+    }
+  `]
+})
+export class WhyChooseUsComponent {
+  readonly reasons = REASONS;
 }

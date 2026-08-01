@@ -1,378 +1,268 @@
-import { Component, ChangeDetectionStrategy, inject, OnInit } from '@angular/core';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { Component, ChangeDetectionStrategy, signal, computed } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
+import { RevealDirective } from '../../../../shared/directives/reveal.directive';
 
 interface Ingredient {
+  key: string;
   name: string;
-  sanskrit: string;
-  latin: string;
-  benefit: string;
-  detail: string;
-  icon: string | SafeHtml;
-  bgColor: string;
-  accentColor: string;
+  botanical: string;
+  role: string;
+  copy: string;
+  image: string;
+  stat: { value: string; label: string };
 }
+
+const INGREDIENTS: Ingredient[] = [
+  {
+    key: 'bhringraj',
+    name: 'Bhringraj',
+    botanical: 'Eclipta alba',
+    role: 'Growth & density',
+    copy: 'Called the “king of hair” in classical Ayurveda. We slow-infuse fresh leaves in sesame oil for 48 hours, which draws out far more of the active wedelolactone than a quick cold press ever would.',
+    image: '/assets/images/ingredient-brahmi.jpg',
+    stat: { value: '48 hrs', label: 'Slow infusion' },
+  },
+  {
+    key: 'amla',
+    name: 'Amla',
+    botanical: 'Phyllanthus emblica',
+    role: 'Strength & shine',
+    copy: 'Indian gooseberry carries up to twenty times the vitamin C of an orange. It rebuilds keratin bonds and holds colour, which is why it sits at the base of nearly every formula we make.',
+    image: '/assets/images/ingredient-amla.jpg',
+    stat: { value: '20×', label: 'Vitamin C vs orange' },
+  },
+  {
+    key: 'neem',
+    name: 'Neem',
+    botanical: 'Azadirachta indica',
+    role: 'Scalp health',
+    copy: 'Naturally antifungal and antibacterial. Neem settles the flaking and itch that quietly undermines growth, without the harshness of a medicated shampoo.',
+    image: '/assets/images/ingredient-neem.jpg',
+    stat: { value: '0%', label: 'Sulphates & parabens' },
+  },
+  {
+    key: 'hibiscus',
+    name: 'Hibiscus',
+    botanical: 'Hibiscus rosa-sinensis',
+    role: 'Conditioning',
+    copy: 'Rich in mucilage and amino acids, hibiscus coats the shaft and smooths the cuticle. It is the reason our masks leave hair soft without a single silicone.',
+    image: '/assets/images/ingredient-hibiscus.jpg',
+    stat: { value: '100%', label: 'Plant-derived actives' },
+  },
+];
 
 @Component({
   selector: 'lk-ingredients-showcase',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styles: [`
-    :host { display: block; }
-
-    @keyframes shimmerGold {
-      0%,100% { background-position: 0% 50%; }
-      50%     { background-position: 100% 50%; }
-    }
-
-    .is {
-      background: linear-gradient(160deg, #20362A 0%, #1a3828 50%, #162b1e 100%);
-      padding: 2.25rem clamp(1.25rem, 4vw, 3rem) 2.5rem;
-      position: relative;
-      overflow: hidden;
-    }
-
-    /* Dot grid background */
-    .is::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background-image: radial-gradient(circle, rgba(226,201,126,0.05) 1px, transparent 1px);
-      background-size: 28px 28px;
-      pointer-events: none;
-    }
-
-    /* Decorative glow */
-    .is::after {
-      content: '';
-      position: absolute;
-      top: -80px; right: -80px;
-      width: 500px; height: 500px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(184,132,71,0.1) 0%, transparent 68%);
-      pointer-events: none;
-    }
-
-    .is__header {
-      text-align: center;
-      max-width: 680px;
-      margin: 0 auto 1rem;
-      position: relative;
-      z-index: 1;
-    }
-
-    .is__eyebrow {
-      font-family: 'Cinzel', serif;
-      font-size: 10px;
-      letter-spacing: 0.28em;
-      text-transform: uppercase;
-      color: #B88447;
-      margin: 0 0 0.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.75rem;
-    }
-
-    .is__eyebrow::before, .is__eyebrow::after {
-      content: '';
-      display: block;
-      width: 36px; height: 1px;
-      background: #B88447;
-      opacity: 0.45;
-    }
-
-    .is__title {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(1.6rem, 3.5vw, 2.35rem);
-      font-weight: 600;
-      color: #FAF7F2;
-      line-height: 1.15;
-      margin: 0 0 0.5rem;
-      letter-spacing: -0.01em;
-    }
-
-    .is__title em {
-      color: #E2C97E;
-      font-style: italic;
-    }
-
-    .is__sub {
-      font-family: 'Manrope', sans-serif;
-      font-size: 0.875rem;
-      color: rgba(250, 247, 242, 0.6);
-      line-height: 1.5;
-      margin: 0;
-    }
-
-    .is__ornament {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      justify-content: center;
-      margin: 0.75rem 0 1.25rem;
-      position: relative;
-      z-index: 1;
-    }
-
-    .is__ornament-line {
-      flex: 1;
-      max-width: 60px;
-      height: 1px;
-      background: rgba(184,132,71,0.35);
-    }
-
-    .is__ornament-mark {
-      color: rgba(226,201,126,0.6);
-      font-size: 0.75rem;
-      letter-spacing: 4px;
-    }
-
-    .is__grid {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 1rem;
-      max-width: 1200px;
-      margin: 0 auto;
-      position: relative;
-      z-index: 1;
-    }
-
-    @media (max-width: 1100px) {
-      .is__grid { grid-template-columns: repeat(3, 1fr); }
-    }
-
-    @media (max-width: 640px) {
-      .is__grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
-    }
-
-    .is__card {
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(226, 201, 126, 0.12);
-      border-radius: 14px;
-      padding: 1.25rem 1rem 1.25rem;
-      text-align: center;
-      transition:
-        transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-        box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-        background 0.3s ease,
-        border-color 0.3s ease;
-      position: relative;
-      overflow: hidden;
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      cursor: default;
-    }
-
-    .is__card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, rgba(226,201,126,0.5), transparent);
-      transform: scaleX(0);
-      transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
-      transform-origin: center;
-    }
-
-    .is__card:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 16px 36px rgba(0,0,0,0.2);
-      background: rgba(255, 255, 255, 0.08);
-      border-color: rgba(226, 201, 126, 0.3);
-    }
-
-    .is__card:hover::before { transform: scaleX(1); }
-
-    .is__icon-wrap {
-      width: 52px; height: 52px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 0.75rem;
-      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-      
-      svg {
-        display: block;
-        width: 22px;
-        height: 22px;
-      }
-    }
-
-    .is__card:hover .is__icon-wrap {
-      transform: scale(1.1) rotate(6deg);
-    }
-
-    .is__card-name {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.25rem;
-      font-weight: 600;
-      color: #FAF7F2;
-      margin: 0 0 0.15rem;
-      line-height: 1.2;
-    }
-
-    .is__card-sanskrit {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 0.875rem;
-      color: #E2C97E;
-      font-style: italic;
-      margin: 0 0 0.15rem;
-    }
-
-    .is__card-latin {
-      font-family: 'Manrope', sans-serif;
-      font-size: 0.65rem;
-      color: rgba(250,247,242,0.4);
-      font-style: italic;
-      margin: 0 0 0.75rem;
-      letter-spacing: 0.02em;
-    }
-
-    .is__card-divider {
-      width: 28px; height: 1px;
-      background: rgba(184,132,71,0.35);
-      margin: 0 auto 0.75rem;
-      transition: width 0.35s ease;
-    }
-
-    .is__card:hover .is__card-divider { width: 44px; }
-
-    .is__card-benefit {
-      font-family: 'Manrope', sans-serif;
-      font-size: 0.78125rem;
-      font-weight: 600;
-      color: rgba(122, 158, 126, 1);
-      line-height: 1.4;
-      margin: 0 0 0.5rem;
-    }
-
-    .is__card-detail {
-      font-family: 'Manrope', sans-serif;
-      font-size: 0.72rem;
-      color: rgba(250, 247, 242, 0.5);
-      line-height: 1.5;
-      margin: 0;
-      max-height: 0;
-      overflow: hidden;
-      opacity: 0;
-      transition: max-height 0.4s ease, opacity 0.3s ease 0.05s;
-    }
-
-    .is__card:hover .is__card-detail {
-      max-height: 120px;
-      opacity: 1;
-    }
-  `],
+  imports: [CommonModule, RouterLink, RevealDirective],
   template: `
-    <section class="is" aria-labelledby="is-heading">
-      <div class="is__header reveal">
-        <p class="is__eyebrow">Ancient Botanicals</p>
-        <h2 class="is__title" id="is-heading">The Wisdom of <em>Sacred Ingredients</em></h2>
-        <p class="is__sub">Five time-tested botanicals, each revered for centuries in herbal tradition for their transformative hair-care properties.</p>
-      </div>
+    <section class="ing lk-section" aria-labelledby="ing-title">
+      <div class="lk-shell">
 
-      <div class="is__ornament reveal" aria-hidden="true">
-        <span class="is__ornament-line"></span>
-        <span class="is__ornament-mark">✦ ✦ ✦</span>
-        <span class="is__ornament-line"></span>
-      </div>
-
-      <div class="is__grid reveal-stagger">
-        @for (ing of ingredients; track ing.name) {
-          <div class="is__card">
-            <div class="is__icon-wrap" [style.background]="ing.bgColor" [attr.aria-label]="ing.name">
-              <span aria-hidden="true" class="is__svg-icon" [innerHTML]="ing.icon"></span>
-            </div>
-            <p class="is__card-name">{{ ing.name }}</p>
-            <p class="is__card-sanskrit">{{ ing.sanskrit }}</p>
-            <p class="is__card-latin">{{ ing.latin }}</p>
-            <div class="is__card-divider"></div>
-            <p class="is__card-benefit">{{ ing.benefit }}</p>
-            <p class="is__card-detail">{{ ing.detail }}</p>
+        <div class="lk-head lk-head--center">
+          <div>
+            <span class="lk-eyebrow lk-eyebrow--center lk-eyebrow--on-dark">Sourced, not synthesised</span>
+            <h2 class="lk-title lk-title--on-dark" id="ing-title">Four herbs doing <em>most of the work</em></h2>
+            <p class="lk-lede lk-lede--on-dark">
+              Every formula starts with whole botanicals, traceable to the farm. No fillers,
+              no fragrance, nothing added just to make a label look longer than it is.
+            </p>
           </div>
-        }
+        </div>
+
+        <div class="ing__panel" lkReveal>
+          <div class="ing__list" role="tablist" aria-label="Key ingredients">
+            @for (ing of ingredients; track ing.key; let i = $index) {
+              <button
+                type="button"
+                role="tab"
+                class="ing__item"
+                [class.is-active]="i === index()"
+                [attr.aria-selected]="i === index()"
+                (click)="select(i)"
+              >
+                <span class="ing__item-name">{{ ing.name }}</span>
+                <span class="ing__item-role">{{ ing.role }}</span>
+                <svg class="ing__item-arrow" width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            }
+          </div>
+
+          @if (current(); as ing) {
+            <div class="ing__detail">
+              <figure class="ing__media">
+                <img [src]="ing.image" [alt]="ing.name" loading="lazy" width="640" height="640"
+                     (error)="$any($event.target).src='/assets/images/placeholder.webp'" />
+                <figcaption class="ing__stat">
+                  <strong>{{ ing.stat.value }}</strong>
+                  <span>{{ ing.stat.label }}</span>
+                </figcaption>
+              </figure>
+
+              <div class="ing__copy">
+                <h3 class="ing__name">{{ ing.name }}</h3>
+                <p class="ing__botanical">{{ ing.botanical }}</p>
+                <p class="ing__text">{{ ing.copy }}</p>
+                <a class="lk-link lk-link--on-dark" routerLink="/about">
+                  How we source
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </a>
+              </div>
+            </div>
+          }
+        </div>
+
       </div>
     </section>
-  `
-})
-export class IngredientsShowcaseComponent implements OnInit {
-  private readonly sanitizer = inject(DomSanitizer);
-
-  ingredients: Ingredient[] = [
-    {
-      name: 'Amla',
-      sanskrit: 'आँवला',
-      latin: 'Phyllanthus emblica',
-      benefit: 'Strengthens follicles, boosts growth',
-      detail: 'Rich in Vitamin C and antioxidants, Amla nourishes the scalp deeply and promotes thick, lustrous hair growth from within.',
-      icon: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#7A9E7E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="9"/>
-        <path d="M12 3a9 9 0 0 0 0 18"/>
-        <path d="M12 12h9"/>
-        <path d="M12 12H3"/>
-      </svg>`,
-      bgColor: 'rgba(74, 124, 89, 0.18)',
-      accentColor: '#7A9E7E'
-    },
-    {
-      name: 'Bhringraj',
-      sanskrit: 'भृंगराज',
-      latin: 'Eclipta prostrata',
-      benefit: 'Prevents greying, revitalises roots',
-      detail: 'The "King of Herbs" in traditional herbal science — revitalizes dormant follicles and helps restore natural hair colour over time.',
-      icon: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#7A9E7E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M2 22c1.25-3.12 3.12-5 6.25-6.25M8.25 15.75c3.13-1.25 5-3.13 6.25-6.25M12 2C6.48 2 2 6.48 2 12c0 2.2.72 4.22 1.94 5.86l13.92-13.92C16.22 2.72 14.2 2 12 2z"/>
-        <path d="M22 2c-1.25 3.12-3.12 5-6.25 6.25M15.75 8.25c-3.13 1.25-5 3.13-6.25 6.25M12 22c5.52 0 10-4.48 10-10 0-2.2-.72-4.22-1.94-5.86L6.14 20.06c1.64 1.22 3.66 1.94 5.86 1.94z"/>
-      </svg>`,
-      bgColor: 'rgba(61, 90, 71, 0.18)',
-      accentColor: '#7A9E7E'
-    },
-    {
-      name: 'Brahmi',
-      sanskrit: 'ब्राह्मी',
-      latin: 'Bacopa monnieri',
-      benefit: 'Reduces hair fall, calms the scalp',
-      detail: 'Strengthens the hair shaft from root to tip, reducing breakage and calming scalp inflammation caused by stress.',
-      icon: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#7A9E7E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 2a10 10 0 0 0-10 10c0 5.52 4.48 10 10 10s10-4.48 10-10A10 10 0 0 0 12 2z"/>
-        <path d="M12 6v12M8 10h8"/>
-      </svg>`,
-      bgColor: 'rgba(122, 158, 126, 0.2)',
-      accentColor: '#7A9E7E'
-    },
-    {
-      name: 'Hibiscus',
-      sanskrit: 'जपाकुसुम',
-      latin: 'Hibiscus rosa-sinensis',
-      benefit: 'Deep conditioning, prevents fall',
-      detail: 'Rich in amino acids that nourish the keratin structure of each strand — leaving hair silky, smooth, and resilient.',
-      icon: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#C87A8F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 22c5.52 0 10-4.48 10-10S17.52 2 12 2 2 6.48 2 12s4.48 10 10 10z"/>
-        <path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 6v2M12 16v2M6 12h2M16 12h2"/>
-      </svg>`,
-      bgColor: 'rgba(168, 66, 101, 0.14)',
-      accentColor: '#C87A8F'
-    },
-    {
-      name: 'Neem',
-      sanskrit: 'नीम',
-      latin: 'Azadirachta indica',
-      benefit: 'Purifies scalp, fights dandruff',
-      detail: "Neem's antibacterial and antifungal properties create a clean, balanced scalp environment for optimal hair growth.",
-      icon: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#7A9E7E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-        <path d="M9 10l2 2 4-4"/>
-      </svg>`,
-      bgColor: 'rgba(74, 103, 65, 0.18)',
-      accentColor: '#7A9E7E'
+  `,
+  styles: [`
+    .ing {
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(90% 70% at 80% 0%, rgba(47, 107, 73, .5) 0%, transparent 65%),
+        linear-gradient(165deg, var(--lk-green-900) 0%, var(--lk-green-950) 100%);
+      color: #fff;
     }
-  ];
 
-  ngOnInit(): void {
-    this.ingredients = this.ingredients.map(ing => ({
-      ...ing,
-      icon: this.sanitizer.bypassSecurityTrustHtml(ing.icon as string)
-    }));
+    .ing__panel {
+      display: grid;
+      grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr);
+      gap: clamp(1.5rem, 3.5vw, 3rem);
+      align-items: start;
+    }
+    @media (max-width: 900px) { .ing__panel { grid-template-columns: 1fr; } }
+
+    .ing__list { display: flex; flex-direction: column; gap: .35rem; }
+    @media (max-width: 900px) {
+      .ing__list { flex-direction: row; overflow-x: auto; padding-bottom: .35rem; }
+      .ing__item { flex: 0 0 auto; }
+      .ing__item-arrow { display: none; }
+    }
+
+    .ing__item {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      width: 100%;
+      padding: .95rem 1.05rem;
+      border: 1px solid rgba(255, 255, 255, .12);
+      border-radius: var(--lk-r-md);
+      background: rgba(255, 255, 255, .04);
+      color: rgba(255, 255, 255, .8);
+      text-align: left;
+      cursor: pointer;
+      transition: background var(--lk-t-fast), border-color var(--lk-t-fast), color var(--lk-t-fast);
+    }
+    .ing__item:hover {
+      background: rgba(255, 255, 255, .08);
+      border-color: rgba(255, 255, 255, .22);
+      color: #fff;
+    }
+    .ing__item.is-active {
+      background: rgba(255, 255, 255, .1);
+      border-color: var(--lk-orange-400);
+      color: #fff;
+    }
+    .ing__item.is-active .ing__item-arrow { color: var(--lk-orange-400); transform: translateX(2px); }
+    .ing__item:focus-visible { outline: 2px solid var(--lk-orange-300); outline-offset: 2px; }
+
+    .ing__item-name { font-family: 'DM Serif Display', Georgia, serif; font-size: 1.06rem; }
+    .ing__item-role {
+      margin-left: auto;
+      font-size: .72rem;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, .5);
+    }
+    .ing__item-arrow {
+      flex: none;
+      color: rgba(255, 255, 255, .3);
+      transition: transform var(--lk-t-fast), color var(--lk-t-fast);
+    }
+
+    .ing__detail {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: clamp(1.2rem, 2.5vw, 2.2rem);
+      align-items: center;
+      padding: clamp(1rem, 2vw, 1.5rem);
+      border: 1px solid rgba(255, 255, 255, .1);
+      border-radius: var(--lk-r-lg);
+      background: rgba(255, 255, 255, .04);
+    }
+    @media (max-width: 640px) { .ing__detail { grid-template-columns: 1fr; } }
+
+    .ing__media {
+      position: relative;
+      margin: 0;
+      aspect-ratio: 1 / 1;
+      border-radius: var(--lk-r-md);
+      overflow: hidden;
+    }
+    .ing__media img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      animation: ingFade var(--lk-t-slow) both;
+    }
+    @keyframes ingFade {
+      from { opacity: 0; transform: scale(1.04); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    .ing__stat {
+      position: absolute;
+      left: .7rem;
+      bottom: .7rem;
+      padding: .5rem .8rem;
+      border-radius: var(--lk-r-sm);
+      background: rgba(15, 36, 26, .82);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, .14);
+    }
+    .ing__stat strong {
+      display: block;
+      font-family: 'Outfit', system-ui, sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--lk-orange-300);
+      line-height: 1.1;
+    }
+    .ing__stat span { font-size: .68rem; letter-spacing: .05em; color: rgba(255, 255, 255, .65); }
+
+    .ing__name {
+      margin: 0;
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-weight: 400;
+      font-size: clamp(1.5rem, 2.6vw, 2rem);
+      line-height: 1.15;
+    }
+    .ing__botanical { margin: .2rem 0 0; font-style: italic; font-size: .87rem; color: var(--lk-orange-300); }
+    .ing__text {
+      margin: .9rem 0 1.3rem;
+      font-size: .95rem;
+      line-height: 1.7;
+      color: rgba(255, 255, 255, .76);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .ing__media img { animation: none; }
+      .ing__item { transition: none; }
+    }
+  `]
+})
+export class IngredientsShowcaseComponent {
+  readonly ingredients = INGREDIENTS;
+  readonly index = signal(0);
+  readonly current = computed(() => this.ingredients[this.index()]);
+
+  select(i: number): void {
+    this.index.set(i);
   }
 }
