@@ -157,6 +157,7 @@ export class ProductService {
   }
 
   async getFeatured(limit: number) {
+    const safeLimit = Math.min(Math.max(1, Math.floor(Number(limit)) || 8), 50);
     return db.query(`
       SELECT p.id, p.name, p.slug, p.subtitle, p.price, p.mrp,
         p.rating_avg, p.rating_count, p.primary_image, p.images,
@@ -166,8 +167,8 @@ export class ProductService {
       LEFT JOIN categories c ON p.category_id = c.id
       WHERE p.status = 'active' AND p.is_featured = 1
       ORDER BY p.sales_count DESC
-      LIMIT ?
-    `, [limit]);
+      LIMIT ${safeLimit}
+    `);
   }
 
   async getBySlug(slug: string, userId?: number) {
@@ -211,6 +212,7 @@ export class ProductService {
 
   async search(q: string, limit: number) {
     const term = `%${q}%`;
+    const safeLimit = Math.min(Math.max(1, Math.floor(Number(limit)) || 10), 50);
     return db.query(`
       SELECT p.id, p.name, p.slug, p.price, p.mrp, p.primary_image, p.category_id,
              p.tags, p.subtitle, p.rating_avg, p.rating_count, p.is_bestseller, p.is_new, p.stock_quantity,
@@ -219,8 +221,8 @@ export class ProductService {
       LEFT JOIN categories c ON p.category_id = c.id
       WHERE p.status = 'active' AND (p.name LIKE ? OR p.tags LIKE ? OR p.ingredients_list LIKE ?)
       ORDER BY p.sales_count DESC
-      LIMIT ?
-    `, [term, term, term, limit]);
+      LIMIT ${safeLimit}
+    `, [term, term, term]);
   }
 
   async getRelated(productId: number) {

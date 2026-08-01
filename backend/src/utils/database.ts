@@ -63,20 +63,26 @@ class Database {
     page: number,
     limit: number
   ): Promise<{ data: T[]; total: number; page: number; pages: number; limit: number }> {
-    const offset = (page - 1) * limit;
+    // LIMIT/OFFSET are inlined as validated integers rather than bound parameters:
+    // MySQL 8.4 rejects string-typed values there in the prepared-statement protocol.
+    // Clamping here also caps runaway page sizes for every paginated endpoint.
+    const safeLimit = Math.min(Math.max(1, Math.floor(Number(limit)) || 20), 100);
+    const safePage = Math.max(1, Math.floor(Number(page)) || 1);
+    const offset = (safePage - 1) * safeLimit;
+
     const countSql = `SELECT COUNT(*) as total FROM (${sql}) as count_query`;
     const [countResult] = await this.pool.execute<any>(countSql, params);
     const total = countResult[0]?.total || 0;
 
-    const paginatedSql = `${sql} LIMIT ? OFFSET ?`;
-    const data = await this.query<T[]>(paginatedSql, [...params, limit, offset]);
+    const paginatedSql = `${sql} LIMIT ${safeLimit} OFFSET ${offset}`;
+    const data = await this.query<T[]>(paginatedSql, params);
 
     return {
       data,
       total,
-      page,
-      limit,
-      pages: Math.ceil(total / limit)
+      page: safePage,
+      limit: safeLimit,
+      pages: Math.ceil(total / safeLimit)
     };
   }
 }
