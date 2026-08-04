@@ -25,17 +25,31 @@
         @for (cat of categories(); track cat.id; let i = $index) {
           <a class="cats__card" routerLink="/shop" [queryParams]="{ category: cat.slug }"
              [lkReveal]="i" [attr.aria-label]="cat.name">
-            <div class="cats__media">
-              <img
-                [src]="imgUrl(cat.image_url)"
-                [alt]="cat.name"
-                loading="lazy"
-                width="400" height="400"
-                (error)="$any($event.target).src='/assets/images/placeholder.webp'"
-              />
+
+            <div class="cats__stage">
+              <div class="cats__media">
+                <img
+                  [src]="imgUrl(cat.image_url)"
+                  [alt]="cat.name"
+                  loading="lazy"
+                  width="400" height="500"
+                  (error)="$any($event.target).src='/assets/images/placeholder.webp'"
+                />
+                @if (countLabel(cat); as count) {
+                  <span class="cats__count">{{ count }}</span>
+                }
+              </div>
+              <!-- Grounds the dome on the shelf, as in the hero -->
+              <span class="cats__contact" aria-hidden="true"></span>
             </div>
+
+            <span class="cats__shelf" aria-hidden="true"></span>
+
             <div class="cats__body">
-              <h3 class="cats__name">{{ cat.name }}</h3>
+              <h3 class="cats__name">
+                <span class="cats__n" aria-hidden="true">{{ ref(i) }}</span>
+                <span class="cats__label">{{ cat.name }}</span>
+              </h3>
               <p class="cats__blurb">{{ blurb(cat.slug) || cat.description }}</p>
               <span class="cats__cta">
                 Shop now

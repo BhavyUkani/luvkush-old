@@ -11,17 +11,13 @@
       (error)="$any($event.target).src='/assets/images/placeholder.webp'"
     />
 
-    <!-- Flags. At most two, so the card never turns into a sticker sheet. -->
-    <div class="pc__flags">
-      @if (discount > 0) {
-        <span class="pc__flag pc__flag--save">{{ discount }}% off</span>
-      } @else if (product.is_new) {
-        <span class="pc__flag pc__flag--new">New</span>
-      }
-      @if (product.is_bestseller) {
-        <span class="pc__flag pc__flag--best">Bestseller</span>
-      }
-    </div>
+    <!-- One flag only. "Bestseller" moved into the body, so a grid of cards
+         reads as a shelf rather than a sticker sheet. -->
+    @if (discount > 0) {
+      <span class="pc__flag pc__flag--save">Save {{ discount }}%</span>
+    } @else if (product.is_new) {
+      <span class="pc__flag pc__flag--new">New</span>
+    }
 
     <button
       type="button"
@@ -65,9 +61,14 @@
 
   <!-- ── Body ─────────────────────────────────────────────── -->
   <div class="pc__body">
-    @if (product.category_name) {
-      <span class="pc__cat">{{ product.category_name }}</span>
-    }
+    <div class="pc__kicker">
+      @if (product.category_name) {
+        <span class="pc__cat">{{ product.category_name }}</span>
+      }
+      @if (product.is_bestseller) {
+        <span class="pc__best">Bestseller</span>
+      }
+    </div>
 
     <h3 class="pc__name">
       <a [routerLink]="productUrl">{{ product.name }}</a>

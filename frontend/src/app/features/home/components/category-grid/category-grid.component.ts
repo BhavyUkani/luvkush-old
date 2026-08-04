@@ -55,4 +55,15 @@ export class CategoryGridComponent implements OnInit {
   blurb(slug: string): string {
     return BLURBS[slug] ?? '';
   }
+
+  /** Catalogue reference for the card, matching the hero's plate numbering. */
+  ref(i: number): string {
+    return String(i + 1).padStart(2, '0');
+  }
+
+  /** Real stock depth, straight from the API. Blank when a range is empty. */
+  countLabel(cat: Category): string {
+    const n = cat.product_count ?? 0;
+    return n > 0 ? `${n} ${n === 1 ? 'formula' : 'formulas'}` : '';
+  }
 }

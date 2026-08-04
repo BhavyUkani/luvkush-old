@@ -1,6 +1,11 @@
-// ── Hero ──────────────────────────────────────────────────────
-// Green carries the brand; the only saturated orange is the primary CTA
-// and the savings flag — both action cues, never decoration.
+// ── Hero — Botanical Specimen Plate ───────────────────────────
+// The hero is staged as an annotated botanical plate: the product is the
+// specimen, and leader lines name the actual botanicals in its formula,
+// binomials and all. The data is real — every label is parsed from the
+// product's own ingredients_list, so the plate cannot claim what isn't there.
+//
+// Colour discipline holds: green carries the brand, and the only saturated
+// orange is the primary CTA and the savings flag — both action cues.
 
 .hero {
   position: relative;
@@ -8,24 +13,18 @@
   background:
     radial-gradient(120% 85% at 12% 0%, var(--lk-green-50) 0%, transparent 60%),
     linear-gradient(178deg, #FCFBF7 0%, var(--lk-cream) 55%, #F4F7F2 100%);
-  padding-block: clamp(2.5rem, 6vw, 5rem) clamp(3rem, 7vw, 6rem);
+  padding-block: clamp(1.3rem, 2.8vw, 2rem) clamp(1.5rem, 3vw, 2.2rem);
   isolation: isolate;
-
-  &::after {   // hairline tying the hero to the section below
-    content: '';
-    position: absolute;
-    inset: auto 0 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--lk-green-100), transparent);
-  }
 }
 
 // ── Ambient wash ──────────────────────────────────────────────
 .hero__wash {
   position: absolute;
-  inset: 0;
-  z-index: -1;
+  inset: -4%;            // slack so the parallax drift never exposes an edge
+  z-index: -2;
   pointer-events: none;
+  transition: transform 700ms var(--lk-ease);
+  will-change: transform;
 }
 
 .hero__orb {
@@ -36,125 +35,459 @@
   &--a {
     width: 46vw; height: 46vw;
     max-width: 560px; max-height: 560px;
-    top: -14%; right: -8%;
-    background: radial-gradient(circle, rgba(99, 164, 125, .26), transparent 68%);
+    top: -16%; right: -6%;
+    background: radial-gradient(circle, rgba(99, 164, 125, .24), transparent 68%);
   }
 
   &--b {
     width: 34vw; height: 34vw;
     max-width: 420px; max-height: 420px;
-    bottom: -16%; left: -6%;
-    background: radial-gradient(circle, rgba(238, 151, 96, .16), transparent 70%);
+    bottom: -18%; left: -6%;
+    background: radial-gradient(circle, rgba(238, 151, 96, .15), transparent 70%);
   }
 }
 
-.hero__leaf {
+// NOTE: assets/images/leaf.png is a JPEG despite the extension, with the
+// transparency checkerboard baked into the pixels — unusable as an overlay.
+// The botanical motif stays vector/typographic until a real cutout exists.
+
+.hero__grain {
   position: absolute;
-  top: 8%;
-  right: 6%;
-  width: clamp(180px, 22vw, 340px);
-  color: var(--lk-green-600);
-  opacity: .07;
-  transform: rotate(14deg);
-
-  @media (max-width: 980px) { display: none; }
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: .3;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.42'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
 }
 
-// ── Layout ────────────────────────────────────────────────────
-.hero__grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.02fr) minmax(0, .98fr);
-  align-items: center;
-  gap: clamp(2rem, 5vw, 4.5rem);
+// ── Plate ─────────────────────────────────────────────────────
+.hero__plate {
+  position: relative;
+  text-align: center;
+}
 
-  @media (max-width: 980px) {
-    grid-template-columns: 1fr;
-    gap: 2.75rem;
+// ── Plate rail ────────────────────────────────────────────────
+.rail {
+  display: flex;
+  align-items: center;
+  gap: clamp(.6rem, 2vw, 1.2rem);
+  margin-bottom: clamp(1.2rem, 3vw, 2rem);
+}
+
+.rail__mark {
+  flex: none;
+  font-family: 'Outfit', system-ui, sans-serif;
+  font-size: .66rem;
+  font-weight: 600;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--lk-muted);
+  white-space: nowrap;
+
+  &--mid { color: var(--lk-green-700); }
+
+  @media (max-width: 620px) {
+    &:not(&--mid) { display: none; }
   }
 }
 
-// ── Copy column ───────────────────────────────────────────────
-.hero__eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: .5rem;
-  padding: .42rem .9rem .42rem .72rem;
-  border-radius: var(--lk-r-pill);
-  background: var(--lk-white);
-  border: 1px solid var(--lk-green-100);
-  box-shadow: var(--lk-shadow-xs);
-  font-family: 'Outfit', system-ui, sans-serif;
-  font-size: .76rem;
-  font-weight: 600;
-  letter-spacing: .04em;
-  color: var(--lk-green-700);
-
-  svg { color: var(--lk-green-500); flex: none; }
+.rail__rule {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--lk-line), transparent);
 }
 
+// ── Headline ──────────────────────────────────────────────────
 .hero__title {
-  margin: 1.1rem 0 0;
+  margin: 0;
   font-family: 'DM Serif Display', Georgia, serif;
   font-weight: 400;
-  font-size: clamp(2.4rem, 5.6vw, 4.1rem);
-  line-height: 1.06;
+  font-size: clamp(2rem, 4.1vw, 3.05rem);
+  line-height: 1.08;
   letter-spacing: -.022em;
   color: var(--lk-ink);
+  text-wrap: balance;
 
   em {
     font-style: italic;
     color: var(--lk-green-600);
-    // Understated underline — reads as craft, not highlighter
     background-image: linear-gradient(var(--lk-orange-200), var(--lk-orange-200));
-    background-size: 100% .18em;
+    background-size: 100% .16em;
     background-position: 0 88%;
     background-repeat: no-repeat;
   }
 }
 
 .hero__lede {
-  margin: 1.15rem 0 0;
-  max-width: 48ch;
-  font-size: clamp(.98rem, 1.15vw, 1.07rem);
-  line-height: 1.68;
+  margin: .7rem auto 0;
+  max-width: 52ch;
+  font-size: clamp(.92rem, 1.05vw, 1rem);
+  line-height: 1.62;
   color: var(--lk-body);
+  text-wrap: balance;
 }
+
+// ── Plate body: notes | specimen | notes ──────────────────────
+.plate__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  // No column gap: the leader lines set their own reach, so the dots land
+  // exactly on the specimen edge instead of stopping a gap short of it.
+  gap: 0;
+  margin-top: clamp(1.1rem, 2.2vw, 1.5rem);
+
+  // Below the breakpoint the leader lines stop being geometrically honest, so
+  // the plate becomes specimen-on-top with the two note groups side by side as
+  // a legend beneath — each stays a single column, so nothing goes ragged.
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: 1.4rem clamp(1rem, 4vw, 2rem);
+  }
+}
+
+// ── Annotations ───────────────────────────────────────────────
+.notes {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(.9rem, 2.2vw, 1.6rem);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  &--left  { align-items: flex-end; }
+  &--right { align-items: flex-start; order: 3; }
+
+  @media (max-width: 900px) {
+    order: 2;                      // both groups sit below the specimen
+    gap: .9rem;
+    width: 100%;
+
+    &--left, &--right { align-items: stretch; }
+  }
+}
+
+.note {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  // Draw-in is staggered outward from the specimen
+  animation: noteIn 620ms var(--lk-ease) both;
+  animation-delay: calc(var(--i, 0) * 90ms + 120ms);
+
+  .notes--right & { flex-direction: row-reverse; }
+
+  @media (max-width: 900px) {
+    gap: 0;
+    .notes--right & { flex-direction: row; }
+  }
+}
+
+.note__body {
+  min-width: 0;
+
+  .notes--left  & { text-align: right; }
+  .notes--right & { text-align: left; }
+
+  @media (max-width: 900px) {
+    .notes--left &, .notes--right & { text-align: left; }
+  }
+}
+
+.note__common {
+  display: block;
+  font-family: 'Outfit', system-ui, sans-serif;
+  font-size: .82rem;
+  font-weight: 600;
+  letter-spacing: .02em;
+  color: var(--lk-ink);
+  white-space: nowrap;
+
+  // Narrow screens have no leader line to align to, so names may wrap freely
+  @media (max-width: 900px) { white-space: normal; }
+}
+
+// The plate number sits inline, small-caps, like a catalogue reference
+.note__n {
+  display: inline-block;
+  margin-right: .4rem;
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  color: var(--lk-green-500);
+  vertical-align: .1em;
+}
+
+.note__latin {
+  display: block;
+  margin-top: .1rem;
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-style: italic;
+  font-size: .8rem;
+  line-height: 1.3;
+  color: var(--lk-muted);
+}
+
+// Leader line, with the tick that lands on the specimen
+.note__lead {
+  position: relative;
+  flex: none;
+  width: clamp(28px, 5.5vw, 76px);
+  height: 1px;
+  background: var(--lk-green-300);
+  transform: scaleX(0);
+  animation: leadIn 620ms var(--lk-ease) both;
+  animation-delay: calc(var(--i, 0) * 90ms + 180ms);
+
+  &::after {           // the dot that touches the specimen
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 5px;
+    height: 5px;
+    margin-top: -2.5px;
+    border-radius: 50%;
+    background: var(--lk-green-500);
+  }
+
+  // A few px of overlap so the tick lands *on* the specimen, the way a plate
+  // annotates a point rather than pointing vaguely at one.
+  .notes--left  & { transform-origin: left center;  margin-right: -5px; &::after { right: -2px; } }
+  .notes--right & { transform-origin: right center; margin-left:  -5px; &::after { left:  -2px; } }
+
+  @media (max-width: 900px) { display: none; }
+}
+
+@keyframes noteIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes leadIn {
+  to { transform: scaleX(1); }
+}
+
+// ── Specimen ──────────────────────────────────────────────────
+.specimen {
+  position: relative;
+  order: 2;
+  width: clamp(200px, 25vw, 320px);
+  aspect-ratio: 4 / 5;
+  // Apothecary arch — the plate's window onto the specimen
+  border-radius: 50% 50% var(--lk-r-md) var(--lk-r-md) / 38% 38% 3% 3%;
+  overflow: hidden;
+  background: var(--lk-white);
+  box-shadow:
+    0 2px 4px rgba(22, 33, 26, .04),
+    0 10px 22px rgba(22, 33, 26, .07),
+    0 30px 64px rgba(22, 33, 26, .13);
+  transition: transform 500ms var(--lk-ease);
+  will-change: transform;
+
+  @media (max-width: 900px) {
+    order: 1;
+    grid-column: 1 / -1;
+    justify-self: center;
+    margin-bottom: .6rem;   // room for the contact shadow above the legend
+  }
+
+  &::after {           // lit top edge + hairline, one consistent light source
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    border-radius: inherit;
+    box-shadow:
+      inset 0 0 0 1px rgba(22, 33, 26, .07),
+      inset 0 1px 0 rgba(255, 255, 255, .55);
+    pointer-events: none;
+  }
+
+  &--skeleton { background: var(--lk-green-50); }
+}
+
+.specimen__shot {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transform: scale(1.04);
+  transition: opacity 900ms var(--lk-ease), transform 1400ms var(--lk-ease);
+
+  &.is-active { opacity: 1; transform: scale(1); }
+}
+
+.specimen__sheen {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    linear-gradient(148deg, rgba(255, 255, 255, .3) 0%, rgba(255, 255, 255, 0) 34%),
+    radial-gradient(90% 60% at 50% 108%, rgba(22, 33, 26, .18), transparent 62%);
+}
+
+.specimen__save {
+  position: absolute;
+  top: .9rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 4;
+  padding: .32rem .78rem;
+  border-radius: var(--lk-r-pill);
+  background: var(--lk-orange-500);
+  color: #fff;
+  font-family: 'Outfit', system-ui, sans-serif;
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  white-space: nowrap;
+  box-shadow: var(--lk-shadow-cta);
+}
+
+// Contact shadow — the specimen rests on the plate instead of floating
+.specimen__contact {
+  position: absolute;
+  z-index: -1;
+  left: 6%;
+  right: 6%;
+  bottom: -22px;
+  height: 40px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(22, 33, 26, .3), transparent 70%);
+  filter: blur(18px);
+  pointer-events: none;
+}
+
+.specimen__shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, .65) 50%, transparent 80%);
+  background-size: 220% 100%;
+  animation: shimmer 1.5s linear infinite;
+}
+
+@keyframes shimmer {
+  from { background-position: 200% 0; }
+  to   { background-position: -120% 0; }
+}
+
+// ── Caption ───────────────────────────────────────────────────
+.caption {
+  margin: clamp(1.1rem, 2.2vw, 1.5rem) 0 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.caption__name {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: clamp(1.15rem, 2vw, 1.5rem);
+  line-height: 1.25;
+  color: var(--lk-ink);
+  text-decoration: none;
+
+  &:hover { color: var(--lk-green-700); }
+}
+
+.caption__meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: .55rem;
+  margin-top: .45rem;
+}
+
+.caption__price {
+  font-family: 'Outfit', system-ui, sans-serif;
+  font-size: 1.08rem;
+  font-weight: 700;
+  color: var(--lk-ink);
+}
+
+.caption__mrp {
+  font-size: .87rem;
+  color: var(--lk-muted);
+  text-decoration: line-through;
+}
+
+.caption__rating {
+  display: inline-flex;
+  align-items: center;
+  gap: .22rem;
+  font-size: .82rem;
+  font-weight: 600;
+  color: var(--lk-body);
+
+  svg { color: var(--lk-star); }
+}
+
+.caption__count { font-weight: 400; color: var(--lk-muted); }
 
 .hero__actions {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: .8rem;
-  margin-top: 1.9rem;
+  margin-top: 1.1rem;
 }
 
-// ── Social proof ──────────────────────────────────────────────
-.hero__proof {
+// ── Specimen selector ─────────────────────────────────────────
+.dots {
   display: flex;
-  align-items: center;
-  gap: .7rem;
-  margin-top: 1.9rem;
-  flex-wrap: wrap;
+  gap: .45rem;
+  margin-top: 1.1rem;
 }
 
-.hero__stars {
-  display: inline-flex;
-  gap: 1px;
-  color: var(--lk-star);
+.dot {
+  position: relative;
+  width: 26px;
+  height: 4px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--lk-r-pill);
+  background: var(--lk-green-200);
+  overflow: hidden;
+  cursor: pointer;
+  transition: background var(--lk-t-fast), width var(--lk-t-base);
+
+  &:hover { background: var(--lk-green-300); }
+
+  &.is-active {
+    width: 40px;
+
+    &::after {         // fill tracks the dwell timer
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: var(--lk-green-600);
+      transform-origin: left center;
+      animation: dotFill var(--dwell, 7000ms) linear forwards;
+    }
+  }
+
+  &:focus-visible { outline: 2px solid var(--lk-green-500); outline-offset: 3px; }
 }
 
-.hero__proof-text {
-  margin: 0;
-  font-size: .87rem;
-  color: var(--lk-muted);
-
-  strong { color: var(--lk-ink); font-weight: 600; }
+@keyframes dotFill {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
 }
 
+// ── Foot ──────────────────────────────────────────────────────
 .hero__trust {
   display: flex;
   flex-wrap: wrap;
-  gap: .6rem 1.5rem;
-  margin: 1.5rem 0 0;
+  justify-content: center;
+  gap: .6rem 1.8rem;
+  margin: clamp(1.2rem, 2.4vw, 1.7rem) 0 0;
   padding: 1.15rem 0 0;
   list-style: none;
   border-top: 1px solid var(--lk-line);
@@ -163,7 +496,7 @@
     display: inline-flex;
     align-items: center;
     gap: .45rem;
-    font-size: .84rem;
+    font-size: .82rem;
     font-weight: 500;
     color: var(--lk-body);
 
@@ -171,185 +504,16 @@
   }
 }
 
-// ── Product spotlight ─────────────────────────────────────────
-.hero__stage {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1.15rem;
-}
-
-.hero__frame {
-  position: relative;
-  width: 100%;
-  max-width: 520px;
-  aspect-ratio: 1 / 1;
-  margin: 0;
-  border-radius: var(--lk-r-xl);
-  overflow: hidden;
-  background: var(--lk-white);
-  box-shadow: var(--lk-shadow-lg);
-
-  // Soft inner edge so photos of any tone sit cleanly on the page
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    box-shadow: inset 0 0 0 1px rgba(22, 33, 26, .06);
-    pointer-events: none;
-  }
-
-  &--skeleton {
-    background: var(--lk-green-50);
-    display: grid;
-    place-items: center;
-  }
-}
-
-.hero__shot {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  animation: heroShot var(--lk-t-slow) both;
-}
-
-@keyframes heroShot {
-  from { opacity: 0; transform: scale(1.035); }
-  to   { opacity: 1; transform: none; }
-}
-
-.hero__shimmer {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, .65) 50%, transparent 80%);
-  background-size: 220% 100%;
-  animation: heroShimmer 1.5s linear infinite;
-}
-
-@keyframes heroShimmer {
-  from { background-position: 200% 0; }
-  to   { background-position: -120% 0; }
-}
-
-// Savings flag — the second and last use of orange in the hero
-.hero__save {
-  position: absolute;
-  top: 1.05rem;
-  left: 1.05rem;
-  z-index: 2;
-  padding: .38rem .82rem;
-  border-radius: var(--lk-r-pill);
-  background: var(--lk-orange-500);
-  color: #fff;
-  font-family: 'Outfit', system-ui, sans-serif;
-  font-size: .74rem;
-  font-weight: 700;
-  letter-spacing: .04em;
-  box-shadow: var(--lk-shadow-cta);
-}
-
-// Floating detail card
-.hero__card {
-  position: absolute;
-  left: 1.05rem;
-  right: 1.05rem;
-  bottom: 1.05rem;
-  z-index: 2;
-  padding: .95rem 1.1rem;
-  border-radius: var(--lk-r-md);
-  background: rgba(255, 255, 255, .92);
-  backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, .7);
-  box-shadow: var(--lk-shadow-md);
-  text-align: left;
-}
-
-.hero__card-cat {
-  display: block;
-  font-family: 'Outfit', system-ui, sans-serif;
-  font-size: .66rem;
-  font-weight: 600;
-  letter-spacing: .13em;
-  text-transform: uppercase;
-  color: var(--lk-green-600);
-}
-
-.hero__card-name {
-  display: block;
-  margin-top: .22rem;
-  font-family: 'DM Serif Display', Georgia, serif;
-  font-size: 1.12rem;
-  line-height: 1.28;
-  color: var(--lk-ink);
-  text-decoration: none;
-
-  &:hover { color: var(--lk-green-700); }
-}
-
-.hero__card-row {
-  display: flex;
-  align-items: baseline;
-  gap: .55rem;
-  margin-top: .45rem;
-}
-
-.hero__price {
-  font-family: 'Outfit', system-ui, sans-serif;
-  font-size: 1.12rem;
-  font-weight: 700;
-  color: var(--lk-ink);
-}
-
-.hero__mrp {
-  font-size: .87rem;
-  color: var(--lk-muted);
-  text-decoration: line-through;
-}
-
-.hero__rating {
-  display: inline-flex;
-  align-items: center;
-  gap: .2rem;
-  margin-left: auto;
-  font-size: .82rem;
-  font-weight: 600;
-  color: var(--lk-body);
-
-  svg { color: var(--lk-star); }
-}
-
-// ── Spotlight selector ────────────────────────────────────────
-.hero__dots {
-  display: flex;
-  gap: .45rem;
-}
-
-.hero__dot {
-  width: 26px;
-  height: 4px;
-  padding: 0;
-  border: 0;
-  border-radius: var(--lk-r-pill);
-  background: var(--lk-green-200);
-  cursor: pointer;
-  transition: background var(--lk-t-fast), width var(--lk-t-base);
-
-  &:hover { background: var(--lk-green-300); }
-
-  &.is-active {
-    width: 40px;
-    background: var(--lk-green-600);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--lk-green-500);
-    outline-offset: 3px;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .hero__shot,
-  .hero__shimmer { animation: none; }
+  .hero__wash, .specimen, .specimen__shot, .specimen__shimmer { transition: none; animation: none; }
+
+  // Draw-in becomes a static plate; leaders must still be visible
+  .note { animation: none; }
+  .note__lead { animation: none; transform: scaleX(1); }
+
+  // Without rotation the fill would sit at zero and read as broken
+  .dot.is-active {
+    background: var(--lk-green-600);
+    &::after { animation: none; transform: scaleX(1); }
+  }
 }

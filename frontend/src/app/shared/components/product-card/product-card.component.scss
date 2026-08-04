@@ -7,21 +7,27 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  padding: .5rem .5rem 0;          // the frame around the domed window
   border-radius: var(--lk-r-lg);
   background: var(--lk-white);
-  border: 1px solid var(--lk-line);
-  overflow: hidden;
+  border: 1px solid transparent;   // reserved so hover cannot shift layout
   cursor: pointer;
+  box-shadow:
+    0 1px 3px rgba(22, 33, 26, .05),
+    0 6px 18px rgba(22, 33, 26, .07);
   transition: transform var(--lk-t-base), box-shadow var(--lk-t-base),
               border-color var(--lk-t-base);
 
   &:hover {
-    transform: translateY(-4px);
-    border-color: var(--lk-green-200);
-    box-shadow: var(--lk-shadow-md);
+    transform: translateY(-5px);
+    border-color: var(--lk-green-100);
+    box-shadow:
+      0 2px 4px rgba(22, 33, 26, .05),
+      0 14px 34px rgba(22, 33, 26, .12);
 
-    .pc__img { transform: scale(1.055); }
+    .pc__img { transform: scale(1.06); }
     .pc__action-btn { transform: translateY(0); opacity: 1; }
+    .pc__name a { color: var(--lk-green-700); }
   }
 }
 
@@ -29,8 +35,20 @@
 .pc__media {
   position: relative;
   aspect-ratio: 1 / 1;
+  // Shallow dome — the category grid's shape at card scale, shallow enough
+  // that the corner controls still sit on a straight edge.
+  border-radius: 42% 42% var(--lk-r-sm) var(--lk-r-sm) / 13% 13% 2% 2%;
   overflow: hidden;
   background: var(--lk-green-50);
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: inset 0 0 0 1px rgba(22, 33, 26, .06);
+    pointer-events: none;
+  }
 }
 
 .pc__img {
@@ -40,39 +58,33 @@
   transition: transform var(--lk-t-slow);
 }
 
-.pc__flags {
-  position: absolute;
-  top: .6rem;
-  left: .6rem;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: .32rem;
-}
-
+// Single flag, centred on the dome — the same placement the hero uses for
+// its savings badge, so the cue reads as one system across the page.
 .pc__flag {
-  padding: .26rem .6rem;
+  position: absolute;
+  top: .62rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  padding: .28rem .68rem;
   border-radius: var(--lk-r-pill);
   font-family: 'Outfit', system-ui, sans-serif;
   font-size: .66rem;
   font-weight: 700;
   letter-spacing: .045em;
   line-height: 1.5;
+  white-space: nowrap;
 
-  &--save { background: var(--lk-orange-500); color: #fff; }
+  &--save { background: var(--lk-orange-500); color: #fff; box-shadow: var(--lk-shadow-cta); }
   &--new  { background: var(--lk-green-600);  color: #fff; }
-  &--best {
-    background: rgba(255, 255, 255, .93);
-    color: var(--lk-green-800);
-    backdrop-filter: blur(6px);
-  }
 }
 
+// Sits on the straight bottom edge, not under the dome sweep — up top the
+// curve is inset ~26px and would clip the button.
 .pc__wish {
   position: absolute;
-  top: .6rem;
-  right: .6rem;
+  bottom: .55rem;
+  right: .55rem;
   z-index: 2;
   display: grid;
   place-items: center;
@@ -121,9 +133,9 @@
 
 .pc__action-btn {
   position: absolute;
-  left: .6rem;
-  right: .6rem;
-  bottom: .6rem;
+  left: .55rem;
+  right: 3.1rem;        // clears the wishlist button beside it
+  bottom: .55rem;
   z-index: 2;
   display: inline-flex;
   align-items: center;
@@ -158,7 +170,7 @@
     position: static;
     opacity: 1;
     transform: none;
-    margin: 0 .6rem .6rem;
+    margin: .55rem .5rem 0;
   }
 }
 
@@ -169,8 +181,32 @@
   display: flex;
   flex-direction: column;
   gap: .28rem;
-  padding: .9rem .95rem 1rem;
+  padding: .85rem .5rem .9rem;   // .pc already supplies the outer frame
   flex: 1;
+}
+
+// Category and the bestseller mark share one quiet line
+.pc__kicker {
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+  min-height: .85rem;
+}
+
+.pc__best {
+  display: inline-flex;
+  align-items: center;
+  padding: .1rem .42rem;
+  border-radius: var(--lk-r-pill);
+  background: var(--lk-green-50);
+  border: 1px solid var(--lk-green-100);
+  font-family: 'Outfit', system-ui, sans-serif;
+  font-size: .58rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--lk-green-700);
+  white-space: nowrap;
 }
 
 .pc__cat {

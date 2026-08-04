@@ -9,6 +9,9 @@
   flex-wrap: wrap;
   gap: .45rem;
   margin-bottom: clamp(1.4rem, 2.5vw, 2rem);
+  padding-bottom: 1.15rem;
+  // Same shelf rule the category grid rests on
+  border-bottom: 1px solid var(--lk-line);
 }
 
 .bs__tab {

@@ -25,28 +25,33 @@
       <div class="hs__grid">
         @for (item of items(); track item.id; let i = $index) {
           <a class="hs__card" [routerLink]="[viewAllLink, item.slug]" [lkReveal]="i % 4">
-            <div class="hs__media">
-              <img
-                [src]="imgUrl(item.primary_image)"
-                [alt]="item.name"
-                loading="lazy"
-                width="400" height="400"
-                (error)="$any($event.target).src='/assets/images/placeholder.webp'"
-              />
-              @if (discount(item) > 0) {
-                <span class="hs__save">{{ discount(item) }}% off</span>
-              }
-              @if (item.gender && item.gender !== 'unisex') {
-                <span class="hs__gender">{{ item.gender === 'male' ? 'Men' : 'Women' }}</span>
-              }
+            <div class="hs__stage">
+              <div class="hs__media">
+                <img
+                  [src]="imgUrl(item.primary_image)"
+                  [alt]="item.name"
+                  loading="lazy"
+                  width="340" height="425"
+                  (error)="$any($event.target).src='/assets/images/placeholder.webp'"
+                />
+              </div>
+              <span class="hs__contact" aria-hidden="true"></span>
             </div>
 
             <div class="hs__body">
-              <h3 class="hs__name">{{ item.name }}</h3>
+              <div class="hs__head">
+                <h3 class="hs__name">{{ item.name }}</h3>
+                @if (item.gender && item.gender !== 'unisex') {
+                  <span class="hs__gender">{{ item.gender === 'male' ? 'Men' : 'Women' }}</span>
+                }
+              </div>
+
               @if (item.short_description) {
                 <p class="hs__desc">{{ item.short_description }}</p>
               }
 
+              <!-- The real buying criteria for a hair system — given every unit
+                   in a range shares one photo, these are what differentiate. -->
               <dl class="hs__specs">
                 @if (item.size_info) {
                   <div><dt>Fit</dt><dd>{{ item.size_info }}</dd></div>
@@ -60,6 +65,7 @@
                 <span class="hs__price">₹{{ item.price | number:'1.0-0' }}</span>
                 @if (discount(item) > 0) {
                   <span class="hs__mrp">₹{{ item.mrp | number:'1.0-0' }}</span>
+                  <span class="hs__save">Save {{ discount(item) }}%</span>
                 }
                 <span class="hs__cta">
                   Details
