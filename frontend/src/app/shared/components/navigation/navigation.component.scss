@@ -21,10 +21,13 @@
 
 // ── Announcement Bar
 .ann-bar {
-  // Lifted a shade above the nav so the two dark bands stay readable as two
-  // bands rather than merging into one slab.
-  background: linear-gradient(90deg, #2E8B57 0%, #379C63 50%, #2E8B57 100%);
-  border-bottom: 1px solid rgba(#000000, 0.22);
+  // The palette's bright green, carrying DARK text — white on it is only
+  // 2.76:1, and on the sea green it was 4.21:1, both under the 4.5:1 small
+  // text needs. Dark on this green clears 5.97:1.
+  background: linear-gradient(90deg, #4CAF50 0%, #58BC5C 50%, #4CAF50 100%);
+  // Sea green is the third palette colour; it cannot carry text either way,
+  // so it earns its place as the divider instead.
+  border-bottom: 2px solid #2E8B57;
   height: 38px;
   display: flex;
   align-items: center;
@@ -37,8 +40,8 @@
   &__msg {
     font-family: $font-ui;
     font-size: 0.78125rem;
-    font-weight: 500;
-    color: rgba(#ffffff, 0.95);
+    font-weight: 600;
+    color: #16211A;
     letter-spacing: 0.03em;
     white-space: nowrap;
     animation: fadeSlideIn 0.4s ease;
