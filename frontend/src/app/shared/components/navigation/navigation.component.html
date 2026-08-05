@@ -49,8 +49,18 @@
     <div class="nav__container">
 
       <!-- Brand Logo -->
+      <!-- Horizontal lockup: the navbar limits height, not width, so the stacked
+           logo squeezed the wordmark to ~10px and the tagline to under 3px.
+           Below 1200px the mark stands alone — the lockup is 260px wide, which
+           crowds the links on mid widths and pushes the burger off-screen on
+           phones, where the action icons already claim ~180px. -->
+      <!-- NOTE: keep the lockup above 1200px only; widening it below that
+           regressed the mobile menu button off the right edge. -->
       <a class="nav__logo" routerLink="/" aria-label="Luv Kush Natural — Home">
-        <img src="/assets/logos/LOGO - GOLD.png" class="nav__logo-img" alt="Luv Kush Natural Logo" />
+        <picture>
+          <source media="(min-width: 1200px)" srcset="/assets/logos/nav-lockup.png" />
+          <img src="/assets/logos/nav-mark.png" class="nav__logo-img" alt="Luv Kush Natural" />
+        </picture>
       </a>
 
       <!-- Desktop Navigation Links -->
