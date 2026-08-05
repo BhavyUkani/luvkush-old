@@ -21,10 +21,10 @@
 
 // ── Announcement Bar
 .ann-bar {
-  // The palette's bright green, carrying DARK text — white on it is only
-  // 2.76:1, and on the sea green it was 4.21:1, both under the 4.5:1 small
-  // text needs. Dark on this green clears 5.97:1.
-  background: linear-gradient(90deg, #4CAF50 0%, #58BC5C 50%, #4CAF50 100%);
+  // #4CAF50 deepened to 75% of itself, same hue. White text on the palette
+  // value is only 2.76:1; this clears 4.64:1. The mid stop is slightly darker
+  // rather than lighter so no point along the gradient drops below that.
+  background: linear-gradient(90deg, #39833C 0%, #357A38 50%, #39833C 100%);
   // Sea green is the third palette colour; it cannot carry text either way,
   // so it earns its place as the divider instead.
   border-bottom: 2px solid #2E8B57;
@@ -41,7 +41,7 @@
     font-family: $font-ui;
     font-size: 0.78125rem;
     font-weight: 600;
-    color: #16211A;
+    color: #FFFFFF;
     letter-spacing: 0.03em;
     white-space: nowrap;
     animation: fadeSlideIn 0.4s ease;
