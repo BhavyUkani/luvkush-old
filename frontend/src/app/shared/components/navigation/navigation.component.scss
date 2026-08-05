@@ -12,7 +12,7 @@
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18);
 
     .nav {
-      background: rgba(#14301F, 0.93);
+      background: rgba(#2A1D16, 0.93);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
     }
@@ -23,7 +23,7 @@
 .ann-bar {
   // Lifted a shade above the nav so the two dark bands stay readable as two
   // bands rather than merging into one slab.
-  background: linear-gradient(90deg, #1E3A2A 0%, #2A4936 50%, #1E3A2A 100%);
+  background: linear-gradient(90deg, #3A2A20 0%, #4A362A 50%, #3A2A20 100%);
   border-bottom: 1px solid rgba(#000000, 0.22);
   height: 38px;
   display: flex;
@@ -127,9 +127,10 @@
 }
 
 // ── Nav Bar Shell
-// Dark green bar. The gold logo measures 5.16:1 here against 2.77:1 on white,
-// so the mark finally carries its own weight instead of washing out.
-$nav-dark: #14301F;
+// Espresso bar. Gold needs a dark backdrop — 2.77:1 on white against 5.90:1
+// here — and brown reads warmer beside the brand green than another green
+// would, while tying back to the sandalwood already in the palette.
+$nav-dark: #2A1D16;
 
 .nav {
   background: $nav-dark;
@@ -330,7 +331,7 @@ $nav-dark: #14301F;
 
 .nav__cart-badge {
   position: absolute; top: 2px; right: 2px; min-width: 18px; height: 18px;
-  border-radius: $radius-pill; background: #E5A81A; color: #14301F;
+  border-radius: $radius-pill; background: #E5A81A; color: #2A1D16;
   font-family: $font-ui; font-size: 10px; font-weight: 700;
   display: flex; align-items: center; justify-content: center; padding: 0 4px;
   box-shadow: 0 2px 6px rgba(#000000, 0.35);
