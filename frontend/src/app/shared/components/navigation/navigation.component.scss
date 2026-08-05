@@ -12,7 +12,7 @@
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18);
 
     .nav {
-      background: rgba(#2A1D16, 0.93);
+      background: rgba(#1E5631, 0.93);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
     }
@@ -23,7 +23,7 @@
 .ann-bar {
   // Lifted a shade above the nav so the two dark bands stay readable as two
   // bands rather than merging into one slab.
-  background: linear-gradient(90deg, #3A2A20 0%, #4A362A 50%, #3A2A20 100%);
+  background: linear-gradient(90deg, #2E8B57 0%, #379C63 50%, #2E8B57 100%);
   border-bottom: 1px solid rgba(#000000, 0.22);
   height: 38px;
   display: flex;
@@ -127,10 +127,11 @@
 }
 
 // ── Nav Bar Shell
-// Espresso bar. Gold needs a dark backdrop — 2.77:1 on white against 5.90:1
-// here — and brown reads warmer beside the brand green than another green
-// would, while tying back to the sandalwood already in the palette.
-$nav-dark: #2A1D16;
+// Dark forest from the Enchanted Forest palette, carrying the WHITE logo.
+// The palette's mid greens kill the gold mark (1.19-1.59:1, effectively every
+// pixel under 3:1); the white logo clears 8.57:1 here — and white-on-colour is
+// how the printed packaging already carries the mark.
+$nav-dark: #1E5631;
 
 .nav {
   background: $nav-dark;
@@ -178,8 +179,8 @@ $nav-dark: #2A1D16;
   transition: color 150ms ease;
 
   &:hover { color: #ffffff; }
-  // Active state picks up the logo's gold — 6.6:1 on the dark bar
-  &--active { font-weight: 700; color: #E5A81A; }
+  // Active state uses the palette's own light mint against the dark forest
+  &--active { font-weight: 700; color: #A9DFBF; }
 }
 
 .nav__badge {
@@ -187,9 +188,9 @@ $nav-dark: #2A1D16;
   font-weight: 700;
   padding: 2px 7px;
   border-radius: $radius-pill;
-  background: rgba(#E5A81A, 0.16);
-  color: #E8BC55;
-  border: 1px solid rgba(#E5A81A, 0.34);
+  background: rgba(#A9DFBF, 0.18);
+  color: #A9DFBF;
+  border: 1px solid rgba(#A9DFBF, 0.36);
   letter-spacing: 0.04em;
   text-transform: uppercase;
 
@@ -200,7 +201,7 @@ $nav-dark: #2A1D16;
 
 .nav__chevron {
   opacity: 0.55; transition: transform 200ms ease;
-  .nav__item:hover & { transform: rotate(180deg); opacity: 1; color: #E5A81A; }
+  .nav__item:hover & { transform: rotate(180deg); opacity: 1; color: #A9DFBF; }
 }
 
 // ── Dropdown
@@ -331,7 +332,7 @@ $nav-dark: #2A1D16;
 
 .nav__cart-badge {
   position: absolute; top: 2px; right: 2px; min-width: 18px; height: 18px;
-  border-radius: $radius-pill; background: #E5A81A; color: #2A1D16;
+  border-radius: $radius-pill; background: #A9DFBF; color: #1E5631;
   font-family: $font-ui; font-size: 10px; font-weight: 700;
   display: flex; align-items: center; justify-content: center; padding: 0 4px;
   box-shadow: 0 2px 6px rgba(#000000, 0.35);
