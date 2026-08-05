@@ -145,20 +145,14 @@
   height: 48px;
 }
 
-.nav__logo picture { display: block; }
-
 .nav__logo-img {
-  // 36px on a horizontal lockup gives the wordmark ~18px of cap height —
-  // roughly double what the 44px stacked version managed.
-  height: 36px;
+  height: 44px;
   width: auto;
   object-fit: contain;
   display: block;
   transition: transform 0.2s ease;
 
   &:hover { transform: scale(1.03); }
-
-  @media (max-width: 420px) { height: 30px; }
 }
 
 // ── Desktop Links
