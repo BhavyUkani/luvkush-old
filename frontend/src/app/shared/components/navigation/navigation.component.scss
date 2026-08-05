@@ -25,9 +25,7 @@
   // value is only 2.76:1; this clears 4.64:1. The mid stop is slightly darker
   // rather than lighter so no point along the gradient drops below that.
   background: linear-gradient(90deg, #39833C 0%, #357A38 50%, #39833C 100%);
-  // Sea green is the third palette colour; it cannot carry text either way,
-  // so it earns its place as the divider instead.
-  border-bottom: 2px solid #2E8B57;
+  // No divider — the two greens meet directly, as in the palette strip.
   height: 38px;
   display: flex;
   align-items: center;
