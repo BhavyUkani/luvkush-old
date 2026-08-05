@@ -9,10 +9,10 @@
   transition: box-shadow 250ms cubic-bezier(0.22, 1, 0.36, 1), background 250ms ease;
   
   &--scrolled {
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18);
 
     .nav {
-      background: rgba(#ffffff, 0.94);
+      background: rgba(#14301F, 0.93);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
     }
@@ -21,7 +21,10 @@
 
 // ── Announcement Bar
 .ann-bar {
-  background: linear-gradient(90deg, #182a1f 0%, #233b2c 50%, #182a1f 100%);
+  // Lifted a shade above the nav so the two dark bands stay readable as two
+  // bands rather than merging into one slab.
+  background: linear-gradient(90deg, #1E3A2A 0%, #2A4936 50%, #1E3A2A 100%);
+  border-bottom: 1px solid rgba(#000000, 0.22);
   height: 38px;
   display: flex;
   align-items: center;
@@ -124,9 +127,13 @@
 }
 
 // ── Nav Bar Shell
+// Dark green bar. The gold logo measures 5.16:1 here against 2.77:1 on white,
+// so the mark finally carries its own weight instead of washing out.
+$nav-dark: #14301F;
+
 .nav {
-  background: #FFFFFF;
-  border-bottom: 1px solid $color-border-light;
+  background: $nav-dark;
+  border-bottom: 1px solid rgba(#ffffff, 0.10);
   transition: background 250ms ease, border-color 250ms ease;
 }
 
@@ -166,11 +173,12 @@
 .nav__link {
   display: flex; align-items: center; gap: 5px; padding: 0 0.875rem; height: 100%;
   font-family: $font-ui; font-size: 0.84375rem; font-weight: $fw-semibold; letter-spacing: 0.02em;
-  color: $color-text-secondary; text-decoration: none; white-space: nowrap;
+  color: rgba(#ffffff, 0.76); text-decoration: none; white-space: nowrap;
   transition: color 150ms ease;
 
-  &:hover, &--active { color: $color-charcoal-true; }
-  &--active { font-weight: 700; color: $color-forest-deep; }
+  &:hover { color: #ffffff; }
+  // Active state picks up the logo's gold — 6.6:1 on the dark bar
+  &--active { font-weight: 700; color: #E5A81A; }
 }
 
 .nav__badge {
@@ -178,9 +186,9 @@
   font-weight: 700;
   padding: 2px 7px;
   border-radius: $radius-pill;
-  background: rgba(#B88447, 0.12);
-  color: #B88447;
-  border: 1px solid rgba(#B88447, 0.25);
+  background: rgba(#E5A81A, 0.16);
+  color: #E8BC55;
+  border: 1px solid rgba(#E5A81A, 0.34);
   letter-spacing: 0.04em;
   text-transform: uppercase;
 
@@ -190,8 +198,8 @@
 }
 
 .nav__chevron {
-  opacity: 0.5; transition: transform 200ms ease;
-  .nav__item:hover & { transform: rotate(180deg); opacity: 1; color: $color-copper-gold; }
+  opacity: 0.55; transition: transform 200ms ease;
+  .nav__item:hover & { transform: rotate(180deg); opacity: 1; color: #E5A81A; }
 }
 
 // ── Dropdown
@@ -304,38 +312,38 @@
 .nav__icon-btn {
   display: flex; align-items: center; justify-content: center;
   width: 40px; height: 40px; border-radius: 10px;
-  background: none; border: none; color: $color-charcoal-true;
+  background: none; border: none; color: rgba(#ffffff, 0.85);
   cursor: pointer; text-decoration: none;
   transition: color 150ms ease, background 150ms ease, transform 150ms ease;
 
-  &:hover { color: $color-forest-deep; background: $color-bg-subtle; transform: translateY(-1px); }
+  &:hover { color: #ffffff; background: rgba(#ffffff, 0.10); transform: translateY(-1px); }
 }
 
 .nav__cart-btn {
   position: relative; display: flex; align-items: center; justify-content: center;
   width: 40px; height: 40px; border-radius: 10px;
-  color: $color-charcoal-true; text-decoration: none;
+  color: rgba(#ffffff, 0.85); text-decoration: none;
   transition: color 150ms ease, background 150ms ease, transform 150ms ease;
 
-  &:hover { color: $color-forest-deep; background: $color-bg-subtle; transform: translateY(-1px); }
+  &:hover { color: #ffffff; background: rgba(#ffffff, 0.10); transform: translateY(-1px); }
 }
 
 .nav__cart-badge {
   position: absolute; top: 2px; right: 2px; min-width: 18px; height: 18px;
-  border-radius: $radius-pill; background: $color-forest-deep; color: #FFFFFF;
+  border-radius: $radius-pill; background: #E5A81A; color: #14301F;
   font-family: $font-ui; font-size: 10px; font-weight: 700;
   display: flex; align-items: center; justify-content: center; padding: 0 4px;
-  box-shadow: 0 2px 6px rgba($color-forest-deep, 0.3);
+  box-shadow: 0 2px 6px rgba(#000000, 0.35);
 }
 
 .nav__signin-btn {
-  display: none; padding: 0.45rem 1rem; border: 1.5px solid $color-forest-deep;
+  display: none; padding: 0.45rem 1rem; border: 1.5px solid rgba(#ffffff, 0.45);
   border-radius: 8px; font-family: $font-ui; font-size: 0.75rem;
   font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
-  color: $color-forest-deep; text-decoration: none; white-space: nowrap;
+  color: #ffffff; text-decoration: none; white-space: nowrap;
   margin-left: 0.5rem; flex-shrink: 0; transition: all 180ms ease;
 
-  &:hover { background: $color-forest-deep; color: #FFFFFF; }
+  &:hover { background: rgba(#ffffff, 0.14); border-color: #ffffff; }
   @include respond-to("lg") { display: flex; align-items: center; }
 }
 
@@ -388,7 +396,7 @@
   @include respond-to("lg") { display: none; }
 
   span {
-    display: block; height: 2px; background: $color-charcoal-true;
+    display: block; height: 2px; background: #ffffff;
     border-radius: 1px; transition: all 0.22s ease; transform-origin: center;
     &.open:nth-child(1) { transform: translateY(7px) rotate(45deg); }
     &.open:nth-child(2) { opacity: 0; transform: scaleX(0); }
