@@ -27,6 +27,21 @@ export interface RecentProduct {
   category_name?: string;
 }
 
+export interface Botanical {
+  key: string;
+  n: string;
+  common: string;
+  latin: string;
+}
+
+// "Amla Extract (Phyllanthus emblica)" → common + binomial.
+const INGREDIENT_RE = /([^,()]+?)\s*\(([^)]+)\)/g;
+// A real binomial is "Genus species" — separates botanicals from the
+// functional base (Aqua, Cetyl Alcohol, Phenoxyethanol, and friends).
+const BINOMIAL_RE = /^[A-Z][a-z]+ [a-z-]+$/;
+const FORM_RE = /\s+(?:(?:Leaf|Flower|Berry|Root|Seed|Fruit|Bark|Essential)\s+)?(?:Extract|Powder|Oil|Water|Butter)$/i;
+const GRADE_RE = /^(?:Organic|Virgin|Cold-Pressed|Pure|Refined)\s+/i;
+
 @Component({
   selector: "lk-product-detail",
   standalone: true,
@@ -105,6 +120,32 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     if (!p?.mrp || p.mrp <= p.price) return 0;
     return Math.round((1 - p.price / p.mrp) * 100);
   });
+
+  /** Named botanicals parsed out of the INCI list, for the specimen cards. */
+  botanicals = computed<Botanical[]>(() => {
+    const list = this.product()?.ingredients_list;
+    if (!list) return [];
+    const seen = new Set<string>();
+    const out: Botanical[] = [];
+    for (const m of list.matchAll(INGREDIENT_RE)) {
+      const latin = m[2].trim();
+      if (!BINOMIAL_RE.test(latin) || seen.has(latin)) continue;
+      seen.add(latin);
+      const common = m[1].trim().replace(GRADE_RE, '').replace(FORM_RE, '').trim();
+      out.push({ key: latin, n: String(out.length + 1).padStart(2, '0'), common, latin });
+    }
+    return out;
+  });
+
+  /** Full INCI-style list for the fine-print block underneath the specimen cards. */
+  ingredientsFull = computed(() => (this.product()?.ingredients_list ?? '').split(',').map(s => s.trim()).filter(Boolean));
+
+  /** Benefits arrive as newline-separated lines; render each as a checklist row. */
+  benefitsList = computed(() => (this.product()?.benefits ?? '').split('\n').map(s => s.trim()).filter(Boolean));
+
+  /** How-to-use arrives pre-numbered ("1. …\n2. …"); strip the numbering, we draw our own. */
+  howToSteps = computed(() => (this.product()?.how_to_use ?? '')
+    .split('\n').map(s => s.trim().replace(/^\d+[.)]\s*/, '')).filter(Boolean));
 
   fbtProducts = computed(() => this.relatedProducts().slice(0, 2));
 

@@ -1,4 +1,4 @@
-<article class="pc" [class.pc--added]="isAdded()" (click)="navigateToProduct($event)">
+<article class="pc" [class.pc--added]="isAdded()" [class.pc--list]="layout === 'list'" (click)="navigateToProduct($event)">
 
   <!-- ── Media ────────────────────────────────────────────── -->
   <div class="pc__media">

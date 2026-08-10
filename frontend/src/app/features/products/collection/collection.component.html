@@ -1,202 +1,284 @@
-<!-- BREADCRUMB + HEADER -->
-<div class="coll-header">
-  <div class="coll-header__inner">
+<!-- ── Header band ─────────────────────────────────────────────── -->
+<section class="coll-header">
+  <div class="lk-shell">
+
+    <div class="coll-rail" aria-hidden="true">
+      <span class="coll-rail__mark">Catalogue</span>
+      <span class="coll-rail__rule"></span>
+      <span class="coll-rail__mark coll-rail__mark--mid">
+        @if (loading()) { Loading } @else { {{ totalProducts() }} formulas }
+      </span>
+      <span class="coll-rail__rule"></span>
+      <span class="coll-rail__mark">Luv Kush Natural</span>
+    </div>
+
     <nav class="coll-breadcrumb" aria-label="Breadcrumb">
       <a routerLink="/">Home</a>
-      <span aria-hidden="true">›</span>
+      <span aria-hidden="true">/</span>
       @if (currentCategory()) {
         <a routerLink="/shop">Shop</a>
-        <span aria-hidden="true">›</span>
+        <span aria-hidden="true">/</span>
         <span>{{ currentCategory()!.name }}</span>
       } @else {
         <span>Shop</span>
       }
     </nav>
+
     <h1 class="coll-header__title">{{ currentCategory()?.name || "All Products" }}</h1>
-    @if (currentCategory()?.description) {
-      <p class="coll-header__desc">{{ currentCategory()!.description }}</p>
-    }
+    <p class="coll-header__desc">
+      {{ currentCategory()?.description || "Every formula we make, in one place. Cold-pressed, small-batch, nothing hiding behind a fragrance line." }}
+    </p>
+
+  </div>
+</section>
+
+<!-- ── Category rail ───────────────────────────────────────────── -->
+<div class="coll-shelf">
+  <div class="lk-shell">
+    <div class="coll-shelf__scroll" role="tablist" aria-label="Shop by category">
+
+      <button
+        type="button"
+        role="tab"
+        class="coll-tile"
+        [class.is-active]="!selectedCategory()"
+        [attr.aria-selected]="!selectedCategory()"
+        (click)="selectCategory('')"
+      >
+        <span class="coll-tile__media coll-tile__media--all">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <rect x="3" y="3" width="7" height="7" rx="1.4" stroke="currentColor" stroke-width="1.5"/>
+            <rect x="14" y="3" width="7" height="7" rx="1.4" stroke="currentColor" stroke-width="1.5"/>
+            <rect x="3" y="14" width="7" height="7" rx="1.4" stroke="currentColor" stroke-width="1.5"/>
+            <rect x="14" y="14" width="7" height="7" rx="1.4" stroke="currentColor" stroke-width="1.5"/>
+          </svg>
+        </span>
+        <span class="coll-tile__name">All Products</span>
+        <span class="coll-tile__count">{{ grandTotal() }}</span>
+      </button>
+
+      @for (cat of railCategories(); track cat.id) {
+        <!-- Every tile behaves identically: click selects it and filters the
+             page. A category with nothing to show (hair systems live in a
+             separate table) is handled by the empty state below, with a
+             button the user chooses to press — not by this tile silently
+             leading somewhere else. -->
+        <button
+          type="button"
+          role="tab"
+          class="coll-tile"
+          [class.is-active]="selectedCategory() === cat.slug"
+          [attr.aria-selected]="selectedCategory() === cat.slug"
+          (click)="selectCategory(cat.slug)"
+        >
+          <span class="coll-tile__media">
+            <img [src]="tileImage(cat)" [alt]="cat.name" loading="lazy" width="120" height="120"
+                 (error)="$any($event.target).src='/assets/images/placeholder.webp'" />
+          </span>
+          <span class="coll-tile__name">{{ cat.name }}</span>
+          <span class="coll-tile__count">{{ cat.product_count }}</span>
+        </button>
+      }
+
+    </div>
   </div>
 </div>
 
-<!-- BODY: SIDEBAR + MAIN -->
-<div class="coll-body">
+<!-- ── Body ─────────────────────────────────────────────────────── -->
+<div class="lk-shell coll-body">
 
-  <!-- ─── Sidebar Overlay (mobile) ─── -->
-  @if (filterOpen()) {
-    <div class="coll-sidebar-overlay" (click)="filterOpen.set(false)" aria-hidden="true"></div>
-  }
+  <!-- Toolbar -->
+  <div class="coll-toolbar">
+    <p class="coll-toolbar__count">
+      @if (loading()) { Loading… }
+      @else { <strong>{{ totalProducts() }}</strong> product{{ totalProducts() === 1 ? '' : 's' }} }
+      @if (searchQuery) { for “{{ searchQuery }}” }
+    </p>
 
-  <!-- ─── Sidebar ─── -->
-  <aside class="coll-sidebar" [class.coll-sidebar--open]="filterOpen()" role="complementary" aria-label="Filters">
-    <div class="coll-sidebar__head">
-      <h2 class="coll-sidebar__title">Filters</h2>
-      <button class="coll-sidebar__close" (click)="filterOpen.set(false)" aria-label="Close filters">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
-      </button>
-    </div>
-
-    <!-- Category -->
-    <div class="coll-filter">
-      <h3 class="coll-filter__label">Category</h3>
-      <ul class="coll-filter__list" role="list">
-        <li>
-          <label class="coll-filter__item">
-            <input type="radio" name="cat" value="" [(ngModel)]="selectedCategory" (change)="onFilterChange()" />
-            <span class="coll-filter__name">All Products</span>
-            <span class="coll-filter__count">{{ totalProducts() }}</span>
-          </label>
-        </li>
-        @for (cat of categories(); track cat.id) {
-          <li>
-            <label class="coll-filter__item">
-              <input type="radio" name="cat" [value]="cat.slug" [(ngModel)]="selectedCategory" (change)="onFilterChange()" />
-              <span class="coll-filter__name">{{ cat.name }}</span>
-              <span class="coll-filter__count">{{ cat.product_count || 0 }}</span>
-            </label>
-          </li>
+    <div class="coll-toolbar__tools">
+      <div class="coll-search">
+        <svg class="coll-search__icon" width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <circle cx="7.5" cy="7.5" r="5.5" stroke="currentColor" stroke-width="1.5"/>
+          <path d="m15 15-3.4-3.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <input type="search" class="coll-search__input" placeholder="Search…"
+          [(ngModel)]="searchQuery" (input)="onFilterChange()" aria-label="Search products" />
+        @if (searchQuery) {
+          <button class="coll-search__clear" (click)="searchQuery = ''; onFilterChange()" aria-label="Clear search">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M3.5 3.5l9 9M12.5 3.5l-9 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+          </button>
         }
-      </ul>
+      </div>
+
+      <button class="coll-refine-btn" (click)="refineOpen.set(true)" aria-haspopup="dialog">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M2 4h12M4.5 8h7M6.5 12h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        Refine
+        @if (activeFilterCount() > 0) { <span class="coll-refine-btn__badge">{{ activeFilterCount() }}</span> }
+      </button>
+
+      <!-- Custom dropdown, not a native <select>: appearance:none plus a
+           custom arrow icon is a known landmine for native widget theming —
+           it was rendering with no visible label text on some Windows
+           browsers even though the underlying value was set correctly. -->
+      <div class="coll-sortbox">
+        <button type="button" class="coll-sort" (click)="sortOpen.set(!sortOpen())"
+          aria-haspopup="listbox" [attr.aria-expanded]="sortOpen()">
+          <span>{{ currentSortLabel() }}</span>
+          <svg width="10" height="6" viewBox="0 0 10 6" fill="none" aria-hidden="true">
+            <path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        @if (sortOpen()) {
+          <div class="coll-sort-veil" (click)="sortOpen.set(false)" aria-hidden="true"></div>
+          <ul class="coll-sort__menu" role="listbox" aria-label="Sort products">
+            @for (opt of SORT_OPTIONS; track opt.value) {
+              <li role="option" [attr.aria-selected]="sortBy() === opt.value">
+                <button type="button" class="coll-sort__opt" [class.is-active]="sortBy() === opt.value" (click)="selectSort(opt.value)">
+                  {{ opt.label }}
+                  @if (sortBy() === opt.value) {
+                    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.4l3 3 6-6.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  }
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+
+      <div class="coll-view-toggle" role="group" aria-label="View mode">
+        <button class="coll-view-btn" [class.is-active]="viewMode() === 'grid'"
+          (click)="viewMode.set('grid')" aria-label="Grid view">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+        </button>
+        <button class="coll-view-btn" [class.is-active]="viewMode() === 'list'"
+          (click)="viewMode.set('list')" aria-label="List view">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><line x1="6" y1="4" x2="15" y2="4"/><line x1="6" y1="8" x2="15" y2="8"/><line x1="6" y1="12" x2="15" y2="12"/><circle cx="2" cy="4" r=".8" fill="currentColor" stroke="none"/><circle cx="2" cy="8" r=".8" fill="currentColor" stroke="none"/><circle cx="2" cy="12" r=".8" fill="currentColor" stroke="none"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Product Grid -->
+  @if (loading()) {
+    <div class="coll-grid" [class.coll-grid--list]="viewMode() === 'list'">
+      @for (_ of [1,2,3,4,5,6,7,8,9,10,11,12]; track $index) {
+        <div class="coll-skeleton"></div>
+      }
+    </div>
+  } @else if (products().length === 0 && selectedIsHairSystem()) {
+    <!-- Real photography in the hero's own arch shape, not a generic icon +
+         text block — the one place navigation to another page can happen
+         here, and only on an explicit click on the button, never from the
+         category tile itself. -->
+    <div class="coll-spot">
+      <div class="coll-spot__media">
+        <img [src]="tileImage(currentCategory()!)" [alt]="currentCategory()?.name" width="360" height="450"
+             (error)="$any($event.target).src='/assets/images/placeholder.webp'" />
+        <span class="coll-spot__sheen" aria-hidden="true"></span>
+        <span class="coll-spot__contact" aria-hidden="true"></span>
+      </div>
+      <div class="coll-spot__body">
+        <span class="lk-eyebrow">Hair systems · dedicated shop</span>
+        <h3 class="coll-spot__title">{{ currentCategory()?.name }}</h3>
+        <p class="coll-spot__desc">{{ hairSystemBlurb(currentCategory()!) }}</p>
+        <p class="coll-spot__note">This range is fitted individually, so it lives in its own space rather than the general catalogue.</p>
+        <a class="lk-btn lk-btn--primary" [routerLink]="hairSystemRoute(currentCategory()!)">
+          Browse {{ currentCategory()?.name }}
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+    </div>
+  } @else if (products().length === 0) {
+    <div class="coll-empty">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <h3>Nothing on this shelf yet</h3>
+      <p>Try a wider search, or clear what you've filtered.</p>
+      <button class="lk-btn lk-btn--solid" (click)="clearFilters()">Clear all filters</button>
+    </div>
+  } @else {
+    <div class="coll-grid" [class.coll-grid--list]="viewMode() === 'list'">
+      @for (product of products(); track product.id) {
+        <lk-product-card [product]="product" [layout]="viewMode()" />
+      }
     </div>
 
-    <!-- Price Range -->
-    <div class="coll-filter">
-      <h3 class="coll-filter__label">Price Range</h3>
+    @if (totalPages() > 1) {
+      <nav class="coll-pagination" aria-label="Page navigation">
+        <button class="coll-page-btn coll-page-btn--nav" (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() === 1" aria-label="Previous page">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M10 3 5 8l5 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        @for (p of pageRange(); track p) {
+          <button class="coll-page-btn" [class.is-active]="p === currentPage()" (click)="goToPage(p)" [attr.aria-current]="p === currentPage() ? 'page' : null">
+            {{ p }}
+          </button>
+        }
+        <button class="coll-page-btn coll-page-btn--nav" (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() === totalPages()" aria-label="Next page">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </nav>
+    }
+  }
+</div>
+
+<!-- ── Refine drawer ────────────────────────────────────────────── -->
+@if (refineOpen()) {
+  <div class="coll-drawer-veil" (click)="refineOpen.set(false)" aria-hidden="true"></div>
+}
+<aside class="coll-drawer" [class.is-open]="refineOpen()" role="dialog" aria-modal="true" aria-label="Refine results">
+  <div class="coll-drawer__head">
+    <h2 class="coll-drawer__title">Refine</h2>
+    <button class="coll-drawer__close" (click)="refineOpen.set(false)" aria-label="Close">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+
+  <div class="coll-drawer__body">
+
+    <div class="coll-drawer__group">
+      <h3 class="coll-drawer__label">Price range</h3>
       <div class="coll-price-row">
         <div class="coll-price-field">
-          <label for="price-min">Min ₹</label>
-          <input id="price-min" type="number" [(ngModel)]="minPrice" placeholder="0" (change)="onFilterChange()" min="0" />
+          <label for="price-min">Min</label>
+          <div class="coll-price-input"><span>₹</span><input id="price-min" type="number" [(ngModel)]="minPrice" placeholder="0" (change)="onFilterChange()" min="0" /></div>
         </div>
-        <span class="coll-price-sep">—</span>
+        <span class="coll-price-sep"></span>
         <div class="coll-price-field">
-          <label for="price-max">Max ₹</label>
-          <input id="price-max" type="number" [(ngModel)]="maxPrice" placeholder="Any" (change)="onFilterChange()" min="0" />
+          <label for="price-max">Max</label>
+          <div class="coll-price-input"><span>₹</span><input id="price-max" type="number" [(ngModel)]="maxPrice" placeholder="Any" (change)="onFilterChange()" min="0" /></div>
         </div>
       </div>
     </div>
 
-    <!-- Rating -->
-    <div class="coll-filter">
-      <h3 class="coll-filter__label">Customer Rating</h3>
-      <ul class="coll-filter__list" role="list">
-        <li>
-          <label class="coll-filter__item">
-            <input type="radio" name="rating" [value]="0" [(ngModel)]="ratingMin" (change)="onFilterChange()" />
-            <span class="coll-filter__name">All ratings</span>
-          </label>
-        </li>
+    <div class="coll-drawer__group">
+      <h3 class="coll-drawer__label">Customer rating</h3>
+      <div class="coll-chip-row">
+        <button type="button" class="coll-chip" [class.is-active]="ratingMin === 0" (click)="ratingMin = 0; onFilterChange()">All</button>
         @for (opt of RATING_OPTIONS; track opt.value) {
-          <li>
-            <label class="coll-filter__item">
-              <input type="radio" name="rating" [value]="opt.value" [(ngModel)]="ratingMin" (change)="onFilterChange()" />
-              <span class="coll-filter__name">{{ opt.label }}</span>
-            </label>
-          </li>
+          <button type="button" class="coll-chip" [class.is-active]="ratingMin === opt.value" (click)="ratingMin = opt.value; onFilterChange()">{{ opt.label }}</button>
         }
-      </ul>
+      </div>
     </div>
 
-    <!-- Availability -->
-    <div class="coll-filter" style="border-bottom:none">
-      <h3 class="coll-filter__label">Availability</h3>
-      <label class="coll-filter__item">
+    <div class="coll-drawer__group coll-drawer__group--last">
+      <label class="coll-toggle">
         <input type="checkbox" [(ngModel)]="inStockOnly" (change)="onFilterChange()" />
-        <span class="coll-filter__name">In stock only</span>
+        <span class="coll-toggle__track"><span class="coll-toggle__thumb"></span></span>
+        <span>In stock only</span>
       </label>
     </div>
 
-    <button class="coll-filter__clear" (click)="clearFilters()" [disabled]="activeFilterCount() === 0">
-      Clear all filters @if (activeFilterCount() > 0) { ({{ activeFilterCount() }}) }
+  </div>
+
+  <div class="coll-drawer__foot">
+    <button class="lk-btn lk-btn--ghost lk-btn--sm" (click)="clearFilters()" [disabled]="activeFilterCount() === 0">
+      Clear all
     </button>
-  </aside>
-
-  <!-- ─── Main ─── -->
-  <main class="coll-main">
-    <!-- Toolbar -->
-    <div class="coll-toolbar">
-      <div class="coll-toolbar__left">
-        <button class="coll-toolbar__filter-btn" (click)="filterOpen.set(true)" aria-label="Open filters">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-          Filters
-          @if (activeFilterCount() > 0) { <span class="coll-toolbar__badge">{{ activeFilterCount() }}</span> }
-        </button>
-        <p class="coll-toolbar__count">
-          @if (loading()) { Loading… }
-          @else { <strong>{{ totalProducts() }}</strong> products }
-        </p>
-      </div>
-      <div class="coll-toolbar__right">
-        <!-- View toggle -->
-        <div class="coll-view-toggle" role="group" aria-label="View mode">
-          <button class="coll-view-btn" [class.coll-view-btn--active]="viewMode() === 'grid'"
-            (click)="viewMode.set('grid')" aria-label="Grid view">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-          </button>
-          <button class="coll-view-btn" [class.coll-view-btn--active]="viewMode() === 'list'"
-            (click)="viewMode.set('list')" aria-label="List view">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-          </button>
-        </div>
-        <!-- Sort -->
-        <select class="coll-sort" [(ngModel)]="sortBy" (change)="onSortChange()" aria-label="Sort products">
-          @for (opt of SORT_OPTIONS; track opt.value) {
-            <option [value]="opt.value">{{ opt.label }}</option>
-          }
-        </select>
-      </div>
-    </div>
-
-    <!-- Search within shop -->
-    <div class="coll-search">
-      <svg class="coll-search__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-      <input type="search" class="coll-search__input" placeholder="Search products…"
-        [(ngModel)]="searchQuery" (input)="onFilterChange()" aria-label="Search products" />
-      @if (searchQuery) {
-        <button class="coll-search__clear" (click)="searchQuery = ''; onFilterChange()" aria-label="Clear search">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
-        </button>
-      }
-    </div>
-
-    <!-- Product Grid -->
-    @if (loading()) {
-      <div class="coll-grid" [class.coll-grid--list]="viewMode() === 'list'">
-        @for (_ of [1,2,3,4,5,6,7,8,9,10,11,12]; track $index) {
-          <div class="coll-skeleton shimmer"></div>
-        }
-      </div>
-    } @else if (products().length === 0) {
-      <div class="coll-empty">
-        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-        <h3>No products found</h3>
-        <p>Try adjusting your filters or search query</p>
-        <button class="coll-empty__reset" (click)="clearFilters()">Clear all filters</button>
-      </div>
-    } @else {
-      <div class="coll-grid" [class.coll-grid--list]="viewMode() === 'list'">
-        @for (product of products(); track product.id) {
-          <lk-product-card [product]="product" />
-        }
-      </div>
-
-      <!-- Pagination -->
-      @if (totalPages() > 1) {
-        <nav class="coll-pagination" aria-label="Page navigation">
-          <button class="coll-page-btn" (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() === 1" aria-label="Previous page">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
-          </button>
-          @for (p of pageRange(); track p) {
-            <button class="coll-page-btn" [class.coll-page-btn--active]="p === currentPage()" (click)="goToPage(p)" [attr.aria-current]="p === currentPage() ? 'page' : null">
-              {{ p }}
-            </button>
-          }
-          <button class="coll-page-btn" (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() === totalPages()" aria-label="Next page">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
-          </button>
-        </nav>
-      }
-    }
-  </main>
-</div>
-
-<!-- Shimmer keyframe (inline — needed for Angular component encapsulation) -->
+    <button class="lk-btn lk-btn--solid lk-btn--sm" (click)="refineOpen.set(false)">
+      Show {{ totalProducts() }} result{{ totalProducts() === 1 ? '' : 's' }}
+    </button>
+  </div>
+</aside>

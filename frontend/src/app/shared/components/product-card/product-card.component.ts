@@ -20,6 +20,11 @@ import { imageUrl } from '../../utils/image-url';
 })
 export class ProductCardComponent {
   @Input({ required: true }) product!: Product;
+  // Grid mode's media is a full-width square (aspect-ratio 1/1 at 100% of
+  // the card). In a single-column list, that square would scale to the
+  // width of the whole row — a thumbnail becomes a wall-sized photo. List
+  // mode switches the card to a row and gives the media a fixed width instead.
+  @Input() layout: 'grid' | 'list' = 'grid';
 
   readonly wishlist = inject(WishlistService);
   private readonly cartService = inject(CartService);

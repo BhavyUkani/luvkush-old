@@ -304,6 +304,36 @@
   color: var(--lk-muted);
 }
 
+// ── List layout ───────────────────────────────────────────────
+// Row instead of column, and the media gets a fixed width instead of 100%
+// — without this, the same aspect-ratio:1/1 square that looks right in a
+// grid cell scales up to the width of the whole row in a single-column list.
+.pc--list {
+  flex-direction: row;
+  align-items: stretch;
+  gap: 1rem;
+  padding: .6rem .6rem .6rem .6rem;
+
+  .pc__media {
+    flex: none;
+    width: clamp(110px, 16vw, 190px);
+  }
+
+  .pc__body {
+    padding: .15rem .2rem;
+  }
+
+  .pc__foot {
+    align-items: center;
+  }
+
+  @media (max-width: 560px) {
+    gap: .75rem;
+    .pc__media { width: 92px; }
+    .pc__sub { display: none; }   // narrow row has no room for it without crowding the price
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .pc, .pc__img, .pc__action-btn, .pc__wish { transition: none; }
 }
