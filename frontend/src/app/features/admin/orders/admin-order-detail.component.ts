@@ -4,6 +4,8 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
 import { imageUrl } from '../../../shared/utils/image-url';
+import { AdminConfirmService } from '../shared/admin-confirm.service';
+import { AdminToastService } from '../shared/admin-toast.service';
 
 interface Order {
   id: number;
@@ -822,6 +824,8 @@ export class AdminOrderDetailComponent implements OnInit {
   private readonly api = inject(ApiService);
   private readonly route = inject(ActivatedRoute);
   readonly router = inject(Router);
+  private readonly confirmSvc = inject(AdminConfirmService);
+  private readonly toast = inject(AdminToastService);
   readonly imgUrl = imageUrl;
 
   orderId = signal<number | null>(null);
@@ -1136,15 +1140,22 @@ export class AdminOrderDetailComponent implements OnInit {
     });
   }
 
-  deleteHistoryEntry(entry: any): void {
-    if (!confirm('Are you sure you want to delete this status history entry?')) return;
+  async deleteHistoryEntry(entry: any): Promise<void> {
+    const ok = await this.confirmSvc.confirm({
+      title: 'Delete History Entry',
+      message: 'Are you sure you want to delete this status history entry?',
+      confirmLabel: 'Delete',
+      danger: true
+    });
+    if (!ok) return;
     this.api.delete<any>(`/orders/status-history/${entry.id}`).subscribe({
       next: () => {
         const orderId = this.orderId();
         if (orderId) this.loadDetail(orderId);
+        this.toast.success('History entry deleted');
       },
       error: (err: any) => {
-        alert(err.userMessage || 'Delete failed');
+        this.toast.error(err.userMessage || 'Delete failed');
       }
     });
   }
@@ -1294,11 +1305,12 @@ export class AdminOrderDetailComponent implements OnInit {
     this.api.patch<any>(`/orders/${d.id}/status`, { status: newStatus }).subscribe({
       next: () => {
         this.updatingStatus.set(false);
+        this.toast.success('Order status updated');
         this.loadDetail(d.id);
       },
       error: (err) => {
         this.updatingStatus.set(false);
-        alert(err.userMessage || 'Failed to update order status');
+        this.toast.error(err.userMessage || 'Failed to update order status');
         select.value = d.status;
       }
     });

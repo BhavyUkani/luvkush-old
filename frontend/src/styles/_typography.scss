@@ -136,10 +136,13 @@ body {
   }
 }
 
-// Selection
+// Selection — a light-mode default for the ~90% of the site that's on a
+// white/cream background. Dark-band sections (footer, About's mission
+// quote, the Wigs/Patches hero) override this locally so it stays legible
+// there too — see each component's stylesheet.
 ::selection {
-  background: rgba($color-gold, 0.25);
-  color: $color-sandalwood;
+  background: var(--lk-orange-200);
+  color: var(--lk-ink);
 }
 
 // Strong

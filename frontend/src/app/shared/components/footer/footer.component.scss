@@ -291,3 +291,10 @@
     line-height: 1;
   }
 }
+
+// Dark green background — the light-mode ::selection default is illegible
+// here, so give selected text a highlight that reads against it.
+.footer ::selection {
+  background: rgba(255, 255, 255, .25);
+  color: #fff;
+}

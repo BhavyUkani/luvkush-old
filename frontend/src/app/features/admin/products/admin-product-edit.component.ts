@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
 import { imageUrl } from '../../../shared/utils/image-url';
+import { AdminToastService } from '../shared/admin-toast.service';
 
 interface Category { id: number; name: string; slug: string; }
 
@@ -696,6 +697,7 @@ export class AdminProductEditComponent implements OnInit {
   private readonly api = inject(ApiService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly toast = inject(AdminToastService);
   readonly imgUrl = imageUrl;
 
   isNew = signal(false);
@@ -917,7 +919,12 @@ export class AdminProductEditComponent implements OnInit {
       ? this.api.uploadFormData<any>('/admin/products', fd, 'post')
       : this.api.uploadFormData<any>(`/admin/products/${this.productId()}`, fd, 'put');
     req.subscribe({
-      next: () => { this.saving.set(false); this.revokeSlotUrls(); this.router.navigate(['/admin/products']); },
+      next: () => {
+        this.saving.set(false);
+        this.revokeSlotUrls();
+        this.toast.success(this.isNew() ? 'Product created' : 'Product updated');
+        this.router.navigate(['/admin/products']);
+      },
       error: (err) => { this.saving.set(false); this.formError.set(err.userMessage || 'Save failed'); }
     });
   }

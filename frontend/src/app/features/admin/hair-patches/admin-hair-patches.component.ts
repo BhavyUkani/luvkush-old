@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
 import { imageUrl } from '../../../shared/utils/image-url';
+import { AdminConfirmService } from '../shared/admin-confirm.service';
+import { AdminToastService } from '../shared/admin-toast.service';
 
 interface HairPatch {
   id: number;
@@ -88,7 +90,21 @@ interface HairPatch {
       }
 
       @if (loading()) {
-        <div class="loading">Loading...</div>
+        <table class="data-table">
+          <tbody>
+            @for (i of [1,2,3,4]; track i) {
+              <tr class="skel-row">
+                <td class="cb"></td>
+                <td><div class="skel-thumb"></div></td>
+                <td><div class="skel-line" style="width:70%;margin-bottom:6px"></div><div class="skel-line" style="width:40%;height:8px"></div></td>
+                <td><div class="skel-line" style="width:35%"></div></td>
+                <td><div class="skel-line" style="width:40%"></div></td>
+                <td><div class="skel-line" style="width:60%"></div></td>
+                <td><div class="skel-line" style="width:70%"></div></td>
+              </tr>
+            }
+          </tbody>
+        </table>
       } @else if (error()) {
         <div class="error-msg">{{ error() }} <button (click)="load()">Retry</button></div>
       } @else {
@@ -181,10 +197,13 @@ interface HairPatch {
     .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
     .page-header h1 { font-size: 1.375rem; font-weight: 700; color: #1C1C1C; margin: 0; display: flex; align-items: center; gap: 0.5rem; }
     .count { font-size: 0.8rem; font-weight: 500; color: #888; background: #F0F0F0; padding: 2px 8px; border-radius: 20px; }
-    .loading { color: #888; padding: 2rem; }
     .error-msg { color: #DC2626; padding: 0.75rem; background: rgba(220,38,38,0.06); border: 1px solid rgba(220,38,38,0.15); border-radius: 6px; font-size: 0.875rem; }
     .error-msg button { margin-left: 1rem; background: none; border: 1px solid #DC2626; color: #DC2626; padding: 2px 8px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; }
-    
+    .skel-row td { padding: 0.7rem 0.875rem; border-bottom: 1px solid #F0F0F0; }
+    .skel-thumb { width: 44px; height: 44px; border-radius: 6px; background: linear-gradient(90deg, #F0F0F0 25%, #F7F7F7 37%, #F0F0F0 63%); background-size: 400% 100%; animation: skel-shimmer 1.4s ease infinite; }
+    .skel-line { height: 10px; border-radius: 4px; background: linear-gradient(90deg, #F0F0F0 25%, #F7F7F7 37%, #F0F0F0 63%); background-size: 400% 100%; animation: skel-shimmer 1.4s ease infinite; }
+    @keyframes skel-shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+
     .data-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; background: #fff; border: 1px solid #E8E8E8; border-radius: 8px; overflow: hidden; }
     .data-table th { text-align: left; padding: 0.65rem 0.875rem; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: #888; background: #FAFAFA; border-bottom: 1px solid #E8E8E8; }
     .data-table td { padding: 0.7rem 0.875rem; border-bottom: 1px solid #F0F0F0; color: #333; vertical-align: middle; }
@@ -262,6 +281,8 @@ interface HairPatch {
 export class AdminHairPatchesComponent implements OnInit {
   private readonly api = inject(ApiService);
   private readonly router = inject(Router);
+  private readonly confirmSvc = inject(AdminConfirmService);
+  private readonly toast = inject(AdminToastService);
   readonly imgUrl = imageUrl;
 
   items = signal<HairPatch[]>([]);
@@ -363,6 +384,7 @@ export class AdminHairPatchesComponent implements OnInit {
     Promise.all(reqs).then(() => {
       this.bulkRunning.set(false);
       this.showBulkConfirm.set(false);
+      this.toast.success(`${this.bulkActionLabel()} applied to ${ids.length} item(s)`);
       this.clearSelection();
       this.load();
     });
@@ -372,11 +394,17 @@ export class AdminHairPatchesComponent implements OnInit {
 
   editPatch(id: number): void { this.router.navigate(['/admin/hair-patches', id, 'edit']); }
 
-  confirmDelete(item: HairPatch): void {
-    if (!confirm(`Delete "${item.name}"?`)) return;
+  async confirmDelete(item: HairPatch): Promise<void> {
+    const ok = await this.confirmSvc.confirm({
+      title: 'Delete Hair Patch',
+      message: `Delete "${item.name}"? This cannot be undone.`,
+      confirmLabel: 'Delete',
+      danger: true
+    });
+    if (!ok) return;
     this.api.delete<any>(`/admin/hair-solutions/${item.id}`).subscribe({
-      next: () => this.load(),
-      error: (err: any) => alert(err.userMessage || 'Delete failed')
+      next: () => { this.toast.success('Hair patch deleted'); this.load(); },
+      error: (err: any) => this.toast.error(err.userMessage || 'Delete failed')
     });
   }
 }

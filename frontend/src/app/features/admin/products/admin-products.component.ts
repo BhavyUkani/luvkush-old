@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
 import { imageUrl } from '../../../shared/utils/image-url';
+import { AdminConfirmService } from '../shared/admin-confirm.service';
+import { AdminToastService } from '../shared/admin-toast.service';
 
 interface Product {
   id: number; name: string; sku: string; price: number; mrp: number;
@@ -85,7 +87,23 @@ const EXCLUDED_CATEGORY_SLUGS = ['hair-wigs', 'hair-patches'];
       }
 
       @if (loading()) {
-        <div class="loading">Loading products...</div>
+        <table class="data-table">
+          <tbody>
+            @for (i of [1,2,3,4,5,6]; track i) {
+              <tr class="skel-row">
+                <td style="width:36px"></td>
+                <td><div class="skel-thumb"></div></td>
+                <td><div class="skel-line" style="width:70%;margin-bottom:6px"></div><div class="skel-line" style="width:40%;height:8px"></div></td>
+                <td><div class="skel-line" style="width:50%"></div></td>
+                <td><div class="skel-line" style="width:40%"></div></td>
+                <td><div class="skel-line" style="width:30%"></div></td>
+                <td><div class="skel-line" style="width:60%"></div></td>
+                <td><div class="skel-line" style="width:30%"></div></td>
+                <td><div class="skel-line" style="width:70%"></div></td>
+              </tr>
+            }
+          </tbody>
+        </table>
       } @else if (error()) {
         <div class="error-msg">{{ error() }} <button (click)="load()">Retry</button></div>
       } @else {
@@ -192,8 +210,11 @@ const EXCLUDED_CATEGORY_SLUGS = ['hair-wigs', 'hair-patches'];
     .btn-bulk-apply { padding: 0.35rem 0.75rem; background: #B87333; color: #fff; border: none; border-radius: 4px; font-size: 0.8rem; cursor: pointer; }
     .btn-bulk-apply:disabled { opacity: 0.4; cursor: not-allowed; }
     .btn-bulk-clear { padding: 0.35rem 0.75rem; background: none; border: 1px solid #E8E8E8; color: #888; border-radius: 4px; font-size: 0.8rem; cursor: pointer; }
-    .loading { color: #888; padding: 2rem; }
     .error-msg { color: #DC2626; padding: 0.75rem; background: rgba(220,38,38,0.06); border: 1px solid rgba(220,38,38,0.15); border-radius: 6px; font-size: 0.875rem; }
+    .skel-row td { padding: 0.7rem 0.875rem; border-bottom: 1px solid #F0F0F0; }
+    .skel-thumb { width: 44px; height: 44px; border-radius: 6px; background: linear-gradient(90deg, #F0F0F0 25%, #F7F7F7 37%, #F0F0F0 63%); background-size: 400% 100%; animation: skel-shimmer 1.4s ease infinite; }
+    .skel-line { height: 10px; border-radius: 4px; background: linear-gradient(90deg, #F0F0F0 25%, #F7F7F7 37%, #F0F0F0 63%); background-size: 400% 100%; animation: skel-shimmer 1.4s ease infinite; }
+    @keyframes skel-shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
     .error-msg button { margin-left: 1rem; background: none; border: 1px solid #DC2626; color: #DC2626; padding: 2px 8px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; }
     .data-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; background: #fff; border: 1px solid #E8E8E8; border-radius: 8px; overflow: hidden; }
     .data-table th { text-align: left; padding: 0.65rem 0.875rem; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: #888; background: #FAFAFA; border-bottom: 1px solid #E8E8E8; }
@@ -252,6 +273,8 @@ const EXCLUDED_CATEGORY_SLUGS = ['hair-wigs', 'hair-patches'];
 export class AdminProductsComponent implements OnInit {
   private readonly api = inject(ApiService);
   private readonly router = inject(Router);
+  private readonly confirmSvc = inject(AdminConfirmService);
+  private readonly toast = inject(AdminToastService);
   readonly imgUrl = imageUrl;
 
   products = signal<Product[]>([]);
@@ -351,6 +374,7 @@ export class AdminProductsComponent implements OnInit {
     Promise.all(reqs).then(() => {
       this.bulkRunning.set(false);
       this.showBulkConfirm.set(false);
+      this.toast.success(`${this.bulkActionLabel()} applied to ${ids.length} product(s)`);
       this.clearSelection();
       this.load();
     });
@@ -369,15 +393,21 @@ export class AdminProductsComponent implements OnInit {
   toggleFeatured(p: Product): void {
     p.is_featured = !p.is_featured;
     this.api.patch<any>(`/admin/products/${p.id}`, { is_featured: p.is_featured }).subscribe({
-      error: () => { p.is_featured = !p.is_featured; }
+      error: () => { p.is_featured = !p.is_featured; this.toast.error('Failed to update featured status'); }
     });
   }
 
-  confirmDelete(p: Product): void {
-    if (!confirm(`Permanently delete "${p.name}"? This cannot be undone.`)) return;
+  async confirmDelete(p: Product): Promise<void> {
+    const ok = await this.confirmSvc.confirm({
+      title: 'Delete Product',
+      message: `Permanently delete "${p.name}"? This cannot be undone.`,
+      confirmLabel: 'Delete',
+      danger: true
+    });
+    if (!ok) return;
     this.api.delete<any>(`/admin/products/${p.id}`).subscribe({
-      next: () => this.load(),
-      error: (err) => alert(err.userMessage || 'Delete failed')
+      next: () => { this.toast.success('Product deleted'); this.load(); },
+      error: (err) => this.toast.error(err.userMessage || 'Delete failed')
     });
   }
 }

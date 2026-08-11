@@ -43,7 +43,9 @@ interface CourierRate {
             <div class="field">
               <label>Pincode of Sender*</label>
               <div class="input-wrapper">
-                <span class="input-icon">📍</span>
+                <span class="input-icon">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 14.5C8 14.5 12.5 10.2 12.5 6.5C12.5 3.7 10.3 1.5 8 1.5C5.7 1.5 3.5 3.7 3.5 6.5C3.5 10.2 8 14.5 8 14.5Z" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="6.5" r="1.7" stroke="currentColor" stroke-width="1.3"/></svg>
+                </span>
                 <input type="text" [(ngModel)]="senderPincode" name="senderPincode" class="form-input" placeholder="360002" required pattern="^\\d{6}$" maxlength="6" />
               </div>
             </div>
@@ -52,7 +54,9 @@ interface CourierRate {
             <div class="field">
               <label>Pincode of Receiver*</label>
               <div class="input-wrapper">
-                <span class="input-icon">🏁</span>
+                <span class="input-icon">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3.5 14.5V1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M3.5 2.5H12L10 5L12 7.5H3.5" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+                </span>
                 <input type="text" [(ngModel)]="receiverPincode" name="receiverPincode" class="form-input" placeholder="Enter Pincode" required pattern="^\\d{6}$" maxlength="6" />
               </div>
             </div>
@@ -61,7 +65,9 @@ interface CourierRate {
             <div class="field">
               <label>Weight of Parcel*</label>
               <div class="input-wrapper">
-                <span class="input-icon">⚖️</span>
+                <span class="input-icon">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="1" y="6.5" width="2" height="3.5" rx="0.5" fill="currentColor"/><rect x="13" y="6.5" width="2" height="3.5" rx="0.5" fill="currentColor"/><rect x="3" y="5.5" width="1.4" height="5.5" rx="0.4" fill="currentColor"/><rect x="11.6" y="5.5" width="1.4" height="5.5" rx="0.4" fill="currentColor"/><line x1="4.4" y1="8" x2="11.6" y2="8" stroke="currentColor" stroke-width="1.2"/></svg>
+                </span>
                 <input type="number" [(ngModel)]="weight" name="weight" class="form-input" placeholder="1.0" step="0.01" min="0.01" required />
                 <span class="input-unit">Kg</span>
               </div>
@@ -72,7 +78,7 @@ interface CourierRate {
             <div class="field">
               <label>Parcel Value ₹*</label>
               <div class="input-wrapper">
-                <span class="input-icon">₹</span>
+                <span class="input-icon" style="font-size:0.8rem;font-weight:600">₹</span>
                 <input type="number" [(ngModel)]="parcelValue" name="parcelValue" class="form-input" placeholder="1000" min="1" required />
               </div>
             </div>
@@ -81,7 +87,9 @@ interface CourierRate {
             <div class="field">
               <label>Length of Parcel (Optional)</label>
               <div class="input-wrapper">
-                <span class="input-icon">📏</span>
+                <span class="input-icon">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="6" width="13" height="4" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M4 6V8M6.5 6V7.3M9 6V8M11.5 6V7.3" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
+                </span>
                 <input type="number" [(ngModel)]="length" name="length" class="form-input" placeholder="L" min="1" />
                 <span class="input-unit">cm</span>
               </div>
@@ -92,7 +100,9 @@ interface CourierRate {
             <div class="field">
               <label>Breadth of Parcel (Optional)</label>
               <div class="input-wrapper">
-                <span class="input-icon">📐</span>
+                <span class="input-icon">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 8H14" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M2 8L4.5 5.5M2 8L4.5 10.5M14 8L11.5 5.5M14 8L11.5 10.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
                 <input type="number" [(ngModel)]="breadth" name="breadth" class="form-input" placeholder="W" min="1" />
                 <span class="input-unit">cm</span>
               </div>
@@ -103,7 +113,9 @@ interface CourierRate {
             <div class="field">
               <label>Height of Parcel (Optional)</label>
               <div class="input-wrapper">
-                <span class="input-icon">↕️</span>
+                <span class="input-icon">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2V14" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M8 2L5.5 4.5M8 2L10.5 4.5M8 14L5.5 11.5M8 14L10.5 11.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
                 <input type="number" [(ngModel)]="height" name="height" class="form-input" placeholder="H" min="1" />
                 <span class="input-unit">cm</span>
               </div>
@@ -205,7 +217,9 @@ interface CourierRate {
         </div>
       } @else if (error()) {
         <div class="card error-card">
-          <div class="error-icon">⚠️</div>
+          <div class="error-icon">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><path d="M16 4L29 26H3L16 4Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M16 13V19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="16" cy="22.5" r="1.2" fill="currentColor"/></svg>
+          </div>
           <h3>Calculation Failed</h3>
           <p class="error-msg">{{ error() }}</p>
           <button class="btn-secondary" (click)="error.set('')">Dismiss</button>
@@ -341,7 +355,9 @@ interface CourierRate {
 
       } @else {
         <div class="card empty-card">
-          <div class="empty-illustration">🚚</div>
+          <div class="empty-illustration">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none"><rect x="4" y="16" width="24" height="16" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M28 22H35L40 27V32H28V22Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="14" cy="34" r="3" stroke="currentColor" stroke-width="1.6"/><circle cx="33" cy="34" r="3" stroke="currentColor" stroke-width="1.6"/></svg>
+          </div>
           <h3>Calculate Shipping Rates</h3>
           <p>Configure the shipment details above and click Calculate to view rates from the Shiprocket aggregator network.</p>
         </div>
@@ -436,7 +452,8 @@ interface CourierRate {
     .input-icon {
       position: absolute;
       left: 0.65rem;
-      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
       pointer-events: none;
       color: #718096;
     }
@@ -1044,7 +1061,8 @@ interface CourierRate {
     }
 
     .empty-illustration {
-      font-size: 2.5rem;
+      color: #B87333;
+      opacity: 0.6;
     }
 
     .empty-card h3 {
@@ -1074,7 +1092,7 @@ interface CourierRate {
     }
 
     .error-icon {
-      font-size: 1.5rem;
+      color: #DC2626;
     }
 
     .error-card h3 {

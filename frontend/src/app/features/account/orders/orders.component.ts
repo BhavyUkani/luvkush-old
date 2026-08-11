@@ -22,11 +22,11 @@ export class OrdersComponent implements OnInit {
   readonly imgUrl = imageUrl;
 
   readonly STATUS_COLOR: Record<string, string | undefined> = {
-    pending:   "status--pending",
-    confirmed: "status--confirmed",
-    shipped:   "status--shipped",
-    delivered: "status--delivered",
-    cancelled: "status--cancelled"
+    pending:   "ac-status--pending",
+    confirmed: "ac-status--confirmed",
+    shipped:   "ac-status--shipped",
+    delivered: "ac-status--delivered",
+    cancelled: "ac-status--cancelled"
   };
 
   ngOnInit(): void {

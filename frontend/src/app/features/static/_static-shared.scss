@@ -1,0 +1,185 @@
+// ── Legal / policy pages — shared vocabulary ─────────────────────
+// Plain long-form reading pages: quiet typography, no marketing chrome.
+
+.sp-page { max-width: 760px; margin: 0 auto; padding: clamp(2.2rem, 5vw, 3.2rem) var(--lk-gutter) clamp(3.5rem, 6vw, 5rem); }
+
+.sp-eyebrow { margin-bottom: .6rem; }
+
+.sp-title {
+  margin: 0 0 .5rem;
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(1.9rem, 3.6vw, 2.4rem);
+  color: var(--lk-ink);
+}
+
+.sp-updated { font-size: .84rem; color: var(--lk-muted); margin: 0 0 2.4rem; }
+
+.sp-body {
+  font-size: .93rem;
+  color: var(--lk-body);
+  line-height: 1.75;
+
+  h2 {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-weight: 400;
+    font-size: 1.2rem;
+    color: var(--lk-ink);
+    margin: 2.2rem 0 .7rem;
+  }
+
+  p { margin: 0 0 1.1rem; }
+
+  ul {
+    padding-left: 1.3rem;
+    margin: 0 0 1.1rem;
+    li { margin-bottom: .45rem; }
+    li::marker { color: var(--lk-green-500); }
+  }
+
+  strong { color: var(--lk-ink); font-weight: 600; }
+
+  a { color: var(--lk-green-700); text-decoration: underline; text-underline-offset: 2px; &:hover { color: var(--lk-green-800); } }
+}
+
+// ── Richer policy pages (refund / shipping) ──────────────────────
+// Same rail/eyebrow header as the plain legal pages, but the body below
+// trades prose for scannable cards — these pages carry concrete, actionable
+// facts (timelines, eligibility, charges), not boilerplate.
+
+.pol-page { max-width: 900px; margin: 0 auto; padding: clamp(2.2rem, 5vw, 3.2rem) var(--lk-gutter) clamp(3.5rem, 6vw, 5rem); }
+
+.pol-intro { max-width: 62ch; font-size: .95rem; line-height: 1.7; color: var(--lk-body); margin: 0 0 2.2rem; }
+
+// Top-line facts — the numbers a customer actually came to check
+.pol-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: clamp(2.4rem, 5vw, 3.2rem);
+  @media (max-width: 620px) { grid-template-columns: 1fr; }
+}
+.pol-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .5rem;
+  padding: 1.4rem 1.2rem;
+  border-radius: var(--lk-r-lg);
+  background: var(--lk-cream);
+  text-align: center;
+}
+.pol-stat__icon {
+  display: grid;
+  place-items: center;
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  background: var(--lk-green-100);
+  color: var(--lk-green-700);
+}
+.pol-stat__num { font-family: 'DM Serif Display', Georgia, serif; font-weight: 400; font-size: 1.5rem; color: var(--lk-ink); }
+.pol-stat__label { font-size: .8rem; color: var(--lk-muted); }
+
+// Section header — icon medallion + serif title, no body-copy indent needed
+.pol-section { margin-bottom: clamp(2.2rem, 4vw, 2.8rem); }
+.pol-section__head { display: flex; align-items: center; gap: .7rem; margin-bottom: 1.1rem; }
+.pol-section__icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--lk-cream);
+  color: var(--lk-green-600);
+}
+.pol-section__title { margin: 0; font-family: 'DM Serif Display', Georgia, serif; font-weight: 400; font-size: 1.15rem; color: var(--lk-ink); }
+.pol-section__text { margin: 0; max-width: 62ch; font-size: .9rem; line-height: 1.7; color: var(--lk-body); a { color: var(--lk-green-700); text-decoration: underline; text-underline-offset: 2px; &:hover { color: var(--lk-green-800); } } }
+
+// Eligible / not-eligible comparison columns
+.pol-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; @media (max-width: 620px) { grid-template-columns: 1fr; } }
+.pol-col {
+  padding: 1.3rem 1.4rem;
+  border-radius: var(--lk-r-lg);
+  border: 1px solid var(--lk-line);
+
+  &--yes { background: var(--lk-green-50); border-color: var(--lk-green-100); }
+  &--no  { background: var(--lk-cream); }
+}
+.pol-col__title { display: flex; align-items: center; gap: .5rem; margin: 0 0 .9rem; font-family: 'Outfit', system-ui, sans-serif; font-size: .82rem; font-weight: 700; color: var(--lk-ink); }
+.pol-col__title svg { flex: none; }
+.pol-col--yes .pol-col__title { color: var(--lk-green-700); }
+.pol-col--no .pol-col__title { color: var(--lk-muted); }
+
+.pol-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .6rem; }
+.pol-list li { display: flex; align-items: flex-start; gap: .55rem; font-size: .86rem; line-height: 1.55; color: var(--lk-body); }
+.pol-list svg { flex: none; margin-top: .18rem; }
+.pol-list--yes svg { color: var(--lk-green-600); }
+.pol-list--no svg { color: var(--lk-faint); }
+
+// Numbered steps
+.pol-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 1rem; max-width: 58ch; }
+.pol-step { display: flex; align-items: flex-start; gap: .9rem; }
+.pol-step__n {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--lk-green-700);
+  color: #fff;
+  font-family: 'Outfit', system-ui, sans-serif;
+  font-size: .8rem;
+  font-weight: 700;
+}
+.pol-step__text { padding-top: .28rem; font-size: .89rem; line-height: 1.6; color: var(--lk-body); }
+
+// Spec-sheet rows (charges, timelines)
+.pol-sheet { margin: 0; display: flex; flex-direction: column; max-width: 62ch; }
+.pol-sheet div {
+  display: flex;
+  justify-content: space-between;
+  gap: .8rem;
+  padding: .7rem 0;
+  border-bottom: 1px dashed var(--lk-line);
+  &:first-child { padding-top: 0; }
+  &:last-child { border-bottom: none; }
+}
+.pol-sheet dt { font-size: .88rem; color: var(--lk-body); }
+.pol-sheet dd { margin: 0; font-family: 'Outfit', system-ui, sans-serif; font-size: .88rem; font-weight: 700; color: var(--lk-ink); text-align: right; }
+.pol-sheet dd small { display: block; font-family: inherit; font-weight: 400; font-size: .76rem; color: var(--lk-muted); }
+
+// Three-up region/timeline cards
+.pol-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; @media (max-width: 700px) { grid-template-columns: 1fr; } }
+.pol-card {
+  padding: 1.2rem 1.3rem;
+  border-radius: var(--lk-r-lg);
+  border: 1px solid var(--lk-line);
+  background: var(--lk-white);
+}
+.pol-card__icon {
+  display: grid;
+  place-items: center;
+  width: 34px; height: 34px;
+  margin-bottom: .8rem;
+  border-radius: 50%;
+  background: var(--lk-cream);
+  color: var(--lk-green-600);
+}
+.pol-card__title { margin: 0 0 .3rem; font-family: 'Outfit', system-ui, sans-serif; font-size: .86rem; font-weight: 700; color: var(--lk-ink); }
+.pol-card__desc { margin: 0; font-size: .82rem; line-height: 1.5; color: var(--lk-muted); }
+
+// Highlighted callout (damaged items, undeliverable packages)
+.pol-callout {
+  display: flex;
+  gap: .9rem;
+  padding: 1.1rem 1.3rem;
+  border-radius: var(--lk-r-lg);
+  background: var(--lk-orange-50);
+  border: 1px solid var(--lk-orange-100);
+}
+.pol-callout__icon { flex: none; color: var(--lk-orange-600); margin-top: .1rem; }
+.pol-callout__text {
+  margin: 0; font-size: .87rem; line-height: 1.65; color: var(--lk-body);
+  strong { color: var(--lk-ink); }
+  a { color: var(--lk-orange-700); text-decoration: underline; text-underline-offset: 2px; &:hover { color: var(--lk-ink); } }
+}

@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { tap, catchError } from 'rxjs/operators';
-import { Observable, throwError, of } from 'rxjs';
+import { Observable, Subject, throwError, of } from 'rxjs';
 import { ApiService } from './api.service';
 import { environment } from '../../../environments/environment';
 
@@ -32,6 +32,11 @@ export class AuthService {
   private _user = signal<User | null>(null);
   private _token = signal<string | null>(null);
   private _loading = signal(false);
+
+  // Session-scoped state (cart, wishlist, ...) subscribes to this instead of
+  // AuthService depending on them directly — keeps the dependency one-way.
+  private readonly _loggedOut$ = new Subject<void>();
+  readonly loggedOut$ = this._loggedOut$.asObservable();
 
   readonly user = this._user.asReadonly();
   readonly token = this._token.asReadonly();
@@ -119,6 +124,7 @@ export class AuthService {
       localStorage.removeItem('lk_refresh_token');
       localStorage.removeItem('lk_user');
     }
+    this._loggedOut$.next();
     this.router.navigate(['/login']);
   }
 

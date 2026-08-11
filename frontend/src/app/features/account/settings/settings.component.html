@@ -1,56 +1,116 @@
 <div class="ac">
   <lk-account-nav />
   <div class="ac-content">
-    <h1 class="ac-page-title">Account Settings</h1>
-
-    <div class="ac-card sett-section">
-      <h2 class="sett-title">Change Password</h2>
-      <form [formGroup]="pwForm" (ngSubmit)="onChangePw()" novalidate>
-        <div class="sett-field">
-          <label class="sett-label">Current password</label>
-          <div class="sett-pw-wrap">
-            <input [type]="showCurrentPw() ? 'text' : 'password'" formControlName="current_password"
-              class="sett-input" [class.sett-input--invalid]="pwSubmitted && pf.current_password.invalid" />
-            <button type="button" class="sett-eye" (click)="showCurrentPw.set(!showCurrentPw())" tabindex="-1">
-              {{ showCurrentPw() ? '🙈' : '👁' }}
-            </button>
-          </div>
-          @if (pwSubmitted && pf.current_password.invalid) { <span class="sett-err">Required</span> }
-        </div>
-        <div class="sett-field">
-          <label class="sett-label">New password</label>
-          <div class="sett-pw-wrap">
-            <input [type]="showNewPw() ? 'text' : 'password'" formControlName="new_password"
-              class="sett-input" [class.sett-input--invalid]="pwSubmitted && pf.new_password.invalid" />
-            <button type="button" class="sett-eye" (click)="showNewPw.set(!showNewPw())" tabindex="-1">
-              {{ showNewPw() ? '🙈' : '👁' }}
-            </button>
-          </div>
-          @if (pwSubmitted && pf.new_password.invalid) { <span class="sett-err">Min 8 characters</span> }
-        </div>
-        <div class="sett-field">
-          <label class="sett-label">Confirm new password</label>
-          <div class="sett-pw-wrap">
-            <input [type]="showConfirmPw() ? 'text' : 'password'" formControlName="confirm_password"
-              class="sett-input" [class.sett-input--invalid]="pwSubmitted && (pf.confirm_password.invalid || pwForm.hasError('mismatch'))" />
-            <button type="button" class="sett-eye" (click)="showConfirmPw.set(!showConfirmPw())" tabindex="-1">
-              {{ showConfirmPw() ? '🙈' : '👁' }}
-            </button>
-          </div>
-          @if (pwSubmitted && pwForm.hasError('mismatch')) { <span class="sett-err">Passwords do not match</span> }
-        </div>
-        <button type="submit" class="sett-save" [disabled]="savingPw()">
-          @if (savingPw()) { Saving… } @else { Update Password }
-        </button>
-      </form>
+    <div class="ac-page-head">
+      <div>
+        <span class="lk-eyebrow">Security</span>
+        <h1 class="ac-page-title">Account settings</h1>
+      </div>
     </div>
 
-    <div class="ac-card sett-section sett-section--danger">
-      <h2 class="sett-title sett-title--danger">Danger Zone</h2>
-      <p class="sett-danger-desc">Permanently delete your account and all associated data. This action cannot be undone.</p>
-      <button class="sett-delete-btn" (click)="deleteAccount()" [disabled]="deletingAcct()">
-        @if (deletingAcct()) { Deleting… } @else { Delete My Account }
-      </button>
+    <div class="sett-grid">
+      <div class="ac-card sett-section">
+        <h2 class="sett-title">Change password</h2>
+        <form [formGroup]="pwForm" (ngSubmit)="onChangePw()" novalidate class="sett-form">
+          <div class="ac-field">
+            <label class="ac-label">Current password</label>
+            <div class="sett-pw-wrap">
+              <input [type]="showCurrentPw() ? 'text' : 'password'" formControlName="current_password"
+                class="ac-input" [class.ac-input--invalid]="pwSubmitted && pf.current_password.invalid" />
+              <button type="button" class="sett-eye" (click)="showCurrentPw.set(!showCurrentPw())" tabindex="-1" [attr.aria-label]="showCurrentPw() ? 'Hide password' : 'Show password'">
+                @if (showCurrentPw()) {
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17.94 17.94A10.94 10.94 0 0112 20c-7 0-10-8-10-8a18.5 18.5 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 10 8 10 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                } @else {
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s3-8 11-8 11 8 11 8-3 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                }
+              </button>
+            </div>
+            @if (pwSubmitted && pf.current_password.invalid) { <span class="ac-err">Required</span> }
+          </div>
+
+          <div class="ac-field">
+            <label class="ac-label">New password</label>
+            <div class="sett-pw-wrap">
+              <input [type]="showNewPw() ? 'text' : 'password'" formControlName="new_password"
+                class="ac-input" [class.ac-input--invalid]="pwSubmitted && pf.new_password.invalid" />
+              <button type="button" class="sett-eye" (click)="showNewPw.set(!showNewPw())" tabindex="-1" [attr.aria-label]="showNewPw() ? 'Hide password' : 'Show password'">
+                @if (showNewPw()) {
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17.94 17.94A10.94 10.94 0 0112 20c-7 0-10-8-10-8a18.5 18.5 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 10 8 10 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                } @else {
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s3-8 11-8 11 8 11 8-3 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                }
+              </button>
+            </div>
+            @if (pwSubmitted && pf.new_password.invalid) { <span class="ac-err">Minimum 8 characters</span> } @else { <span class="ac-hint">At least 8 characters</span> }
+          </div>
+
+          <div class="ac-field">
+            <label class="ac-label">Confirm new password</label>
+            <div class="sett-pw-wrap">
+              <input [type]="showConfirmPw() ? 'text' : 'password'" formControlName="confirm_password"
+                class="ac-input" [class.ac-input--invalid]="pwSubmitted && (pf.confirm_password.invalid || pwForm.hasError('mismatch'))" />
+              <button type="button" class="sett-eye" (click)="showConfirmPw.set(!showConfirmPw())" tabindex="-1" [attr.aria-label]="showConfirmPw() ? 'Hide password' : 'Show password'">
+                @if (showConfirmPw()) {
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17.94 17.94A10.94 10.94 0 0112 20c-7 0-10-8-10-8a18.5 18.5 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 10 8 10 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                } @else {
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s3-8 11-8 11 8 11 8-3 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                }
+              </button>
+            </div>
+            @if (pwSubmitted && pwForm.hasError('mismatch')) { <span class="ac-err">Passwords do not match</span> }
+          </div>
+
+          <button type="submit" class="lk-btn lk-btn--solid lk-btn--sm" [disabled]="savingPw()">
+            @if (savingPw()) { Saving… } @else { Update password }
+          </button>
+        </form>
+      </div>
+
+      <aside class="ac-card sett-tips">
+        <h2 class="sett-title">Keep your account safe</h2>
+        <ul class="sett-tips__list">
+          <li>
+            <span class="sett-tips__icon" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            </span>
+            <div>
+              <p class="sett-tips__title">Use a unique password</p>
+              <p class="sett-tips__desc">Avoid reusing a password from another site — a mix of letters, numbers and symbols is strongest.</p>
+            </div>
+          </li>
+          <li>
+            <span class="sett-tips__icon" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+            </span>
+            <div>
+              <p class="sett-tips__title">Never share your password</p>
+              <p class="sett-tips__desc">Luv Kush Natural will never ask for your password over email, call, or WhatsApp.</p>
+            </div>
+          </li>
+          <li>
+            <span class="sett-tips__icon" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            </span>
+            <div>
+              <p class="sett-tips__title">Sign out on shared devices</p>
+              <p class="sett-tips__desc">If you've logged in on a public or shared computer, always sign out when you're done.</p>
+            </div>
+          </li>
+        </ul>
+      </aside>
+    </div>
+
+    <div class="ac-card sett-danger">
+      <div class="sett-danger__icon" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <div class="sett-danger__body">
+        <h2 class="sett-title sett-title--danger">Danger zone</h2>
+        <p class="sett-danger-desc">Permanently delete your account and all associated data — orders, addresses, and wishlist. This action cannot be undone.</p>
+        <button class="ac-btn ac-btn--danger sett-delete-btn" (click)="deleteAccount()" [disabled]="deletingAcct()">
+          @if (deletingAcct()) { Deleting… } @else { Delete my account }
+        </button>
+      </div>
     </div>
   </div>
 </div>

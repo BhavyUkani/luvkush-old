@@ -1,7 +1,15 @@
 <div class="ac">
   <lk-account-nav />
   <div class="ac-content">
-    <h1 class="ac-page-title">Wishlist</h1>
+    <div class="ac-page-head">
+      <div>
+        <span class="lk-eyebrow">Saved for later</span>
+        <h1 class="ac-page-title">Wishlist</h1>
+        @if (!loading() && !wishlist.isEmpty()) {
+          <p class="ac-page-sub">{{ wishlist.items().length }} item{{ wishlist.items().length === 1 ? '' : 's' }} saved</p>
+        }
+      </div>
+    </div>
 
     @if (loading()) {
       <div class="wl-grid">
@@ -11,9 +19,10 @@
       </div>
     } @else if (wishlist.isEmpty()) {
       <div class="ac-empty">
-        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-        <p>Your wishlist is empty.</p>
-        <a routerLink="/shop" class="ac-empty__cta">Start Shopping</a>
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        <h3>Your wishlist is empty</h3>
+        <p>Save the products you love and find them here anytime.</p>
+        <a routerLink="/shop" class="ac-empty__cta">Start shopping</a>
       </div>
     } @else {
       <div class="wl-grid">
@@ -21,8 +30,13 @@
           <div class="wl-item">
             <lk-product-card [product]="product" />
             <div class="wl-item__actions">
-              <button class="wl-item__cart" (click)="moveToCart(product)">Move to Cart</button>
-              <button class="wl-item__remove" (click)="remove(product)" aria-label="Remove">&#10005; Remove</button>
+              <button class="lk-btn lk-btn--solid lk-btn--sm wl-item__cart" (click)="moveToCart(product)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+                Move to cart
+              </button>
+              <button class="ac-btn ac-btn--danger wl-item__remove" (click)="remove(product)" aria-label="Remove from wishlist" title="Remove from wishlist">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 4h10M6.5 4V2.5h3V4M4.5 4l.6 9a1 1 0 001 .9h3.8a1 1 0 001-.9l.6-9"/></svg>
+              </button>
             </div>
           </div>
         }

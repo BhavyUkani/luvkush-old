@@ -204,3 +204,10 @@
 @media (prefers-reduced-motion: reduce) {
   .ab-value, .ab-value__icon, .ab-range__media, .ab-range__media img, .ab-range__title { transition: none; }
 }
+
+// The mission band is a dark gradient — the light-mode ::selection default
+// is illegible there, so give selected text a highlight that reads on it.
+.ab-mission ::selection {
+  background: rgba(255, 255, 255, .25);
+  color: #fff;
+}

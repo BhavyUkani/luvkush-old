@@ -1,124 +1,83 @@
-@use "../../../../styles/variables" as *;
 @use "../account-shared";
 
-.addr-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem; }
+.addr-skeleton { height: 168px; border-radius: var(--lk-r-lg); margin-bottom: 1rem; }
 
-.addr-add-btn {
-  padding: 0.6rem 1.25rem;
-  background: $color-herbal-green;
-  color: $color-white;
-  border: none;
-  border-radius: 6px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: opacity 0.18s;
-  &:hover { opacity: 0.88; }
+.addr-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.1rem;
+  margin-bottom: 1.5rem;
 }
-
-.addr-skeleton { height: 160px; border-radius: 10px; background: $color-bg-subtle; margin-bottom: 1rem; }
-
-.addr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
 
 .addr-card {
-  border: 1.5px solid $color-border-base;
-  border-radius: 10px;
-  padding: 1.25rem;
-  background: $color-white;
   position: relative;
+  border: 1px solid var(--lk-line);
+  border-radius: var(--lk-r-lg);
+  padding: 1.3rem;
+  background: var(--lk-white);
+  box-shadow: var(--lk-shadow-xs);
+  transition: border-color var(--lk-t-fast), box-shadow var(--lk-t-fast);
 
-  &--default { border-color: $color-herbal-green; }
+  &:hover { box-shadow: var(--lk-shadow-sm); }
+  &--default { border-color: var(--lk-green-200); }
 }
 
-.addr-default-badge {
-  position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
-  font-size: 0.6875rem;
+.addr-card__top { display: flex; align-items: center; justify-content: space-between; gap: .6rem; margin-bottom: .6rem; }
+
+.addr-label-tag {
+  font-family: 'Outfit', system-ui, sans-serif;
+  font-size: .68rem;
   font-weight: 700;
+  letter-spacing: .08em;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: $color-herbal-green;
-  background: rgba(61, 90, 71, 0.08);
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
+  color: var(--lk-muted);
 }
 
-.addr-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: $color-text-muted; margin: 0 0 0.375rem; }
-.addr-name  { font-weight: 600; color: $color-text-primary; margin: 0 0 0.25rem; }
-.addr-text  { font-size: 0.875rem; color: $color-text-secondary; margin: 0 0 0.125rem; }
-.addr-phone { font-size: 0.875rem; color: $color-text-muted; margin: 0.25rem 0 0; }
+.addr-name  { font-family: 'DM Serif Display', Georgia, serif; font-weight: 400; font-size: 1.05rem; color: var(--lk-ink); margin: 0 0 .3rem; }
+.addr-text  { font-size: .86rem; color: var(--lk-body); margin: 0 0 .15rem; line-height: 1.5; }
+.addr-phone { font-size: .84rem; color: var(--lk-muted); margin: .3rem 0 0; }
 
-.addr-actions { display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap; }
+.addr-actions { display: flex; gap: .5rem; margin-top: 1.1rem; flex-wrap: wrap; }
 
-.addr-btn {
-  padding: 0.4rem 0.875rem;
-  border-radius: 5px;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  cursor: pointer;
-  border: 1.5px solid transparent;
-  transition: all 0.18s;
-
-  &--edit { border-color: $color-border-base; background: none; color: $color-text-secondary; &:hover { border-color: $color-herbal-green; color: $color-herbal-green; } }
-  &--default { border-color: $color-herbal-green; background: none; color: $color-herbal-green; &:hover { background: $color-herbal-green; color: $color-white; } }
-  &--del { border-color: transparent; background: none; color: $color-text-muted; &:hover { color: #E53E3E; } &:disabled { opacity: 0.5; cursor: not-allowed; } }
-  &--cancel { border-color: $color-border-base; background: none; color: $color-text-secondary; &:hover { border-color: $color-herbal-green; } }
-  &--save { background: $color-herbal-green; color: $color-white; border-color: $color-herbal-green; &:disabled { opacity: 0.6; cursor: not-allowed; } }
-}
-
-.addr-form-wrap {
-  margin-top: 1.5rem;
-  border: 1.5px solid $color-border-base;
-  border-radius: 10px;
-  padding: 1.5rem;
-  background: $color-white;
-}
-
-.addr-form-title { font-size: 1rem; font-weight: 600; margin: 0 0 1.25rem; }
+// ── Form ────────────────────────────────────────────────────
+.addr-form-wrap { max-width: 720px; }
+.addr-form-title { margin: 0 0 1.3rem; font-family: 'DM Serif Display', Georgia, serif; font-weight: 400; font-size: 1.1rem; color: var(--lk-ink); }
 
 .addr-form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
-  margin-bottom: 1rem;
   &--3 { grid-template-columns: 1fr 1fr 1fr; }
   @media (max-width: 600px) { grid-template-columns: 1fr; &--3 { grid-template-columns: 1fr; } }
 }
 
-.addr-form-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.375rem;
-  &--full { margin-bottom: 1rem; }
+.addr-label-picker { display: flex; gap: .5rem; }
+.addr-label-picker__opt {
+  padding: .48rem 1.1rem;
+  border: 1px solid var(--lk-line);
+  border-radius: var(--lk-r-pill);
+  background: var(--lk-white);
+  font-family: 'Outfit', system-ui, sans-serif;
+  font-size: .82rem;
+  font-weight: 600;
+  color: var(--lk-body);
+  cursor: pointer;
+  transition: border-color var(--lk-t-fast), background var(--lk-t-fast), color var(--lk-t-fast);
 
-  label { font-size: 0.8125rem; font-weight: 500; color: $color-text-secondary; }
+  &:hover { border-color: var(--lk-green-300); }
+  &.active { background: var(--lk-green-50); border-color: var(--lk-green-600); color: var(--lk-green-700); }
 }
-
-.addr-input {
-  padding: 0.7rem 0.875rem;
-  border: 1.5px solid $color-border-base;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  color: $color-text-primary;
-  background: $color-white;
-  outline: none;
-  transition: border-color 0.18s;
-  &:focus { border-color: $color-herbal-green; }
-  &--invalid { border-color: #E53E3E; }
-}
-
-.addr-err { font-size: 0.75rem; color: #E53E3E; }
 
 .addr-default-check {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 0.875rem;
-  color: $color-text-secondary;
+  gap: .55rem;
+  font-size: .87rem;
+  color: var(--lk-body);
   cursor: pointer;
-  margin-bottom: 1.25rem;
-  input { width: 16px; height: 16px; cursor: pointer; accent-color: $color-herbal-green; }
+  margin: .3rem 0 1.4rem;
+
+  input { width: 16px; height: 16px; cursor: pointer; accent-color: var(--lk-green-600); }
 }
 
-.addr-form-actions { display: flex; gap: 0.75rem; justify-content: flex-end; }
+.addr-form-actions { display: flex; gap: .75rem; justify-content: flex-end; }

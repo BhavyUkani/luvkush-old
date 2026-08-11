@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
 import { imageUrl } from '../../../shared/utils/image-url';
+import { AdminToastService } from '../shared/admin-toast.service';
 
 interface Order {
   id: number;
@@ -47,15 +48,17 @@ const ALL_STATUSES = [
       </div>
 
       <!-- Status Tabs -->
-      <div class="status-tabs">
-        <button class="status-tab" [class.active]="statusFilter === ''" (click)="setStatusFilter('')">
-          All Orders
-        </button>
-        @for (s of statuses; track s) {
-          <button class="status-tab" [class.active]="statusFilter === s" (click)="setStatusFilter(s)">
-            {{ formatStatus(s) }}
+      <div class="status-tabs-wrap">
+        <div class="status-tabs">
+          <button class="status-tab" [class.active]="statusFilter === ''" (click)="setStatusFilter('')">
+            All Orders
           </button>
-        }
+          @for (s of statuses; track s) {
+            <button class="status-tab" [class.active]="statusFilter === s" (click)="setStatusFilter(s)">
+              {{ formatStatus(s) }}
+            </button>
+          }
+        </div>
       </div>
 
       <!-- Bulk Actions Bar -->
@@ -74,7 +77,22 @@ const ALL_STATUSES = [
       }
 
       @if (loading()) {
-        <div class="loading">Loading orders...</div>
+        <table class="data-table">
+          <tbody>
+            @for (i of [1,2,3,4,5]; track i) {
+              <tr class="skel-row">
+                <td style="width:36px"></td>
+                <td><div class="skel-line" style="width:65%"></div></td>
+                <td><div class="skel-line" style="width:60%;margin-bottom:6px"></div><div class="skel-line" style="width:75%;height:8px"></div></td>
+                <td><div class="skel-line" style="width:45%"></div></td>
+                <td><div class="skel-line" style="width:55%"></div></td>
+                <td><div class="skel-line" style="width:60%"></div></td>
+                <td><div class="skel-line" style="width:50%"></div></td>
+                <td><div class="skel-line" style="width:40%"></div></td>
+              </tr>
+            }
+          </tbody>
+        </table>
       } @else if (error()) {
         <div class="error-msg">{{ error() }} <button (click)="load()">Retry</button></div>
       } @else {
@@ -165,7 +183,12 @@ const ALL_STATUSES = [
   `,
   styles: [`
     .page { padding: 2rem 0; max-width: 100%; width: 100%; box-sizing: border-box; }
-    .status-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; overflow-x: auto; padding: 0 2rem 0.5rem 2rem; -webkit-overflow-scrolling: touch; }
+    .status-tabs-wrap { position: relative; margin-bottom: 1.5rem; }
+    .status-tabs-wrap::after { content: ''; position: absolute; top: 0; right: 0; bottom: 8px; width: 40px; background: linear-gradient(to right, transparent, #F7F8FA); pointer-events: none; }
+    .status-tabs { display: flex; gap: 0.5rem; overflow-x: auto; padding: 0 2rem 0.5rem 2rem; -webkit-overflow-scrolling: touch; scrollbar-width: thin; scrollbar-color: rgba(184,115,51,0.35) transparent; }
+    .status-tabs::-webkit-scrollbar { height: 6px; }
+    .status-tabs::-webkit-scrollbar-thumb { background: rgba(184,115,51,0.3); border-radius: 3px; }
+    .status-tabs::-webkit-scrollbar-thumb:hover { background: rgba(184,115,51,0.5); }
     .status-tab { padding: 0.5rem 1.2rem; background: #FAF9F6; border: 1.5px solid #E8E8E8; border-radius: 24px; color: #555; font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: all 0.15s ease; white-space: nowrap; }
     .status-tab:hover { background: #F0EDE8; color: #333; border-color: #D0C8B8; }
     .status-tab.active { background: #B87333; color: #fff; border-color: #B87333; box-shadow: 0 3px 10px rgba(184, 115, 51, 0.2); }
@@ -186,8 +209,10 @@ const ALL_STATUSES = [
     .btn-bulk-apply:disabled { opacity: 0.4; cursor: not-allowed; }
     .btn-bulk-clear { padding: 0.35rem 0.75rem; background: none; border: 1px solid #E8E8E8; color: #888; border-radius: 4px; font-size: 0.8rem; cursor: pointer; }
 
-    .loading { color: #888; padding: 2rem; }
     .error-msg { color: #DC2626; padding: 0.75rem; background: rgba(220,38,38,0.06); border: 1px solid rgba(220,38,38,0.15); border-radius: 6px; margin: 0 2rem 1rem 2rem; font-size: 0.875rem; }
+    .skel-row td { padding: 0.7rem 0.875rem; border-bottom: 1px solid #F0F0F0; }
+    .skel-line { height: 10px; border-radius: 4px; background: linear-gradient(90deg, #F0F0F0 25%, #F7F7F7 37%, #F0F0F0 63%); background-size: 400% 100%; animation: skel-shimmer 1.4s ease infinite; }
+    @keyframes skel-shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
     .success-msg { color: #15803D; padding: 0.75rem; background: rgba(21,128,61,0.06); border: 1px solid rgba(21,128,61,0.2); border-radius: 6px; margin: 0 2rem 1rem 2rem; font-size: 0.875rem; font-weight: 600; }
     .data-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; background: #fff; border-top: 1px solid #E8E8E8; border-bottom: 1px solid #E8E8E8; border-left: none; border-right: none; }
     .data-table th:first-child, .data-table td:first-child { padding-left: 2rem; }
@@ -326,6 +351,7 @@ const ALL_STATUSES = [
 })
 export class AdminOrdersComponent implements OnInit {
   private readonly api = inject(ApiService);
+  private readonly toast = inject(AdminToastService);
   readonly imgUrl = imageUrl;
 
   orders = signal<Order[]>([]);
@@ -400,7 +426,7 @@ export class AdminOrdersComponent implements OnInit {
 
   changeStatus(o: Order): void {
     this.api.patch<any>(`/orders/${o.id}/status`, { status: o.status }).subscribe({
-      error: () => this.load()
+      error: (err) => { this.toast.error(err.userMessage || 'Failed to update status'); this.load(); }
     });
   }
 
@@ -438,6 +464,7 @@ export class AdminOrdersComponent implements OnInit {
     Promise.all(reqs).then(() => {
       this.bulkRunning.set(false);
       this.showBulkConfirm.set(false);
+      this.toast.success(`${ids.length} order(s) marked ${this.formatStatus(newStatus)}`);
       this.clearSelection();
       this.load();
     });

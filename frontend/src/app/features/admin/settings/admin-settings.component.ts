@@ -2,6 +2,8 @@ import { Component, OnInit, ChangeDetectionStrategy, inject, signal, computed } 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
+import { AdminConfirmService } from '../shared/admin-confirm.service';
+import { AdminToastService } from '../shared/admin-toast.service';
 
 interface OrderStatus {
   id: number;
@@ -57,7 +59,20 @@ const EMPTY_FORM = () => ({ name: '', color: '#B87333' });
               </div>
 
               @if (loading()) {
-                <div class="loading">Loading statuses...</div>
+                <table class="data-table">
+                  <tbody>
+                    @for (i of [1,2,3,4,5]; track i) {
+                      <tr class="skel-row">
+                        <td style="width:100px"></td>
+                        <td><div class="skel-line" style="width:60%"></div></td>
+                        <td><div class="skel-line" style="width:40%"></div></td>
+                        <td><div class="skel-line" style="width:50%"></div></td>
+                        <td><div class="skel-line" style="width:45%"></div></td>
+                        <td><div class="skel-line" style="width:65%;margin-left:auto"></div></td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
               } @else if (error()) {
                 <div class="error-msg">
                   <span>{{ error() }}</span>
@@ -133,7 +148,10 @@ const EMPTY_FORM = () => ({ name: '', color: '#B87333' });
                             @if (!status.is_system) {
                               <button class="btn-delete" (click)="confirmDelete(status)">Delete</button>
                             } @else {
-                              <span class="locked-action" title="System status cannot be deleted">🔒 Locked</span>
+                              <span class="locked-action" title="System status cannot be deleted">
+                                <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="7" rx="1.3" stroke="currentColor" stroke-width="1.3"/><path d="M5.5 7V4.8C5.5 3.25 6.6 2 8 2C9.4 2 10.5 3.25 10.5 4.8V7" stroke="currentColor" stroke-width="1.3"/></svg>
+                                Locked
+                              </span>
                             }
                           </div>
                         </td>
@@ -232,8 +250,10 @@ const EMPTY_FORM = () => ({ name: '', color: '#B87333' });
     .pane-header h2 { font-size: 1.15rem; font-weight: 700; color: #1C1C1C; margin: 0 0 4px 0; }
     .pane-desc { font-size: 0.8rem; color: #666; margin: 0; }
     
-    .loading { color: #888; padding: 2rem; text-align: center; }
     .error-msg { display: flex; align-items: center; justify-content: space-between; color: #DC2626; padding: 0.75rem 1rem; background: rgba(220,38,38,0.06); border: 1px solid rgba(220,38,38,0.15); border-radius: 6px; margin-bottom: 1rem; font-size: 0.875rem; }
+    .skel-row td { padding: 0.75rem 1rem; border-bottom: 1px solid #F0F0F0; }
+    .skel-line { height: 10px; border-radius: 4px; background: linear-gradient(90deg, #F0F0F0 25%, #F7F7F7 37%, #F0F0F0 63%); background-size: 400% 100%; animation: skel-shimmer 1.4s ease infinite; }
+    @keyframes skel-shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
     .error-msg button { background: none; border: 1px solid #DC2626; color: #DC2626; padding: 3px 10px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 600; transition: all 0.15s ease; }
     .error-msg button:hover { background: #DC2626; color: #fff; }
     
@@ -263,7 +283,7 @@ const EMPTY_FORM = () => ({ name: '', color: '#B87333' });
     .btn-edit:hover { background: rgba(184,115,51,0.15); }
     .btn-delete { padding: 4px 10px; background: none; border: 1px solid rgba(220,38,38,0.3); color: #DC2626; border-radius: 4px; font-size: 0.75rem; cursor: pointer; font-weight: 500; transition: background 0.15s; }
     .btn-delete:hover { background: rgba(220,38,38,0.06); }
-    .locked-action { font-size: 0.75rem; color: #999; padding: 4px 8px; background: #FAFAFA; border: 1px solid #EEE; border-radius: 4px; cursor: default; }
+    .locked-action { display: inline-flex; align-items: center; gap: 5px; font-size: 0.75rem; color: #999; padding: 4px 8px; background: #FAFAFA; border: 1px solid #EEE; border-radius: 4px; cursor: default; }
     
     .empty-cell { text-align: center; color: #AAAAAA; padding: 3rem; font-style: italic; }
     
@@ -301,6 +321,8 @@ const EMPTY_FORM = () => ({ name: '', color: '#B87333' });
 })
 export class AdminSettingsComponent implements OnInit {
   private readonly api = inject(ApiService);
+  private readonly confirmSvc = inject(AdminConfirmService);
+  private readonly toast = inject(AdminToastService);
 
   activeTab = signal<'statuses'>('statuses');
   statuses = signal<OrderStatus[]>([]);
@@ -380,6 +402,7 @@ export class AdminSettingsComponent implements OnInit {
       next: () => {
         this.saving.set(false);
         this.showForm.set(false);
+        this.toast.success(editId ? 'Status updated' : 'Status created');
         this.loadStatuses();
       },
       error: (err) => {
@@ -389,16 +412,23 @@ export class AdminSettingsComponent implements OnInit {
     });
   }
 
-  confirmDelete(status: OrderStatus): void {
+  async confirmDelete(status: OrderStatus): Promise<void> {
     if (status.is_system) return;
-    if (!confirm(`Are you sure you want to delete the custom status "${status.name}"?`)) return;
+    const ok = await this.confirmSvc.confirm({
+      title: 'Delete Status',
+      message: `Are you sure you want to delete the custom status "${status.name}"?`,
+      confirmLabel: 'Delete',
+      danger: true
+    });
+    if (!ok) return;
 
     this.api.delete<any>(`/admin/order-statuses/${status.id}`).subscribe({
       next: () => {
+        this.toast.success('Status deleted');
         this.loadStatuses();
       },
       error: (err) => {
-        alert(err.userMessage || 'Delete failed');
+        this.toast.error(err.userMessage || 'Delete failed');
       }
     });
   }
@@ -420,8 +450,7 @@ export class AdminSettingsComponent implements OnInit {
     const ids = list.map(s => s.id);
     this.api.put<any>('/admin/order-statuses/reorder', { ids }).subscribe({
       error: (err) => {
-        console.error('Failed to save status order', err);
-        // Rollback on error
+        this.toast.error(err.userMessage || 'Failed to save new order');
         this.loadStatuses();
       }
     });

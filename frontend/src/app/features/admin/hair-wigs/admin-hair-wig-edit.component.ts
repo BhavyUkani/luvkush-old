@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
 import { imageUrl } from '../../../shared/utils/image-url';
+import { AdminToastService } from '../shared/admin-toast.service';
 
 const EMPTY = () => ({
   name: '', short_description: '', description: '',
@@ -412,6 +413,7 @@ export class AdminHairWigEditComponent implements OnInit {
   private readonly api = inject(ApiService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly toast = inject(AdminToastService);
   readonly imgUrl = imageUrl;
 
   isNew = signal(false);
@@ -493,7 +495,7 @@ export class AdminHairWigEditComponent implements OnInit {
         this.imgUploading.set(false);
         this.form.update((f: any) => ({ ...f, primary_image: res.data?.primary_image }));
       },
-      error: () => { this.imgUploading.set(false); alert('Image upload failed'); }
+      error: () => { this.imgUploading.set(false); this.toast.error('Image upload failed'); }
     });
   }
 
@@ -515,6 +517,7 @@ export class AdminHairWigEditComponent implements OnInit {
     req.subscribe({
       next: (res: any) => {
         this.saving.set(false);
+        this.toast.success(this.isNew() ? 'Hair wig created' : 'Hair wig updated');
         if (this.isNew()) {
           const newId = res.data?.id;
           newId

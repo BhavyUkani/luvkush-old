@@ -1,6 +1,8 @@
 import { Component, ChangeDetectionStrategy, signal, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet, Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { AdminConfirmDialogComponent } from '../shared/admin-confirm-dialog.component';
+import { AdminToastComponent } from '../shared/admin-toast.component';
 
 interface NavItem {
   icon: string;
@@ -13,7 +15,7 @@ interface NavItem {
   selector: 'lk-admin-layout',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, RouterLinkActive, RouterOutlet],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet, AdminConfirmDialogComponent, AdminToastComponent],
   templateUrl: './admin-layout.component.html',
   styleUrls: ['./admin-layout.component.scss']
 })

@@ -17,6 +17,10 @@ export class WishlistService {
   readonly count = computed(() => this._items().length);
   readonly isEmpty = computed(() => this._items().length === 0);
 
+  constructor() {
+    this.auth.loggedOut$.subscribe(() => this.clear());
+  }
+
   isWishlisted(productId: number): boolean {
     return this._wishlistIds().has(productId);
   }

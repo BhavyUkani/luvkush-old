@@ -317,3 +317,10 @@
   .fit-card, .fit-card__media img, .fit-card__contact, .fit-card__name, .fit-card__cta, .fit-card__cta svg { transition: none; }
   .fit-skeleton { animation: none; }
 }
+
+// The atelier hero sits on a dark gradient — override the light-mode
+// ::selection default so selected text stays legible on it.
+.atelier ::selection {
+  background: rgba(255, 255, 255, .25);
+  color: #fff;
+}

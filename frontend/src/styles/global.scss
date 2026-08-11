@@ -59,6 +59,15 @@ input, textarea, select {
   font: inherit;
 }
 
+// Edge adds its own clear ("x") and reveal buttons to every text input.
+// Anywhere we render a custom clear button, that stacks into a double "x" —
+// suppress the native ones everywhere and let our own controls own that job.
+input::-ms-clear, input::-ms-reveal {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
 ul, ol {
   list-style: none;
 }
