@@ -229,12 +229,18 @@ interface CourierRate {
         <!-- Search and Global Filter -->
         <div class="filter-header">
           <div class="filters-container">
-            <input type="text" placeholder="Filter couriers by name..." [(ngModel)]="searchFilter" class="filter-input" />
-            <select [(ngModel)]="sortBy" class="sort-select">
-              <option value="rate-asc">Price: Low to High</option>
-              <option value="rate-desc">Price: High to Low</option>
-              <option value="rating-desc">Rating: High to Low</option>
-            </select>
+            <div class="filter-search-wrap">
+              <svg class="filter-search-icon" width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5.2" stroke="currentColor" stroke-width="1.4"/><path d="M11 11L14.5 14.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+              <input type="text" placeholder="Filter couriers by name..." [(ngModel)]="searchFilter" class="filter-input" />
+            </div>
+            <div class="sort-select-wrap">
+              <select [(ngModel)]="sortBy" class="sort-select">
+                <option value="rate-asc">Price: Low to High</option>
+                <option value="rate-desc">Price: High to Low</option>
+                <option value="rating-desc">Rating: High to Low</option>
+              </select>
+              <svg class="sort-caret" width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
           </div>
         </div>
 
@@ -244,14 +250,18 @@ interface CourierRate {
           <div class="provider-column">
             <div class="provider-header sr-header">
               <div class="header-main">
-                <h2>Available Rates</h2>
+                <h2>
+                  <span class="ph-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></span>
+                  Available Rates
+                </h2>
                 <span class="couriers-count">{{ filteredShiprocket().length }} Serviceable</span>
               </div>
               @if (shiprocketError()) {
                 <span class="col-error">⚠️ {{ shiprocketError() }}</span>
               } @else if (filteredShiprocket().length > 0) {
                 <div class="col-summary">
-                  Cheapest: <strong>₹{{ cheapestShiprocket()?.rate }}</strong> ({{ cheapestShiprocket()?.courier_name }})
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+                  Cheapest: <strong>₹{{ cheapestShiprocket()?.rate }}</strong> <span class="col-summary-name">({{ cheapestShiprocket()?.courier_name }})</span>
                 </div>
               }
             </div>
@@ -275,14 +285,20 @@ interface CourierRate {
                         </div>
                         <span class="c-name">{{ c.courier_name }}</span>
                         @if (c.courier_company_id === cheapestShiprocket()?.courier_company_id) {
-                          <span class="mini-badge cheapest">Cheapest</span>
+                          <span class="mini-badge cheapest">
+                            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>
+                            Cheapest
+                          </span>
                         }
                       </div>
                       <div class="c-performance">
-                        <span class="performance-label">Delivery Rate:</span> 
+                        <span class="performance-label">Delivery Rate:</span>
                         <strong class="performance-val">{{ c.delivery_performance || '95%' }}</strong>
                       </div>
-                      <div class="c-rating-stars">★ {{ c.rating }}</div>
+                      <div class="c-rating-stars">
+                        <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.6l1.9 4h4.2l-3.4 2.9 1.2 4.2L8 10.3l-3.9 2.4 1.2-4.2L1.9 5.6h4.2L8 1.6Z"/></svg>
+                        {{ c.rating }}
+                      </div>
                     </div>
 
                     <!-- Center: Transit Days & Timelines -->
@@ -326,7 +342,8 @@ interface CourierRate {
                   <div class="card-footer-row">
                     <span class="c-charge-weight">Charged Wt: <strong>{{ c.charge_weight || getChargeableWeight() }}kg</strong></span>
                     <button class="btn-details-link" (click)="toggleDetails(c.courier_company_id)">
-                      {{ isExpanded(c.courier_company_id) ? 'Hide API details ▲' : 'All API details ▼' }}
+                      {{ isExpanded(c.courier_company_id) ? 'Hide API details' : 'All API details' }}
+                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" [style.transform]="isExpanded(c.courier_company_id) ? 'rotate(180deg)' : 'none'"><path d="M6 9l6 6 6-6"/></svg>
                     </button>
                   </div>
 
@@ -366,38 +383,37 @@ interface CourierRate {
   `,
   styles: [`
     .page {
-      padding: 1rem 0.25rem;
+      padding: 2rem;
       width: 100%;
       margin: 0;
       font-family: 'Inter', system-ui, -apple-system, sans-serif;
       box-sizing: border-box;
     }
-    
+
     .page-header {
-      margin-bottom: 1.25rem;
-      padding: 0 0.5rem;
+      margin-bottom: 1.5rem;
     }
 
     .page-header h1 {
-      font-size: 1.5rem;
-      font-weight: 800;
+      font-size: 1.375rem;
+      font-weight: 700;
       color: #1C1C1C;
       margin: 0 0 0.25rem 0;
-      letter-spacing: -0.02em;
+      letter-spacing: -0.01em;
     }
 
     .subtitle {
-      color: #718096;
+      color: #888888;
       font-size: 0.85rem;
       margin: 0;
     }
 
     .card {
       background: #ffffff;
-      border: 1px solid #EDE8E0;
-      border-radius: 8px;
-      padding: 1rem;
-      box-shadow: 0 2px 10px rgba(184, 115, 51, 0.02);
+      border: 1px solid #E0D8C8;
+      border-radius: 12px;
+      padding: 1.25rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
       box-sizing: border-box;
     }
 
@@ -440,7 +456,7 @@ interface CourierRate {
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: #4A5568;
+      color: #555;
     }
 
     .input-wrapper {
@@ -455,33 +471,37 @@ interface CourierRate {
       display: flex;
       align-items: center;
       pointer-events: none;
-      color: #718096;
+      color: #888;
     }
 
     .form-input {
       width: 100%;
       padding: 0.45rem 1.75rem 0.45rem 1.65rem;
-      border: 1.5px solid #E2E8F0;
-      border-radius: 6px;
+      border: 1px solid #E0D8C8;
+      border-radius: 8px;
       font-size: 0.825rem;
       color: #1C1C1C;
       outline: none;
       transition: all 0.15s ease-in-out;
       background: #FFF;
       box-sizing: border-box;
-      height: 33px;
+      height: 34px;
+    }
+
+    .form-input:hover {
+      border-color: #D0C4AE;
     }
 
     .form-input:focus {
       border-color: #B87333;
-      box-shadow: 0 0 0 2px rgba(184, 115, 51, 0.08);
+      box-shadow: 0 0 0 3px rgba(184, 115, 51, 0.1);
     }
 
     .input-unit {
       position: absolute;
       right: 0.55rem;
       font-size: 0.68rem;
-      color: #A0AEC0;
+      color: #AAAAAA;
       font-weight: 700;
       pointer-events: none;
     }
@@ -489,11 +509,11 @@ interface CourierRate {
     .read-only-display {
       width: 100%;
       padding: 0.45rem 0.5rem;
-      border: 1.5px solid #E2E8F0;
-      border-radius: 6px;
+      border: 1px solid #E0D8C8;
+      border-radius: 8px;
       font-size: 0.825rem;
       font-weight: 700;
-      color: #0D47A1;
+      color: #1D4ED8;
       background: #FAF8F5;
       text-align: center;
       box-sizing: border-box;
@@ -505,7 +525,7 @@ interface CourierRate {
 
     .field-sublbl {
       font-size: 0.62rem;
-      color: #A0AEC0;
+      color: #AAAAAA;
       font-weight: 600;
       margin-top: 1px;
     }
@@ -520,8 +540,8 @@ interface CourierRate {
 
     .toggle-option {
       flex: 1;
-      border: 1.5px solid #E2E8F0;
-      border-radius: 6px;
+      border: 1px solid #E0D8C8;
+      border-radius: 8px;
       cursor: pointer;
       display: flex;
       justify-content: center;
@@ -553,11 +573,11 @@ interface CourierRate {
 
     .btn-calculate-large {
       width: 100%;
-      height: 33px;
+      height: 34px;
       background: linear-gradient(135deg, #B87333 0%, #9D5D22 100%);
       color: #FFF;
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
       font-size: 0.825rem;
       font-weight: 700;
       cursor: pointer;
@@ -586,7 +606,7 @@ interface CourierRate {
       flex-wrap: wrap;
       background: #FAF8F5;
       border: 1px solid #EDE8E0;
-      border-radius: 6px;
+      border-radius: 8px;
       padding: 0.65rem 1rem;
       font-size: 0.78rem;
       gap: 0.5rem;
@@ -600,7 +620,7 @@ interface CourierRate {
     }
 
     .banner-lbl {
-      color: #718096;
+      color: #888888;
       font-weight: 500;
     }
 
@@ -609,7 +629,7 @@ interface CourierRate {
     }
 
     .banner-sep {
-      color: #E2E8F0;
+      color: #E0D8C8;
       font-weight: 300;
     }
 
@@ -625,7 +645,7 @@ interface CourierRate {
     }
 
     .highlight-val-blue {
-      color: #0D47A1;
+      color: #1D4ED8;
       font-weight: 700;
     }
 
@@ -653,22 +673,33 @@ interface CourierRate {
       justify-content: flex-end;
     }
 
+    .filter-search-wrap { position: relative; display: flex; align-items: center; }
+    .filter-search-icon { position: absolute; left: 0.55rem; color: #AAAAAA; pointer-events: none; }
+    .sort-select-wrap { position: relative; display: flex; align-items: center; }
+    .sort-caret { position: absolute; right: 0.55rem; color: #999; pointer-events: none; }
+
     .filter-input, .sort-select {
-      padding: 0.35rem 0.5rem;
-      border: 1.5px solid #E2E8F0;
-      border-radius: 6px;
+      padding: 0.4rem 0.6rem;
+      border: 1px solid #E0D8C8;
+      border-radius: 8px;
       font-size: 0.75rem;
       color: #333;
       outline: none;
       background: #FFF;
+      transition: border-color 0.15s, box-shadow 0.15s;
     }
 
+    .filter-input { padding-left: 1.9rem; }
+    .sort-select { appearance: none; padding-right: 1.7rem; cursor: pointer; }
+
+    .filter-input:hover, .sort-select:hover { border-color: #D0C4AE; }
     .filter-input:focus, .sort-select:focus {
       border-color: #B87333;
+      box-shadow: 0 0 0 3px rgba(184,115,51,0.1);
     }
 
     .filter-input {
-      width: 180px;
+      width: 200px;
     }
 
     .comparison-grid {
@@ -676,37 +707,51 @@ interface CourierRate {
       grid-template-columns: 1fr;
       gap: 1rem;
       align-items: start;
-      max-width: 900px;
-      margin: 0 auto;
+      width: 100%;
     }
 
     .provider-column {
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
-      background: #FAF8F5;
-      border: 1px solid #EDE8E0;
-      border-radius: 8px;
-      padding: 0.75rem;
+      gap: 1rem;
+      background: #fff;
+      border: 1px solid #E0D8C8;
+      border-radius: 12px;
+      padding: 1.25rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
     }
 
     .provider-header {
-      border-bottom: 1.5px solid #EDE8E0;
-      padding-bottom: 0.5rem;
-      margin-bottom: 0.25rem;
+      border-bottom: 1px solid #F3EFE8;
+      padding-bottom: 0.85rem;
       display: flex;
       flex-direction: column;
-      gap: 0.25rem;
+      gap: 0.6rem;
     }
 
     .provider-header h2 {
-      font-size: 0.95rem;
+      font-size: 1rem;
       font-weight: 800;
       margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .ph-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: rgba(184,115,51,0.1);
+      color: #B87333;
+      flex-shrink: 0;
     }
 
     .sr-header h2 {
-      color: #B87333;
+      color: #1C1C1C;
     }
 
     .header-main {
@@ -716,76 +761,91 @@ interface CourierRate {
     }
 
     .couriers-count {
-      font-size: 0.7rem;
-      color: #718096;
-      background: #E2E8F0;
-      padding: 1px 6px;
-      border-radius: 10px;
-      font-weight: 600;
+      font-size: 0.72rem;
+      color: #888888;
+      background: #F3EFE8;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-weight: 700;
     }
 
     .col-summary {
-      font-size: 0.72rem;
-      color: #4A5568;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      color: #15803D;
+      background: rgba(21,128,61,0.06);
+      border: 1px solid rgba(21,128,61,0.18);
+      border-radius: 8px;
+      padding: 0.55rem 0.8rem;
     }
 
+    .col-summary strong { font-weight: 800; }
+    .col-summary-name { color: #4B7A5E; }
+
     .col-error {
-      font-size: 0.7rem;
-      color: #C53030;
+      font-size: 0.8rem;
+      color: #DC2626;
       font-weight: 600;
+      background: rgba(220,38,38,0.06);
+      border: 1px solid rgba(220,38,38,0.18);
+      border-radius: 8px;
+      padding: 0.55rem 0.8rem;
     }
 
     .empty-col-state {
       text-align: center;
-      padding: 2rem 1rem;
-      font-size: 0.78rem;
-      color: #A0AEC0;
+      padding: 2.5rem 1rem;
+      font-size: 0.82rem;
+      color: #AAAAAA;
       font-style: italic;
-      background: #FFF;
-      border: 1px dashed #E2E8F0;
-      border-radius: 6px;
+      background: #FAF8F5;
+      border: 1px dashed #E0D8C8;
+      border-radius: 10px;
     }
 
     /* Courier list items */
     .couriers-list {
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: 0.75rem;
     }
 
-    /* Courier cards (Three-column layout, compact) */
+    /* Courier cards (Three-column layout) */
     .courier-card {
-      background: #FFF;
-      border: 1px solid #EDE8E0;
-      border-radius: 6px;
-      padding: 0.6rem 0.75rem;
+      background: #fff;
+      border: 1px solid #E0D8C8;
+      border-radius: 12px;
+      padding: 1rem 1.1rem;
       display: flex;
       flex-direction: column;
-      gap: 0.45rem;
-      transition: all 0.1s ease;
+      gap: 0.7rem;
+      transition: all 0.15s ease;
     }
 
     .courier-card:hover {
       border-color: #B87333;
-      box-shadow: 0 2px 6px rgba(184, 115, 51, 0.04);
+      box-shadow: 0 4px 14px rgba(184, 115, 51, 0.1);
+      transform: translateY(-1px);
     }
 
     .courier-card.cheapest-highlight {
-      border-left: 3px solid #276749;
-      background: rgba(39, 103, 73, 0.005);
+      border-color: rgba(21,128,61,0.35);
+      background: linear-gradient(rgba(21,128,61,0.045), rgba(21,128,61,0.045)), #fff;
     }
 
     .courier-compact-layout {
       display: grid;
       grid-template-columns: 1.3fr 1fr 1fr;
-      gap: 0.5rem;
+      gap: 1rem;
       align-items: start;
     }
 
     @media (max-width: 480px) {
       .courier-compact-layout {
         grid-template-columns: 1fr;
-        gap: 0.4rem;
+        gap: 0.6rem;
       }
     }
 
@@ -793,26 +853,26 @@ interface CourierRate {
     .c-col-identity {
       display: flex;
       flex-direction: column;
-      gap: 0.15rem;
+      gap: 0.3rem;
     }
 
     .c-title-row {
       display: flex;
       align-items: center;
-      gap: 0.35rem;
+      gap: 0.5rem;
       flex-wrap: wrap;
     }
 
     .c-logo-container {
-      width: 20px;
-      height: 20px;
-      border-radius: 3px;
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
       overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: #FAF8F5;
-      border: 1px solid #EDE8E0;
+      background: #F3EFE8;
+      border: 1px solid #E0D8C8;
       flex-shrink: 0;
     }
 
@@ -829,63 +889,66 @@ interface CourierRate {
       align-items: center;
       justify-content: center;
       color: #FFF;
-      font-size: 0.55rem;
+      font-size: 0.65rem;
       font-weight: 800;
       letter-spacing: -0.01em;
-      border-radius: 2px;
+      border-radius: 7px;
     }
 
     .c-name {
       font-weight: 700;
-      font-size: 0.8rem;
+      font-size: 0.88rem;
       color: #1C1C1C;
-      line-height: 1.2;
+      line-height: 1.25;
     }
 
     .c-performance {
-      font-size: 0.7rem;
-      color: #4A5568;
+      font-size: 0.75rem;
+      color: #555555;
       margin-top: 1px;
     }
 
     .performance-label {
-      color: #718096;
+      color: #888888;
     }
 
     .performance-val {
-      color: #276749;
+      color: #15803D;
     }
 
     .c-rating-stars {
-      color: #D69E2E;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: #B45309;
       font-weight: 700;
-      font-size: 0.7rem;
+      font-size: 0.75rem;
     }
 
     /* Column 2: Transit & Stats */
     .c-col-stats {
       display: flex;
       flex-direction: column;
-      gap: 0.15rem;
-      border-left: 1px solid #FAF8F5;
-      border-right: 1px solid #FAF8F5;
-      padding: 0 0.25rem;
+      gap: 0.35rem;
+      border-left: 1px solid #F3EFE8;
+      border-right: 1px solid #F3EFE8;
+      padding: 0 0.9rem;
     }
 
     .stat-line {
       display: flex;
       justify-content: space-between;
-      font-size: 0.68rem;
-      gap: 0.25rem;
+      font-size: 0.75rem;
+      gap: 0.5rem;
     }
 
     .stat-lbl {
-      color: #718096;
+      color: #888888;
     }
 
     .stat-val {
-      color: #2D3748;
-      font-weight: 600;
+      color: #1C1C1C;
+      font-weight: 700;
     }
 
     .timeline-val {
@@ -893,47 +956,50 @@ interface CourierRate {
     }
 
     .days-val {
-      color: #276749;
+      color: #15803D;
     }
 
     /* Column 3: Breakdown & Total */
     .c-col-breakdown {
       display: flex;
       flex-direction: column;
-      gap: 0.12rem;
+      gap: 0.3rem;
       text-align: right;
     }
 
     .breakdown-line {
       display: flex;
       justify-content: space-between;
-      font-size: 0.65rem;
-      color: #718096;
-      gap: 0.25rem;
+      font-size: 0.72rem;
+      color: #888888;
+      gap: 0.5rem;
     }
 
     .breakdown-val {
-      color: #4A5568;
+      color: #555555;
+      font-weight: 600;
     }
 
     .total-line {
       display: flex;
       justify-content: space-between;
-      font-size: 0.75rem;
-      border-top: 1px dashed #EDE8E0;
-      padding-top: 2px;
-      margin-top: 1px;
-      gap: 0.25rem;
+      align-items: baseline;
+      font-size: 0.8rem;
+      border-top: 1px dashed #E0D8C8;
+      padding-top: 0.4rem;
+      margin-top: 0.15rem;
+      gap: 0.5rem;
     }
 
     .total-lbl {
       font-weight: 700;
-      color: #2D3748;
+      color: #1C1C1C;
     }
 
     .total-val {
       color: #B87333;
       font-weight: 800;
+      font-size: 1rem;
     }
 
     /* Card Footer Area */
@@ -941,60 +1007,67 @@ interface CourierRate {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-top: 1px solid #FAF8F5;
-      padding-top: 4px;
-      font-size: 0.65rem;
+      border-top: 1px solid #F3EFE8;
+      padding-top: 0.65rem;
+      font-size: 0.72rem;
     }
 
     .c-charge-weight {
-      color: #A0AEC0;
+      color: #AAAAAA;
     }
 
     .c-charge-weight strong {
-      color: #718096;
+      color: #888888;
     }
 
     .btn-details-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
       background: none;
       border: none;
-      color: #718096;
-      font-size: 0.65rem;
-      font-weight: 600;
+      color: #B87333;
+      font-size: 0.72rem;
+      font-weight: 700;
       cursor: pointer;
-      text-decoration: underline;
       padding: 0;
+      transition: opacity 0.15s;
     }
 
     .btn-details-link:hover {
-      color: #B87333;
+      opacity: 0.75;
     }
 
-    /* Dynamic API Inspector (Compact grid) */
+    .btn-details-link svg {
+      transition: transform 0.15s ease;
+    }
+
+    /* Dynamic API Inspector */
     .api-inspector {
       background: #FAF8F5;
-      border: 1px solid #EDE8E0;
-      border-radius: 4px;
-      padding: 0.4rem 0.5rem;
-      font-size: 0.65rem;
+      border: 1px solid #E0D8C8;
+      border-radius: 8px;
+      padding: 0.75rem 0.9rem;
+      font-size: 0.7rem;
       animation: expandDown 0.15s ease-out;
-      margin-top: 2px;
+      margin-top: 0.15rem;
     }
 
     .inspector-title {
-      font-size: 0.58rem;
+      font-size: 0.63rem;
       font-weight: 800;
       text-transform: uppercase;
-      color: #A0AEC0;
-      margin-bottom: 0.35rem;
-      letter-spacing: 0.04em;
-      border-bottom: 1px solid #EDE8E0;
-      padding-bottom: 2px;
+      color: #AAAAAA;
+      margin-bottom: 0.5rem;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid #E0D8C8;
+      padding-bottom: 0.4rem;
     }
 
     .inspector-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-      gap: 0.35rem 0.5rem;
+      gap: 0.5rem 0.75rem;
     }
 
     .ins-item {
@@ -1003,42 +1076,43 @@ interface CourierRate {
     }
 
     .ins-lbl {
-      font-size: 0.55rem;
+      font-size: 0.6rem;
       font-weight: 600;
-      color: #A0AEC0;
+      color: #AAAAAA;
     }
 
     .ins-val {
       font-weight: 500;
-      color: #2D3748;
+      color: #1C1C1C;
       word-break: break-all;
     }
 
     .yes-val {
-      color: #276749;
+      color: #15803D;
       font-weight: 700;
     }
 
     /* Badges */
     .mini-badge {
-      display: inline-block;
-      padding: 1px 4px;
-      border-radius: 3px;
-      font-size: 0.58rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 0.62rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.03em;
     }
 
     .mini-badge.cheapest {
-      background: rgba(39, 103, 73, 0.1);
-      color: #276749;
-      margin-left: 2px;
+      background: rgba(21,128,61,0.1);
+      color: #15803D;
     }
 
     .mini-badge.cod {
       background: rgba(39, 103, 73, 0.06);
-      color: #276749;
+      color: #15803D;
     }
 
     .mini-badge.prepaid {
@@ -1050,13 +1124,13 @@ interface CourierRate {
     .empty-card {
       text-align: center;
       padding: 3rem 1.5rem;
-      color: #718096;
+      color: #888888;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       gap: 0.5rem;
-      border: 2px dashed #E2E8F0;
+      border: 2px dashed #E0D8C8;
       background: #FAF8F5;
     }
 
@@ -1068,7 +1142,7 @@ interface CourierRate {
     .empty-card h3 {
       font-size: 1rem;
       font-weight: 700;
-      color: #2D3748;
+      color: #1C1C1C;
       margin: 0;
     }
 
@@ -1081,8 +1155,8 @@ interface CourierRate {
 
     /* Errors */
     .error-card {
-      border-color: #FEB2B2;
-      background: #FFF5F5;
+      border-color: rgba(220,38,38,0.3);
+      background: rgba(220,38,38,0.05);
       text-align: center;
       padding: 1.5rem;
       display: flex;
@@ -1096,14 +1170,30 @@ interface CourierRate {
     }
 
     .error-card h3 {
-      color: #C53030;
+      color: #DC2626;
       margin: 0;
       font-size: 0.95rem;
     }
 
+    .btn-secondary {
+      padding: 0.5rem 1.25rem;
+      background: #fff;
+      border: 1px solid #E0D8C8;
+      color: #555;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .btn-secondary:hover {
+      background: #F7F8FA;
+    }
+
     .error-msg {
       font-size: 0.78rem;
-      color: #9B2C2C;
+      color: #DC2626;
       margin: 0 0 0.5rem 0;
     }
 

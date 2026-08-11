@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
 import { AdminToastService } from '../shared/admin-toast.service';
+import { IndianCurrencyPipe } from '../shared/indian-currency.pipe';
 
 interface Customer {
   id: number;
@@ -21,7 +22,7 @@ interface Customer {
   selector: 'lk-admin-customers',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, IndianCurrencyPipe],
   template: `
     <div class="page">
       <div class="page-header">
@@ -29,20 +30,32 @@ interface Customer {
       </div>
 
       <div class="filter-bar">
-        <input type="text" class="search-input" placeholder="Search by name or email..." [(ngModel)]="searchQ" (input)="onSearch()" />
+        <div class="search-wrap">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5.2" stroke="currentColor" stroke-width="1.4"/><path d="M11 11L14.5 14.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          <input type="text" class="search-input" placeholder="Search by name or email..." [(ngModel)]="searchQ" (input)="onSearch()" />
+        </div>
       </div>
 
       @if (selectedIds().size > 0) {
         <div class="bulk-bar">
-          <span class="bulk-info">{{ selectedIds().size }} selected</span>
-          <select class="bulk-select" [(ngModel)]="bulkAction">
-            <option value="">Bulk Action</option>
-            <option value="active">Activate Selected</option>
-            <option value="suspended">Deactivate Selected</option>
-            <option value="delete">Delete Selected</option>
-          </select>
+          <div class="bulk-info">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.5L13 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            {{ selectedIds().size }} selected
+          </div>
+          <div class="select-wrap select-wrap--bulk">
+            <select class="bulk-select" [(ngModel)]="bulkAction">
+              <option value="">Bulk Action</option>
+              <option value="active">Activate Selected</option>
+              <option value="suspended">Deactivate Selected</option>
+              <option value="delete">Delete Selected</option>
+            </select>
+            <svg class="select-caret" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
           <button class="btn-bulk-apply" (click)="applyBulk()" [disabled]="!bulkAction">Apply</button>
-          <button class="btn-bulk-clear" (click)="clearSelection()">Clear</button>
+          <button class="btn-bulk-clear" (click)="clearSelection()">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 2L10 10M10 2L2 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            Clear
+          </button>
         </div>
       }
 
@@ -52,7 +65,7 @@ interface Customer {
             @for (i of [1,2,3,4,5]; track i) {
               <tr class="skel-row">
                 <td class="cb"></td>
-                <td><div class="skel-line" style="width:55%;margin-bottom:6px"></div><div class="skel-line" style="width:70%;height:8px"></div></td>
+                <td><div class="prod-cell"><div class="skel-avatar"></div><div style="flex:1"><div class="skel-line" style="width:55%;margin-bottom:6px"></div><div class="skel-line" style="width:70%;height:8px"></div></div></div></td>
                 <td><div class="skel-line" style="width:50%"></div></td>
                 <td><div class="skel-line" style="width:30%"></div></td>
                 <td><div class="skel-line" style="width:40%"></div></td>
@@ -82,25 +95,33 @@ interface Customer {
               <tr [class.row-selected]="selectedIds().has(c.id)">
                 <td class="cb"><input type="checkbox" [checked]="selectedIds().has(c.id)" (change)="toggleSelect(c.id)" /></td>
                 <td>
-                  <div class="cust-name">{{ c.first_name }} {{ c.last_name }}</div>
-                  <div class="cust-email">{{ c.email }}</div>
+                  <div class="prod-cell">
+                    <div class="cust-avatar">{{ c.first_name?.charAt(0) }}{{ c.last_name?.charAt(0) }}</div>
+                    <div class="prod-info">
+                      <div class="cust-name">{{ c.first_name }} {{ c.last_name }}</div>
+                      <div class="cust-email">{{ c.email }}</div>
+                    </div>
+                  </div>
                 </td>
                 <td class="muted">{{ c.phone || '—' }}</td>
-                <td>{{ c.order_count ?? 0 }}</td>
-                <td>₹{{ (c.total_spent ?? 0) | number:'1.0-0' }}</td>
+                <td><span class="count-chip">{{ c.order_count ?? 0 }}</span></td>
+                <td class="spent">₹{{ c.total_spent ?? 0 | inr:false }}</td>
                 <td>
                   <span class="badge"
                     [class.badge-active]="c.status === 'active'"
                     [class.badge-pending]="c.status === 'pending'"
                     [class.badge-inactive]="c.status === 'suspended' || c.status === 'deleted'">
-                    {{ c.status === 'active' ? 'Active' : c.status === 'pending' ? 'Pending' : 'Blocked' }}
+                    <span class="badge-dot"></span>{{ c.status === 'active' ? 'Active' : c.status === 'pending' ? 'Pending' : 'Blocked' }}
                   </span>
                 </td>
                 <td class="muted">{{ c.created_at | date:'dd MMM yyyy' }}</td>
               </tr>
             }
             @if (!customers().length) {
-              <tr><td colspan="7" class="empty-cell">No customers found</td></tr>
+              <tr><td colspan="7" class="empty-cell">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="11" r="6" stroke="currentColor" stroke-width="1.4"/><path d="M4 30C4 23 9.4 19 16 19C22.6 19 28 23 28 30" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                <div>No customers found</div>
+              </td></tr>
             }
           </tbody>
         </table>
@@ -120,7 +141,9 @@ interface Customer {
         <div class="modal" (click)="$event.stopPropagation()">
           <div class="modal-header">
             <h2>Confirm Bulk Action</h2>
-            <button class="modal-close" (click)="showBulkConfirm.set(false)">✕</button>
+            <button class="modal-close" (click)="showBulkConfirm.set(false)">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2L12 12M12 2L2 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </button>
           </div>
           <div class="modal-body">
             <p>{{ bulkActionLabel() }} <strong>{{ selectedIds().size }}</strong> customer(s)?</p>
@@ -139,44 +162,58 @@ interface Customer {
     }
   `,
   styles: [`
-    .page { padding: 2rem; max-width: 1440px; }
+    .page { padding: 2rem; max-width: 100%; }
     .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
     .page-header h1 { font-size: 1.375rem; font-weight: 700; color: #1C1C1C; margin: 0; display: flex; align-items: center; gap: 0.5rem; letter-spacing: -0.01em; }
     .count { font-size: 0.8rem; font-weight: 500; color: #888; background: #F0F0F0; padding: 2px 8px; border-radius: 20px; }
     .filter-bar { display: flex; gap: 0.75rem; margin-bottom: 1.5rem; }
-    .search-input { padding: 0.5rem 0.75rem; background: #fff; border: 1px solid #E8E8E8; border-radius: 6px; color: #333; font-size: 0.875rem; outline: none; flex: 1; min-width: 200px; transition: border-color 0.15s; }
-    .search-input:focus { border-color: #B87333; }
+    .search-wrap { position: relative; flex: 1; min-width: 200px; display: flex; align-items: center; }
+    .search-icon { position: absolute; left: 0.75rem; color: #AAAAAA; pointer-events: none; }
+    .search-input { width: 100%; padding: 0.55rem 0.75rem 0.55rem 2.15rem; background: #fff; border: 1px solid #E0D8C8; border-radius: 8px; color: #333; font-size: 0.875rem; outline: none; box-sizing: border-box; transition: border-color 0.15s, box-shadow 0.15s; }
+    .search-input:focus { border-color: #B87333; box-shadow: 0 0 0 3px rgba(184,115,51,0.1); }
     .search-input::placeholder { color: #AAAAAA; }
     .error-msg { color: #DC2626; padding: 0.75rem; background: rgba(220,38,38,0.06); border: 1px solid rgba(220,38,38,0.15); border-radius: 6px; margin-bottom: 1rem; font-size: 0.875rem; }
     .error-msg button { margin-left: 1rem; background: none; border: 1px solid #DC2626; color: #DC2626; padding: 2px 8px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; }
     .skel-row td { padding: 0.7rem 0.875rem; border-bottom: 1px solid #F0F0F0; }
     .skel-line { height: 10px; border-radius: 4px; background: linear-gradient(90deg, #F0F0F0 25%, #F7F7F7 37%, #F0F0F0 63%); background-size: 400% 100%; animation: skel-shimmer 1.4s ease infinite; }
+    .skel-avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(90deg, #F0F0F0 25%, #F7F7F7 37%, #F0F0F0 63%); background-size: 400% 100%; animation: skel-shimmer 1.4s ease infinite; flex-shrink: 0; }
     @keyframes skel-shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
     .data-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; background: #fff; border: 1px solid #E8E8E8; border-radius: 8px; overflow: hidden; }
     .data-table th { text-align: left; padding: 0.65rem 0.875rem; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: #888; background: #FAFAFA; border-bottom: 1px solid #E8E8E8; }
     .data-table td { padding: 0.7rem 0.875rem; border-bottom: 1px solid #F0F0F0; color: #333; vertical-align: middle; }
     .data-table tr:last-child td { border-bottom: none; }
     .data-table tr:hover td { background: #F7F8FA; }
+    .prod-cell { display: flex; align-items: center; gap: 0.75rem; }
+    .prod-info { min-width: 0; }
+    .cust-avatar { width: 34px; height: 34px; border-radius: 50%; background: rgba(184,115,51,0.12); color: #B87333; font-size: 0.72rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; text-transform: uppercase; }
     .cust-name { font-weight: 600; color: #1C1C1C; }
     .cust-email { font-size: 0.75rem; color: #888; margin-top: 2px; }
     .muted { color: #888; }
-    .badge { display: inline-block; padding: 3px 8px; border-radius: 20px; font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; background: #F0F0F0; color: #888; }
+    .spent { font-weight: 600; color: #1C1C1C; }
+    .count-chip { display: inline-block; min-width: 22px; text-align: center; padding: 2px 8px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; color: #555; background: #F0F0F0; }
+    .badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 20px; font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; background: #F0F0F0; color: #888; }
+    .badge-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
     .badge-active { background: rgba(21,128,61,0.09); color: #15803D; }
     .badge-pending { background: rgba(217,119,6,0.09); color: #D97706; }
     .badge-inactive { background: rgba(220,38,38,0.09); color: #DC2626; }
-    .empty-cell { text-align: center; color: #AAAAAA; padding: 3rem; font-style: italic; }
+    .empty-cell { text-align: center; color: #AAAAAA; padding: 3rem; }
+    .empty-cell svg { margin-bottom: 0.5rem; }
     .pagination { display: flex; gap: 1rem; align-items: center; justify-content: center; margin-top: 1.5rem; font-size: 0.875rem; color: #888; }
     .pagination button { padding: 0.4rem 0.75rem; background: #fff; border: 1px solid #E8E8E8; color: #555; border-radius: 4px; cursor: pointer; font-size: 0.8rem; transition: background 0.15s; }
     .pagination button:hover { background: #F7F8FA; }
     .pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
-    .bulk-bar { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 1rem; background: #FFF8F2; border: 1px solid rgba(184,115,51,0.2); border-radius: 8px; margin-bottom: 1rem; }
-    .bulk-info { font-size: 0.8rem; font-weight: 600; color: #B87333; }
-    .bulk-select { padding: 0.35rem 0.6rem; border: 1px solid #E8E8E8; border-radius: 4px; font-size: 0.8rem; background: #fff; color: #333; }
-    .btn-bulk-apply { padding: 0.35rem 0.8rem; background: #B87333; color: #fff; border: none; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+    .bulk-bar { display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 1rem; background: linear-gradient(rgba(184,115,51,0.08), rgba(184,115,51,0.08)), #F3EFE8; border: 1px solid rgba(184,115,51,0.3); border-radius: 8px; margin-bottom: 1rem; }
+    .bulk-info { display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; font-weight: 700; color: #B87333; }
+    .select-wrap--bulk { position: relative; display: flex; align-items: center; }
+    .select-wrap--bulk .bulk-select { padding: 0.4rem 1.7rem 0.4rem 0.65rem; border: 1px solid #E0D8C8; border-radius: 6px; font-size: 0.8rem; background: #fff; color: #333; appearance: none; cursor: pointer; }
+    .select-wrap--bulk .select-caret { position: absolute; right: 0.6rem; color: #999; pointer-events: none; }
+    .btn-bulk-apply { padding: 0.4rem 0.9rem; background: #B87333; color: #fff; border: none; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: opacity 0.15s; }
+    .btn-bulk-apply:hover { opacity: 0.9; }
     .btn-bulk-apply:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-bulk-clear { padding: 0.35rem 0.8rem; background: none; border: 1px solid #E8E8E8; color: #888; border-radius: 4px; font-size: 0.8rem; cursor: pointer; }
+    .btn-bulk-clear { display: flex; align-items: center; gap: 0.35rem; padding: 0.4rem 0.85rem; background: none; border: 1px solid #E0D8C8; color: #888; border-radius: 6px; font-size: 0.8rem; cursor: pointer; transition: background 0.15s; }
+    .btn-bulk-clear:hover { background: rgba(0,0,0,0.03); }
     .cb { width: 36px; }
-    .row-selected td { background: #FFF8F2 !important; }
+    .row-selected td { background: rgba(184,115,51,0.05) !important; }
     .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 2rem; }
     .modal { background: #fff; border-radius: 12px; width: 100%; max-width: 440px; box-shadow: 0 8px 40px rgba(0,0,0,0.12); }
     .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; border-bottom: 1px solid #E8E8E8; }

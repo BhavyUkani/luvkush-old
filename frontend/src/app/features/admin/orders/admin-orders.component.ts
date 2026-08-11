@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
 import { imageUrl } from '../../../shared/utils/image-url';
 import { AdminToastService } from '../shared/admin-toast.service';
+import { IndianCurrencyPipe } from '../shared/indian-currency.pipe';
 
 interface Order {
   id: number;
@@ -35,7 +36,7 @@ const ALL_STATUSES = [
   selector: 'lk-admin-orders',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, IndianCurrencyPipe],
   template: `
     <div class="page">
       <div class="page-header">
@@ -44,35 +45,45 @@ const ALL_STATUSES = [
 
       <!-- Filters -->
       <div class="filter-bar">
-        <input type="text" class="search-input" placeholder="Search by order # or customer..." [(ngModel)]="searchQ" (input)="onSearch()" />
+        <div class="search-wrap">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5.2" stroke="currentColor" stroke-width="1.4"/><path d="M11 11L14.5 14.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          <input type="text" class="search-input" placeholder="Search by order # or customer..." [(ngModel)]="searchQ" (input)="onSearch()" />
+        </div>
       </div>
 
-      <!-- Status Tabs -->
-      <div class="status-tabs-wrap">
-        <div class="status-tabs">
-          <button class="status-tab" [class.active]="statusFilter === ''" (click)="setStatusFilter('')">
-            All Orders
+      <!-- Status Filter Pills -->
+      <div class="status-tabs">
+        <button class="status-tab" [class.active]="statusFilter === ''" (click)="setStatusFilter('')">
+          All Orders <span class="tab-count">{{ allOrdersCount() }}</span>
+        </button>
+        @for (s of statuses; track s) {
+          <button class="status-tab" [class.active]="statusFilter === s" (click)="setStatusFilter(s)">
+            {{ formatStatus(s) }} <span class="tab-count">{{ statusCounts()[s] ?? 0 }}</span>
           </button>
-          @for (s of statuses; track s) {
-            <button class="status-tab" [class.active]="statusFilter === s" (click)="setStatusFilter(s)">
-              {{ formatStatus(s) }}
-            </button>
-          }
-        </div>
+        }
       </div>
 
       <!-- Bulk Actions Bar -->
       @if (selectedIds().size > 0) {
         <div class="bulk-bar">
-          <span class="bulk-count">{{ selectedIds().size }} selected</span>
-          <select class="bulk-select" [(ngModel)]="bulkAction">
-            <option value="">Update Status...</option>
-            @for (s of statuses; track s) {
-              <option [value]="s">Mark {{ formatStatus(s) }}</option>
-            }
-          </select>
+          <div class="bulk-count">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.5L13 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            {{ selectedIds().size }} selected
+          </div>
+          <div class="select-wrap select-wrap--bulk">
+            <select class="bulk-select" [(ngModel)]="bulkAction">
+              <option value="">Update Status...</option>
+              @for (s of statuses; track s) {
+                <option [value]="s">Mark {{ formatStatus(s) }}</option>
+              }
+            </select>
+            <svg class="select-caret" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
           <button class="btn-bulk-apply" [disabled]="!bulkAction" (click)="applyBulk()">Apply</button>
-          <button class="btn-bulk-clear" (click)="clearSelection()">✕ Clear</button>
+          <button class="btn-bulk-clear" (click)="clearSelection()">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 2L10 10M10 2L2 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            Clear
+          </button>
         </div>
       }
 
@@ -122,28 +133,37 @@ const ALL_STATUSES = [
                   <div class="cust-name">{{ o.first_name }} {{ o.last_name }}</div>
                   <div class="cust-email">{{ o.email }}</div>
                 </td>
-                <td>₹{{ o.total_amount | number:'1.0-0' }}</td>
+                <td class="amount">₹{{ o.total_amount ?? 0 | inr:false }}</td>
                 <td>
-                  <span class="badge" [class]="'pay-' + o.payment_status">{{ o.payment_status }}</span>
+                  <span class="badge" [class]="'pay-' + o.payment_status"><span class="badge-dot"></span>{{ o.payment_status }}</span>
                   <div class="muted-sm">{{ o.advance_paid_amount ? 'Partial (Advance)' : formatPaymentMethod(o.payment_method) }}</div>
                 </td>
                 <td>
-                  <select class="inline-select" [(ngModel)]="o.status" (change)="changeStatus(o)">
-                    @for (s of statuses; track s) {
-                      <option [value]="s">{{ formatStatus(s) }}</option>
-                    }
-                  </select>
+                  <div class="select-wrap select-wrap--status" [class]="'status-' + o.status">
+                    <select class="inline-select" [(ngModel)]="o.status" (change)="changeStatus(o)">
+                      @for (s of statuses; track s) {
+                        <option [value]="s">{{ formatStatus(s) }}</option>
+                      }
+                    </select>
+                    <svg class="select-caret" width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </div>
                 </td>
                 <td class="muted">{{ o.created_at | date:'dd MMM, HH:mm' }}</td>
                 <td>
                   <div class="action-btns">
-                    <a [routerLink]="['/admin/orders', o.id]" class="btn-sm btn-view" style="text-decoration:none">View</a>
+                    <a [routerLink]="['/admin/orders', o.id]" class="btn-view">
+                      <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M1 8C1 8 4 3 8 3C12 3 15 8 15 8C15 8 12 13 8 13C4 13 1 8 1 8Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><circle cx="8" cy="8" r="2.2" stroke="currentColor" stroke-width="1.3"/></svg>
+                      View
+                    </a>
                   </div>
                 </td>
               </tr>
             }
             @if (!orders().length) {
-              <tr><td colspan="8" class="empty-cell">No orders found</td></tr>
+              <tr><td colspan="8" class="empty-cell">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><path d="M6 10H26M9 10L10.5 28H21.5L23 10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M13 15V22M19 15V22" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+                <div>No orders found</div>
+              </td></tr>
             }
           </tbody>
         </table>
@@ -166,7 +186,9 @@ const ALL_STATUSES = [
         <div class="modal confirm-modal" (click)="$event.stopPropagation()">
           <div class="modal-header">
             <h2>Confirm Bulk Action</h2>
-            <button class="modal-close" (click)="showBulkConfirm.set(false)">✕</button>
+            <button class="modal-close" (click)="showBulkConfirm.set(false)">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2L12 12M12 2L2 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </button>
           </div>
           <div class="modal-body">
             <p>Apply <strong>{{ bulkActionLabel() }}</strong> to <strong>{{ selectedIds().size }}</strong> orders?</p>
@@ -183,31 +205,33 @@ const ALL_STATUSES = [
   `,
   styles: [`
     .page { padding: 2rem 0; max-width: 100%; width: 100%; box-sizing: border-box; }
-    .status-tabs-wrap { position: relative; margin-bottom: 1.5rem; }
-    .status-tabs-wrap::after { content: ''; position: absolute; top: 0; right: 0; bottom: 8px; width: 40px; background: linear-gradient(to right, transparent, #F7F8FA); pointer-events: none; }
-    .status-tabs { display: flex; gap: 0.5rem; overflow-x: auto; padding: 0 2rem 0.5rem 2rem; -webkit-overflow-scrolling: touch; scrollbar-width: thin; scrollbar-color: rgba(184,115,51,0.35) transparent; }
-    .status-tabs::-webkit-scrollbar { height: 6px; }
-    .status-tabs::-webkit-scrollbar-thumb { background: rgba(184,115,51,0.3); border-radius: 3px; }
-    .status-tabs::-webkit-scrollbar-thumb:hover { background: rgba(184,115,51,0.5); }
-    .status-tab { padding: 0.5rem 1.2rem; background: #FAF9F6; border: 1.5px solid #E8E8E8; border-radius: 24px; color: #555; font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: all 0.15s ease; white-space: nowrap; }
-    .status-tab:hover { background: #F0EDE8; color: #333; border-color: #D0C8B8; }
-    .status-tab.active { background: #B87333; color: #fff; border-color: #B87333; box-shadow: 0 3px 10px rgba(184, 115, 51, 0.2); }
+    .status-tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; padding: 0 2rem; }
+    .status-tab { padding: 0.45rem 1rem; background: #fff; border: 1px solid #E0D8C8; border-radius: 20px; color: #666; font-size: 0.76rem; font-weight: 600; cursor: pointer; transition: all 0.15s ease; white-space: nowrap; }
+    .status-tab:hover { background: #FAF8F5; color: #1C1C1C; border-color: #D0C4AE; }
+    .status-tab.active { background: #B87333; color: #fff; border-color: #B87333; box-shadow: 0 2px 8px rgba(184, 115, 51, 0.25); }
+    .tab-count { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; margin-left: 5px; border-radius: 9px; background: rgba(0,0,0,0.06); color: inherit; font-size: 0.66rem; font-weight: 800; }
+    .status-tab.active .tab-count { background: rgba(255,255,255,0.25); }
     .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding: 0 2rem; }
     .page-header h1 { font-size: 1.375rem; font-weight: 700; color: #1C1C1C; margin: 0; display: flex; align-items: center; gap: 0.5rem; letter-spacing: -0.01em; }
     .count { font-size: 0.8rem; font-weight: 500; color: #888; background: #F0F0F0; padding: 2px 8px; border-radius: 20px; }
     .filter-bar { display: flex; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap; padding: 0 2rem; }
-    .search-input, .filter-select { padding: 0.5rem 0.75rem; background: #fff; border: 1px solid #E8E8E8; border-radius: 6px; color: #333; font-size: 0.875rem; outline: none; transition: border-color 0.15s; }
-    .search-input:focus, .filter-select:focus { border-color: #B87333; }
-    .search-input { flex: 1; min-width: 200px; }
+    .search-wrap { position: relative; flex: 1; min-width: 220px; display: flex; align-items: center; }
+    .search-icon { position: absolute; left: 0.75rem; color: #AAAAAA; pointer-events: none; }
+    .search-input { width: 100%; padding: 0.55rem 0.75rem 0.55rem 2.15rem; background: #fff; border: 1px solid #E0D8C8; border-radius: 8px; color: #333; font-size: 0.875rem; outline: none; box-sizing: border-box; transition: border-color 0.15s, box-shadow 0.15s; }
+    .search-input:focus { border-color: #B87333; box-shadow: 0 0 0 3px rgba(184,115,51,0.1); }
     .search-input::placeholder { color: #AAAAAA; }
 
     /* Bulk bar */
-    .bulk-bar { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 1rem; background: rgba(184,115,51,0.06); border: 1px solid rgba(184,115,51,0.2); border-radius: 6px; margin: 0 2rem 1rem 2rem; }
-    .bulk-count { font-size: 0.8rem; font-weight: 600; color: #B87333; }
-    .bulk-select { padding: 0.4rem 0.6rem; border: 1px solid #E8E8E8; border-radius: 4px; font-size: 0.8rem; outline: none; background: #fff; }
-    .btn-bulk-apply { padding: 0.35rem 0.75rem; background: #B87333; color: #fff; border: none; border-radius: 4px; font-size: 0.8rem; cursor: pointer; }
+    .bulk-bar { display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 1rem; background: linear-gradient(rgba(184,115,51,0.08), rgba(184,115,51,0.08)), #F3EFE8; border: 1px solid rgba(184,115,51,0.3); border-radius: 8px; margin: 0 2rem 1rem 2rem; }
+    .bulk-count { display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; font-weight: 700; color: #B87333; }
+    .select-wrap--bulk { position: relative; display: flex; align-items: center; }
+    .select-wrap--bulk .bulk-select { padding: 0.4rem 1.7rem 0.4rem 0.65rem; border: 1px solid #E0D8C8; border-radius: 6px; font-size: 0.8rem; outline: none; background: #fff; appearance: none; cursor: pointer; }
+    .select-wrap--bulk .select-caret { position: absolute; right: 0.6rem; color: #999; pointer-events: none; }
+    .btn-bulk-apply { padding: 0.4rem 0.9rem; background: #B87333; color: #fff; border: none; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: opacity 0.15s; }
+    .btn-bulk-apply:hover { opacity: 0.9; }
     .btn-bulk-apply:disabled { opacity: 0.4; cursor: not-allowed; }
-    .btn-bulk-clear { padding: 0.35rem 0.75rem; background: none; border: 1px solid #E8E8E8; color: #888; border-radius: 4px; font-size: 0.8rem; cursor: pointer; }
+    .btn-bulk-clear { display: flex; align-items: center; gap: 0.35rem; padding: 0.4rem 0.85rem; background: none; border: 1px solid #E0D8C8; color: #888; border-radius: 6px; font-size: 0.8rem; cursor: pointer; transition: background 0.15s; }
+    .btn-bulk-clear:hover { background: rgba(0,0,0,0.03); }
 
     .error-msg { color: #DC2626; padding: 0.75rem; background: rgba(220,38,38,0.06); border: 1px solid rgba(220,38,38,0.15); border-radius: 6px; margin: 0 2rem 1rem 2rem; font-size: 0.875rem; }
     .skel-row td { padding: 0.7rem 0.875rem; border-bottom: 1px solid #F0F0F0; }
@@ -227,16 +251,24 @@ const ALL_STATUSES = [
     .cust-email { font-size: 0.75rem; color: #888; margin-top: 2px; }
     .muted { color: #888; }
     .muted-sm { font-size: 0.7rem; color: #888; margin-top: 2px; }
-    .badge { display: inline-block; padding: 3px 8px; border-radius: 20px; font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; background: #F0F0F0; color: #888; }
+    .amount { font-weight: 600; color: #1C1C1C; }
+    .badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 20px; font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; background: #F0F0F0; color: #888; }
+    .badge-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
     .pay-paid { background: rgba(21,128,61,0.09); color: #15803D; }
     .pay-pending { background: rgba(180,83,9,0.1); color: #B45309; }
     .pay-failed { background: rgba(220,38,38,0.09); color: #DC2626; }
-    .inline-select { background: #fff; border: 1px solid #E8E8E8; border-radius: 4px; color: #333; font-size: 0.75rem; padding: 4px 6px; cursor: pointer; max-width: 170px; outline: none; }
-    .inline-select:focus { border-color: #B87333; }
+    .inline-select { appearance: none; background: transparent; border: none; color: inherit; font-size: 0.78rem; font-weight: 600; padding: 5px 20px 5px 10px; cursor: pointer; outline: none; max-width: 170px; }
+    .select-wrap--status { border-radius: 6px; background: #F0F0F0; color: #666; position: relative; display: inline-flex; align-items: center; }
+    .select-wrap--status .select-caret { position: absolute; right: 6px; color: inherit; pointer-events: none; }
+    .select-wrap--status.status-pending { background: rgba(180,83,9,0.1); color: #B45309; }
+    .select-wrap--status.status-confirmed, .select-wrap--status.status-processing, .select-wrap--status.status-quality_check { background: rgba(29,78,216,0.1); color: #1D4ED8; }
+    .select-wrap--status.status-shipped, .select-wrap--status.status-out_for_delivery { background: rgba(124,58,237,0.1); color: #7C3AED; }
+    .select-wrap--status.status-delivered { background: rgba(21,128,61,0.1); color: #15803D; }
+    .select-wrap--status.status-cancelled, .select-wrap--status.status-refund_requested, .select-wrap--status.status-refunded, .select-wrap--status.status-returned { background: rgba(220,38,38,0.1); color: #DC2626; }
     .action-btns { display: flex; gap: 0.4rem; }
     .btn-sm { padding: 4px 10px; background: #F7F8FA; border: 1px solid #E8E8E8; color: #555; border-radius: 4px; font-size: 0.75rem; cursor: pointer; transition: background 0.15s; }
     .btn-sm:hover { background: #F0F0F0; }
-    .btn-view { background: rgba(184,115,51,0.08); border-color: rgba(184,115,51,0.3); color: #B87333; }
+    .btn-view { display: inline-flex; align-items: center; gap: 0.35rem; padding: 5px 12px; background: rgba(184,115,51,0.08); border: 1px solid rgba(184,115,51,0.3); color: #B87333; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer; text-decoration: none; transition: background 0.15s; }
     .btn-view:hover { background: rgba(184,115,51,0.15); }
     .btn-book { background: #B87333; color: #fff; border-color: #B87333; }
     .btn-book:hover { background: #9d5d22; border-color: #9d5d22; }
@@ -247,7 +279,8 @@ const ALL_STATUSES = [
     .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
     .btn-secondary { padding: 0.5rem 1.25rem; background: #fff; border: 1px solid #E8E8E8; color: #555; border-radius: 6px; font-size: 0.875rem; cursor: pointer; transition: background 0.15s; }
     .btn-secondary:hover { background: #F7F8FA; }
-    .empty-cell { text-align: center; color: #AAAAAA; padding: 3rem; font-style: italic; }
+    .empty-cell { text-align: center; color: #AAAAAA; padding: 3rem; }
+    .empty-cell svg { margin-bottom: 0.5rem; }
     .pagination { display: flex; gap: 1rem; align-items: center; justify-content: center; margin-top: 1.5rem; font-size: 0.875rem; color: #888; }
     .pagination button { padding: 0.4rem 0.75rem; background: #fff; border: 1px solid #E8E8E8; color: #555; border-radius: 4px; cursor: pointer; font-size: 0.8rem; transition: background 0.15s; }
     .pagination button:hover { background: #F7F8FA; }
@@ -358,6 +391,7 @@ export class AdminOrdersComponent implements OnInit {
   loading = signal(true);
   error = signal('');
   total = signal(0);
+  statusCounts = signal<Record<string, number>>({});
   page = signal(1);
   pages = signal(1);
   searchQ = '';
@@ -372,6 +406,10 @@ export class AdminOrdersComponent implements OnInit {
 
   readonly statuses = ALL_STATUSES;
 
+  readonly allOrdersCount = computed(() =>
+    Object.values(this.statusCounts()).reduce((a, b) => a + b, 0)
+  );
+
   readonly allSelected = computed(() => {
     const ids = this.orders().map(o => o.id);
     const sel = this.selectedIds();
@@ -385,7 +423,14 @@ export class AdminOrdersComponent implements OnInit {
     return 'Mark ' + this.formatStatus(this.bulkAction);
   });
 
-  ngOnInit(): void { this.load(); }
+  ngOnInit(): void { this.load(); this.loadStatusCounts(); }
+
+  loadStatusCounts(): void {
+    this.api.get<any>('/orders/status-counts').subscribe({
+      next: (res) => this.statusCounts.set(res.data || {}),
+      error: () => {}
+    });
+  }
 
   load(): void {
     this.loading.set(true);
@@ -426,6 +471,7 @@ export class AdminOrdersComponent implements OnInit {
 
   changeStatus(o: Order): void {
     this.api.patch<any>(`/orders/${o.id}/status`, { status: o.status }).subscribe({
+      next: () => this.loadStatusCounts(),
       error: (err) => { this.toast.error(err.userMessage || 'Failed to update status'); this.load(); }
     });
   }
@@ -467,6 +513,7 @@ export class AdminOrdersComponent implements OnInit {
       this.toast.success(`${ids.length} order(s) marked ${this.formatStatus(newStatus)}`);
       this.clearSelection();
       this.load();
+      this.loadStatusCounts();
     });
   }
 

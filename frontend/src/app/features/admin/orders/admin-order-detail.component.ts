@@ -6,6 +6,7 @@ import { ApiService } from '../../../core/services/api.service';
 import { imageUrl } from '../../../shared/utils/image-url';
 import { AdminConfirmService } from '../shared/admin-confirm.service';
 import { AdminToastService } from '../shared/admin-toast.service';
+import { IndianCurrencyPipe } from '../shared/indian-currency.pipe';
 
 interface Order {
   id: number;
@@ -68,18 +69,30 @@ interface ShippingAddress {
   selector: 'lk-admin-order-detail',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, IndianCurrencyPipe],
   template: `
     <div class="page">
       @if (loadingDetail()) {
-        <div class="detail-loading">Loading order details...</div>
+        <div class="detail-loading">
+          <span class="spinner-lg"></span>
+          <div>Loading order details…</div>
+        </div>
       } @else if (error()) {
-        <div class="error-msg">{{ error() }} <button (click)="retryLoad()">Retry</button></div>
+        <div class="error-msg">
+          {{ error() }}
+          <button (click)="retryLoad()">Retry</button>
+        </div>
       } @else if (detailOrder(); as d) {
-        <div class="page-header" style="padding: 0; margin-bottom: 1.5rem;">
+        <div class="page-header">
           <div>
-            <a routerLink="/admin/orders" class="btn-back">← Back to Orders</a>
+            <a routerLink="/admin/orders" class="btn-back">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              Back to Orders
+            </a>
             <h1 class="order-title">
+              <span class="order-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 2L3 7v13a1 1 0 001 1h16a1 1 0 001-1V7l-6-5"/><path d="M9 2h6M3 7h18M9 12h6"/></svg>
+              </span>
               Order {{ d.order_number }}
               <span class="order-date">{{ d.created_at | date:'dd MMM yyyy, hh:mm a' }}</span>
             </h1>
@@ -88,14 +101,19 @@ interface ShippingAddress {
             <div class="status-selector">
               <label class="status-select-label">Order Status</label>
               <div class="status-select-wrap">
-                <select [value]="d.status" (change)="onStatusChange($event)" [disabled]="updatingStatus()" class="status-dropdown">
-                  @for (st of allStatuses(); track st.id) {
-                    <option [value]="st.slug">{{ st.name }}</option>
-                  }
-                </select>
                 <span class="status-badge" [style.background-color]="d.status_color + '15'" [style.color]="d.status_color" [style.border-color]="d.status_color + '40'">
+                  <span class="status-dot" [style.background]="d.status_color"></span>
                   {{ d.status_name || formatStatus(d.status) }}
                 </span>
+                <div class="select-wrap select-wrap--header">
+                  <select [value]="d.status" (change)="onStatusChange($event)" [disabled]="updatingStatus()" class="status-dropdown form-select">
+                    @for (st of allStatuses(); track st.id) {
+                      <option [value]="st.slug">{{ st.name }}</option>
+                    }
+                  </select>
+                  <svg class="select-caret" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M6 9l6 6 6-6"/></svg>
+                </div>
+                @if (updatingStatus()) { <span class="spinner-sm"></span> }
               </div>
             </div>
           </div>
@@ -105,10 +123,13 @@ interface ShippingAddress {
           
           <!-- Row 1: 4 Cards (Customer, Shipping Address, Payments, Order Summary) -->
           <div class="detail-row-4">
-            
+
             <!-- Card 1: Customer -->
             <div class="detail-card">
-              <div class="dc-title">Customer</div>
+              <div class="dc-title">
+                <span class="dc-icon dc-icon--blue"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+                Customer
+              </div>
               <div class="dc-val fw">{{ d.first_name }} {{ d.last_name }}</div>
               <div class="dc-val">{{ d.email }}</div>
               <div class="dc-val">{{ d.user_phone || d.phone || '—' }}</div>
@@ -116,7 +137,10 @@ interface ShippingAddress {
 
             <!-- Card 2: Shipping Address -->
             <div class="detail-card">
-              <div class="dc-title">Shipping Address</div>
+              <div class="dc-title">
+                <span class="dc-icon dc-icon--purple"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
+                Shipping Address
+              </div>
               @if (shippingAddr()) {
                 <div class="dc-val fw">{{ shippingAddr()!.full_name || (d.first_name + ' ' + d.last_name) }}</div>
                 <div class="dc-val">{{ shippingAddr()!.address_line1 }}{{ shippingAddr()!.address_line2 ? ', ' + shippingAddr()!.address_line2 : '' }}</div>
@@ -129,26 +153,32 @@ interface ShippingAddress {
 
             <!-- Card 3: Payments -->
             <div class="detail-card">
-              <div class="dc-title">Payment</div>
+              <div class="dc-title">
+                <span class="dc-icon dc-icon--green"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></span>
+                Payment
+              </div>
               <div class="dc-val fw">{{ d.advance_paid_amount ? 'Partial (Advance)' : formatPaymentMethod(d.payment_method) }}</div>
               <div style="margin-top: 0.5rem;">
-                <span class="badge" [class]="'pay-' + d.payment_status">{{ d.payment_status }}</span>
+                <span class="badge badge-dot-wrap" [class]="'pay-' + d.payment_status"><span class="badge-dot"></span>{{ d.payment_status }}</span>
               </div>
               @if (d.coupon_code) {
-                <div class="dc-val muted" style="margin-top: 0.5rem">Coupon: {{ d.coupon_code }}</div>
+                <div class="dc-val muted" style="margin-top: 0.5rem">Coupon: <strong>{{ d.coupon_code }}</strong></div>
               }
             </div>
 
             <!-- Card 4: Order Summary -->
             <div class="detail-card summary-card">
-              <div class="dc-title">Order Summary</div>
-              <div class="summary-row"><span>Subtotal</span><span>₹{{ d.subtotal | number:'1.0-0' }}</span></div>
+              <div class="dc-title">
+                <span class="dc-icon dc-icon--copper"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 11V6a3 3 0 016 0v5M5 11h14l-1.5 9.5a2 2 0 01-2 1.5H8.5a2 2 0 01-2-1.5L5 11z"/></svg></span>
+                Order Summary
+              </div>
+              <div class="summary-row"><span>Subtotal</span><span>{{ d.subtotal | inr }}</span></div>
               @if (d.discount_amount > 0) {
-                <div class="summary-row green"><span>Discount</span><span>-₹{{ d.discount_amount | number:'1.0-0' }}</span></div>
+                <div class="summary-row green"><span>Discount</span><span>-{{ d.discount_amount | inr }}</span></div>
               }
-              <div class="summary-row"><span>Shipping</span><span>{{ d.shipping_amount > 0 ? '₹' + (d.shipping_amount | number:'1.0-0') : 'Free' }}</span></div>
-              <div class="summary-row"><span>Tax (GST)</span><span>₹{{ d.tax_amount | number:'1.0-0' }}</span></div>
-              <div class="summary-row total"><span>Grand Total</span><span>₹{{ d.total_amount | number:'1.0-0' }}</span></div>
+              <div class="summary-row"><span>Shipping</span><span>{{ d.shipping_amount > 0 ? (d.shipping_amount | inr) : 'Free' }}</span></div>
+              <div class="summary-row"><span>Tax (GST)</span><span>{{ d.tax_amount | inr }}</span></div>
+              <div class="summary-row total"><span>Grand Total</span><span>{{ d.total_amount | inr }}</span></div>
             </div>
 
           </div>
@@ -156,24 +186,33 @@ interface ShippingAddress {
           <!-- Tabs (Shown only if shipment not created) -->
           @if (!d.tracking_number) {
             <div class="tabs-container">
-              <button class="tab-btn" [class.active]="activeTab() === 'overview'" (click)="activeTab.set('overview')">Order Overview</button>
-              <button class="tab-btn" [class.active]="activeTab() === 'booking'" (click)="activeTab.set('booking')">Book Shipment</button>
+              <button class="tab-btn" [class.active]="activeTab() === 'overview'" (click)="activeTab.set('overview')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 2L3 7v13a1 1 0 001 1h16a1 1 0 001-1V7l-6-5"/><path d="M9 2h6M3 7h18M9 12h6"/></svg>
+                Order Overview
+              </button>
+              <button class="tab-btn" [class.active]="activeTab() === 'booking'" (click)="activeTab.set('booking')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                Book Shipment
+              </button>
             </div>
           }
 
           <!-- TAB 1: OVERVIEW -->
           @if (d.tracking_number || activeTab() === 'overview') {
             <div class="detail-main-layout">
-              
+
               <!-- Left Column: Products List & Special Instructions -->
               <div class="main-left">
                 <!-- Products Table Card -->
                 <div class="detail-card">
-                  <div class="dc-title">Products</div>
+                  <div class="dc-title">
+                    <span class="dc-icon dc-icon--copper"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20.59 13.41L11 3.83A2 2 0 009.5 3H4a1 1 0 00-1 1v5.5a2 2 0 00.59 1.41l9.58 9.58a2 2 0 002.83 0l4.59-4.59a2 2 0 000-2.83z"/><circle cx="7.5" cy="7.5" r="1.25"/></svg></span>
+                    Products <span class="count-chip">{{ d.items.length }}</span>
+                  </div>
                   <table class="items-table">
                     <thead>
                       <tr>
-                        <th style="width:36px"></th>
+                        <th style="width:44px"></th>
                         <th>Product</th>
                         <th>Qty</th>
                         <th>Unit Price</th>
@@ -187,7 +226,9 @@ interface ShippingAddress {
                             @if (item.primary_image) {
                               <img [src]="imgUrl(item.primary_image)" class="item-thumb" [alt]="item.product_name" />
                             } @else {
-                              <div class="item-thumb-empty"></div>
+                              <div class="item-thumb-empty">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                              </div>
                             }
                           </td>
                           <td>
@@ -195,8 +236,8 @@ interface ShippingAddress {
                             @if (item.variant_name) { <div class="item-variant">{{ item.variant_name }}</div> }
                           </td>
                           <td>{{ item.quantity }}</td>
-                          <td>₹{{ item.unit_price | number:'1.0-0' }}</td>
-                          <td class="fw">₹{{ item.total_amount | number:'1.0-0' }}</td>
+                          <td>{{ item.unit_price | inr }}</td>
+                          <td class="fw">{{ item.total_amount | inr }}</td>
                         </tr>
                       }
                       @if (!d.items.length) {
@@ -209,14 +250,18 @@ interface ShippingAddress {
                 <!-- Special instructions -->
                 @if (d.special_instructions) {
                   <div class="detail-card">
-                    <div class="dc-title">Special Instructions</div>
+                    <div class="dc-title">
+                      <span class="dc-icon dc-icon--amber"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 3v4a1 1 0 001 1h4"/><path d="M17 21H7a2 2 0 01-2-2V5a2 2 0 012-2h7l5 5v11a2 2 0 01-2 2z"/><path d="M9 13h6M9 17h6"/></svg></span>
+                      Special Instructions
+                    </div>
                     <div class="dc-val">{{ d.special_instructions }}</div>
                   </div>
                 }
 
                 <!-- Manual Tracking and Action Buttons at the Bottom -->
-                <div class="bottom-actions" style="margin-top: 1rem; display: flex; gap: 0.75rem;">
+                <div class="bottom-actions">
                   <button class="btn-secondary" (click)="openTracking(d)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
                     {{ d.tracking_number ? 'Update Tracking' : 'Manual Tracking' }}
                   </button>
                 </div>
@@ -226,20 +271,27 @@ interface ShippingAddress {
               <div class="main-right">
                 <div class="detail-card">
                   <div class="dc-top-row">
-                    <div class="dc-title" style="margin-bottom:0">Order History</div>
-                    <button class="btn-update-sm" (click)="openUpdateModal()">+ Update</button>
+                    <div class="dc-title" style="margin-bottom:0">
+                      <span class="dc-icon dc-icon--blue"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></span>
+                      Order History
+                    </div>
+                    <button class="btn-update-sm" (click)="openUpdateModal()">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                      Update
+                    </button>
                   </div>
 
                   @if (d.tracking_number) {
-                    <div class="dc-val fw" style="margin-top:0.6rem">AWB: {{ d.tracking_number }}</div>
-                    @if (d.tracking_url) {
-                      <a [href]="d.tracking_url" target="_blank" class="track-link">Track Package ↗</a>
-                    }
-                    <div style="height:0.5rem"></div>
+                    <div class="awb-strip">
+                      <div class="dc-val fw" style="margin:0">AWB: {{ d.tracking_number }}</div>
+                      @if (d.tracking_url) {
+                        <a [href]="d.tracking_url" target="_blank" class="track-link">Track Package ↗</a>
+                      }
+                    </div>
                   }
 
                   @if (loadingHistory()) {
-                    <div class="history-loading">Loading history…</div>
+                    <div class="history-loading"><span class="spinner-sm"></span> Loading history…</div>
                   } @else if (statusHistory().length) {
                     <div class="status-tl">
                       @for (entry of statusHistory(); track entry.id; let last = $last) {
@@ -249,15 +301,15 @@ interface ShippingAddress {
                             @if (!last) { <div class="stl-line"></div> }
                           </div>
                           <div class="stl-body">
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div class="stl-head">
                               <div class="stl-name" [style.color]="entry.status_color || '#B87333'">
                                 {{ entry.status_name || entry.status }}
                               </div>
-                              <div class="stl-actions" style="display: flex; gap: 0.5rem; margin-top: -2px;">
-                                <button (click)="openEditHistoryModal(entry)" class="btn-icon" title="Edit entry" style="background:none; border:none; color:#B87333; cursor:pointer; padding:2px; font-size:0.75rem; display:flex; align-items:center;">
+                              <div class="stl-actions">
+                                <button (click)="openEditHistoryModal(entry)" class="icon-btn icon-btn--edit" title="Edit entry">
                                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                 </button>
-                                <button (click)="deleteHistoryEntry(entry)" class="btn-icon" title="Delete entry" style="background:none; border:none; color:#DC2626; cursor:pointer; padding:2px; font-size:0.75rem; display:flex; align-items:center;">
+                                <button (click)="deleteHistoryEntry(entry)" class="icon-btn icon-btn--delete" title="Delete entry">
                                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
                                 </button>
                               </div>
@@ -284,18 +336,29 @@ interface ShippingAddress {
                 
                 <!-- Section 1: Booking Details -->
                 <div class="form-section">
-                  <div class="form-section-title">Booking Details</div>
+                  <div class="form-section-title">
+                    <span class="fs-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></span>
+                    Booking Details
+                  </div>
                   <div class="form-grid-2">
                     <div class="field-group">
                       <label>Pickup Address</label>
-                      <select class="form-input" [(ngModel)]="bookingForm.pickupLocation" name="pickupLocation">
-                        <option value="Primary">Primary</option>
-                        <option value="Warehouse 1">Warehouse 1</option>
-                      </select>
+                      <div class="select-wrap">
+                        <select class="form-select" [(ngModel)]="bookingForm.pickupLocation" name="pickupLocation">
+                          <option value="Primary">Primary</option>
+                          <option value="Warehouse 1">Warehouse 1</option>
+                        </select>
+                        <svg class="select-caret" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M6 9l6 6 6-6"/></svg>
+                      </div>
                     </div>
-                    <div class="field-group" style="justify-content: center; padding-top: 1.2rem;">
+                    <div class="field-group" style="justify-content: center;">
                       <label class="checkbox-label">
-                        <input type="checkbox" [(ngModel)]="bookingForm.sameAsPickup" name="sameAsPickup" />
+                        <span class="chk-box" [class.checked]="bookingForm.sameAsPickup">
+                          @if (bookingForm.sameAsPickup) {
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>
+                          }
+                        </span>
+                        <input type="checkbox" [(ngModel)]="bookingForm.sameAsPickup" name="sameAsPickup" class="chk-native" />
                         Same as Pickup Address (Shipper Address on Label / From Address)
                       </label>
                     </div>
@@ -317,7 +380,10 @@ interface ShippingAddress {
 
                 <!-- Section 2: Delivery Address -->
                 <div class="form-section">
-                  <div class="form-section-title">Delivery Address</div>
+                  <div class="form-section-title">
+                    <span class="fs-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
+                    Delivery Address
+                  </div>
                   <div class="form-grid-3">
                     <div class="field-group">
                       <label>Contact Name</label>
@@ -383,37 +449,40 @@ interface ShippingAddress {
 
                 <!-- Section 3: Box Details -->
                 <div class="form-section">
-                  <div class="form-section-title">Box Details (Set Defaults)</div>
+                  <div class="form-section-title">
+                    <span class="fs-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><path d="M3.27 6.96L12 12l8.73-5.04M12 22.08V12"/></svg></span>
+                    Box Details (Set Defaults)
+                  </div>
                   <div class="form-grid-4">
                     <div class="field-group">
                       <label>Weight of Parcel</label>
-                      <div style="display: flex; align-items: center; gap: 0.5rem;">
+                      <div class="input-icon-wrap input-icon-wrap--suffix">
                         <input type="number" class="form-input" [(ngModel)]="bookingForm.weight" name="weight" required min="1" />
-                        <span style="font-size: 0.8rem; color: #666; font-weight: 600; white-space: nowrap;">Grams (gm)</span>
+                        <span class="input-suffix">gm</span>
                       </div>
                     </div>
 
                     <div class="field-group">
                       <label>Length of Parcel</label>
-                      <div style="display: flex; align-items: center; gap: 0.5rem;">
+                      <div class="input-icon-wrap input-icon-wrap--suffix">
                         <input type="number" class="form-input" [(ngModel)]="bookingForm.length" name="length" required min="1" />
-                        <span style="font-size: 0.8rem; color: #666; font-weight: 600; white-space: nowrap;">Centimetres (cm)</span>
+                        <span class="input-suffix">cm</span>
                       </div>
                     </div>
 
                     <div class="field-group">
                       <label>Breadth of Parcel</label>
-                      <div style="display: flex; align-items: center; gap: 0.5rem;">
+                      <div class="input-icon-wrap input-icon-wrap--suffix">
                         <input type="number" class="form-input" [(ngModel)]="bookingForm.breadth" name="breadth" required min="1" />
-                        <span style="font-size: 0.8rem; color: #666; font-weight: 600; white-space: nowrap;">Centimetres (cm)</span>
+                        <span class="input-suffix">cm</span>
                       </div>
                     </div>
 
                     <div class="field-group">
                       <label>Height of Parcel</label>
-                      <div style="display: flex; align-items: center; gap: 0.5rem;">
+                      <div class="input-icon-wrap input-icon-wrap--suffix">
                         <input type="number" class="form-input" [(ngModel)]="bookingForm.height" name="height" required min="1" />
-                        <span style="font-size: 0.8rem; color: #666; font-weight: 600; white-space: nowrap;">Centimetres (cm)</span>
+                        <span class="input-suffix">cm</span>
                       </div>
                     </div>
                   </div>
@@ -421,7 +490,7 @@ interface ShippingAddress {
                   <div class="form-grid-2" style="margin-top: 1rem;">
                     <div class="field-group">
                       <label>Volumetric Weight</label>
-                      <div style="padding: 0.5rem 0.75rem; background: #F7F8FA; border: 1px solid #E8E8E8; border-radius: 6px; font-size: 0.875rem; font-weight: 600; color: #4A5568;">
+                      <div class="volumetric-box">
                         {{ volumetricWeight }} kg
                       </div>
                     </div>
@@ -430,7 +499,10 @@ interface ShippingAddress {
 
                 <!-- Section 4: Shipment Details -->
                 <div class="form-section">
-                  <div class="form-section-title">Shipment Details</div>
+                  <div class="form-section-title">
+                    <span class="fs-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 2L3 7v13a1 1 0 001 1h16a1 1 0 001-1V7l-6-5"/><path d="M9 2h6M3 7h18M9 12h6"/></svg></span>
+                    Shipment Details
+                  </div>
                   <div class="form-grid-3">
                     <div class="field-group">
                       <label>Mode</label>
@@ -495,10 +567,17 @@ interface ShippingAddress {
 
                 <!-- Courier Serviceability Check & rates display -->
                 <div class="form-section shipment-card">
-                  <div class="form-section-title">Courier Rates & Booking</div>
-                  
-                  <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1.25rem;">
+                  <div class="form-section-title">
+                    <span class="fs-icon fs-icon--copper"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></span>
+                    Courier Rates &amp; Booking
+                  </div>
+
+                  <div class="fetch-row">
                     <button type="button" class="btn-primary" (click)="loadCouriersForForm()" [disabled]="loadingCouriers() || !isFormValid()">
+                      @if (loadingCouriers()) { <span class="btn-spinner"></span> }
+                      @if (!loadingCouriers()) {
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 21l-4.35-4.35"/><circle cx="10" cy="10" r="7"/></svg>
+                      }
                       {{ loadingCouriers() ? 'Checking Serviceability...' : 'Fetch Serviceable Couriers' }}
                     </button>
                     @if (!isFormValid()) {
@@ -513,19 +592,22 @@ interface ShippingAddress {
                   } @else if (couriersError()) {
                     <div class="error-msg">{{ couriersError() }}</div>
                   } @else if (shiprocketCouriers().length > 0) {
-                    <div class="couriers-list" style="margin-top: 0.75rem;">
+                    <div class="couriers-list">
                       @for (c of shiprocketCouriers(); track c.courier_company_id) {
                         <div class="courier-card" (click)="selectCourier(c)">
-                          <div>
-                            <div class="courier-name">{{ c.courier_name }}</div>
-                            <div class="courier-meta">
-                              <span>ETD: <strong>{{ c.etd }}</strong></span>
-                              <span>★ {{ c.rating }}</span>
-                              <span class="cod-tag" [class.cod-yes]="c.cod">{{ c.cod ? 'COD' : 'Prepaid' }}</span>
+                          <div class="courier-left">
+                            <span class="courier-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></span>
+                            <div>
+                              <div class="courier-name">{{ c.courier_name }}</div>
+                              <div class="courier-meta">
+                                <span>ETD: <strong>{{ c.etd }}</strong></span>
+                                <span class="star-meta">★ {{ c.rating }}</span>
+                                <span class="cod-tag" [class.cod-yes]="c.cod">{{ c.cod ? 'COD' : 'Prepaid' }}</span>
+                              </div>
                             </div>
                           </div>
                           <div class="courier-right">
-                            <div class="courier-rate">₹{{ c.rate }}</div>
+                            <div class="courier-rate">{{ c.rate | inr }}</div>
                             <button class="btn-book-sm"
                               [disabled]="bookingCourierId() !== null"
                               (click)="bookShipment(c); $event.stopPropagation()">
@@ -559,24 +641,32 @@ interface ShippingAddress {
       <div class="modal-backdrop" (click)="closeUpdateModal()">
         <div class="modal" (click)="$event.stopPropagation()">
           <div class="modal-header">
-            <h2>Update Order Status</h2>
-            <button class="modal-close" (click)="closeUpdateModal()">✕</button>
+            <h2>
+              <span class="modal-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></span>
+              Update Order Status
+            </h2>
+            <button class="modal-close" (click)="closeUpdateModal()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
           </div>
           <div class="modal-body">
             <div class="field">
               <label>Status *</label>
-              <select [(ngModel)]="updateForm.status" class="form-input">
-                @for (st of allStatuses(); track st.id) {
-                  <option [value]="st.slug">{{ st.name }}</option>
-                }
-              </select>
+              <div class="select-wrap">
+                <select [(ngModel)]="updateForm.status" class="form-select">
+                  @for (st of allStatuses(); track st.id) {
+                    <option [value]="st.slug">{{ st.name }}</option>
+                  }
+                </select>
+                <svg class="select-caret" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M6 9l6 6 6-6"/></svg>
+              </div>
             </div>
             <div class="field" style="margin-top:1rem">
               <label>Date &amp; Time</label>
               <input type="datetime-local" [(ngModel)]="updateForm.date" class="form-input" />
             </div>
             <div class="field" style="margin-top:1rem">
-              <label>Remark <span style="font-weight:400;color:#AAAAAA">(optional)</span></label>
+              <label>Remark <span class="field-optional">(optional)</span></label>
               <textarea [(ngModel)]="updateForm.note" class="form-input" rows="3" placeholder="Add a note about this status change…"></textarea>
             </div>
             @if (updateError()) { <div class="error-msg" style="margin-top:0.75rem">{{ updateError() }}</div> }
@@ -584,6 +674,7 @@ interface ShippingAddress {
           <div class="modal-footer">
             <button class="btn-secondary" (click)="closeUpdateModal()">Cancel</button>
             <button class="btn-primary" (click)="saveStatusUpdate()" [disabled]="updatingStatus()">
+              @if (updatingStatus()) { <span class="btn-spinner"></span> }
               {{ updatingStatus() ? 'Updating…' : 'Update Status' }}
             </button>
           </div>
@@ -596,13 +687,21 @@ interface ShippingAddress {
       <div class="modal-backdrop" (click)="closeTracking()">
         <div class="modal" (click)="$event.stopPropagation()">
           <div class="modal-header">
-            <h2>{{ trackingOrder()?.tracking_number ? 'Update Tracking' : 'Manual Tracking Entry' }} — {{ trackingOrder()!.order_number }}</h2>
-            <button class="modal-close" (click)="closeTracking()">✕</button>
+            <h2>
+              <span class="modal-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg></span>
+              {{ trackingOrder()?.tracking_number ? 'Update Tracking' : 'Manual Tracking Entry' }} — {{ trackingOrder()!.order_number }}
+            </h2>
+            <button class="modal-close" (click)="closeTracking()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
           </div>
           <div class="modal-body">
             @if (trackingOrder()?.tracking_number) {
               <div class="active-shipment-card">
-                <div style="font-weight:700;color:#276749;font-size:0.875rem">✓ Active Shipment</div>
+                <div class="asc-title">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+                  Active Shipment
+                </div>
                 <div class="dc-val">AWB: <strong>{{ trackingOrder()?.tracking_number }}</strong></div>
                 @if (trackingOrder()?.tracking_url) {
                   <a [href]="trackingOrder()?.tracking_url" target="_blank" class="track-link">Track ↗</a>
@@ -622,6 +721,7 @@ interface ShippingAddress {
           <div class="modal-footer">
             <button class="btn-secondary" (click)="closeTracking()">Cancel</button>
             <button class="btn-primary" (click)="saveTracking()" [disabled]="trackSaving()">
+              @if (trackSaving()) { <span class="btn-spinner"></span> }
               {{ trackSaving() ? 'Saving...' : 'Save Tracking' }}
             </button>
           </div>
@@ -634,24 +734,32 @@ interface ShippingAddress {
       <div class="modal-backdrop" (click)="closeEditHistoryModal()">
         <div class="modal" (click)="$event.stopPropagation()">
           <div class="modal-header">
-            <h2>Edit Status History Entry</h2>
-            <button class="modal-close" (click)="closeEditHistoryModal()">✕</button>
+            <h2>
+              <span class="modal-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span>
+              Edit Status History Entry
+            </h2>
+            <button class="modal-close" (click)="closeEditHistoryModal()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
           </div>
           <div class="modal-body">
             <div class="field">
               <label>Status *</label>
-              <select [(ngModel)]="editHistoryForm.status" class="form-input">
-                @for (st of allStatuses(); track st.id) {
-                  <option [value]="st.slug">{{ st.name }}</option>
-                }
-              </select>
+              <div class="select-wrap">
+                <select [(ngModel)]="editHistoryForm.status" class="form-select">
+                  @for (st of allStatuses(); track st.id) {
+                    <option [value]="st.slug">{{ st.name }}</option>
+                  }
+                </select>
+                <svg class="select-caret" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M6 9l6 6 6-6"/></svg>
+              </div>
             </div>
             <div class="field" style="margin-top:1rem">
               <label>Date &amp; Time</label>
               <input type="datetime-local" [(ngModel)]="editHistoryForm.date" class="form-input" />
             </div>
             <div class="field" style="margin-top:1rem">
-              <label>Remark <span style="font-weight:400;color:#AAAAAA">(optional)</span></label>
+              <label>Remark <span class="field-optional">(optional)</span></label>
               <textarea [(ngModel)]="editHistoryForm.note" class="form-input" rows="3" placeholder="Add a note about this status change…"></textarea>
             </div>
             @if (editHistoryError()) { <div class="error-msg" style="margin-top:0.75rem">{{ editHistoryError() }}</div> }
@@ -659,6 +767,7 @@ interface ShippingAddress {
           <div class="modal-footer">
             <button class="btn-secondary" (click)="closeEditHistoryModal()">Cancel</button>
             <button class="btn-primary" (click)="saveHistoryUpdate()" [disabled]="updatingHistory()">
+              @if (updatingHistory()) { <span class="btn-spinner"></span> }
               {{ updatingHistory() ? 'Updating…' : 'Save Changes' }}
             </button>
           </div>
@@ -667,156 +776,200 @@ interface ShippingAddress {
     }
   `,
   styles: [`
-    .page { padding: 1rem 0.5rem; max-width: 100%; width: 100%; box-sizing: border-box; }
-    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding: 0 0.5rem; }
-    .btn-back { display: inline-block; color: #B87333; text-decoration: none; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; transition: color 0.15s; }
+    .page { padding: 1.5rem 1.75rem; max-width: 100%; width: 100%; box-sizing: border-box; }
+    .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; gap: 1rem; flex-wrap: wrap; }
+    .btn-back { display: inline-flex; align-items: center; gap: 6px; color: #B87333; text-decoration: none; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.6rem; transition: color 0.15s; }
     .btn-back:hover { color: #9d5d22; }
-    .order-title { font-size: 1.375rem; font-weight: 700; color: #1c1c1c; margin: 0.5rem 0 0 0; display: flex; align-items: center; gap: 0.75rem; }
-    .order-date { font-size: 0.8rem; font-weight: 400; color: #888; background: #F0F0F0; padding: 2px 8px; border-radius: 12px; }
+    .order-title { font-size: 1.375rem; font-weight: 700; color: #1c1c1c; margin: 0; display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+    .order-icon { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 9px; background: rgba(184,115,51,0.1); color: #B87333; flex-shrink: 0; }
+    .order-date { font-size: 0.75rem; font-weight: 600; color: #888; background: #F3EFE8; padding: 3px 10px; border-radius: 12px; }
     .header-actions { display: flex; align-items: center; gap: 1rem; }
-    .status-selector { display: flex; flex-direction: column; gap: 0.25rem; }
-    .status-select-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: #888; letter-spacing: 0.05em; }
-    .status-select-wrap { display: flex; align-items: center; gap: 0.75rem; }
-    .status-dropdown { padding: 0.45rem 2rem 0.45rem 0.75rem; background: #fff; border: 1.5px solid #E8E8E8; border-radius: 6px; font-size: 0.8125rem; color: #1c1c1c; outline: none; cursor: pointer; transition: all 0.15s ease; font-weight: 600; }
-    .status-dropdown:focus { border-color: #B87333; box-shadow: 0 0 0 3px rgba(184, 115, 51, 0.1); }
-    .status-badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; border: 1px solid transparent; text-align: center; }
-    
-    .detail-loading { padding: 4rem; text-align: center; color: #888; }
-    .detail-body { display: flex; flex-direction: column; gap: 1rem; padding: 0 0.5rem; }
-    
+    .status-selector { display: flex; flex-direction: column; gap: 0.4rem; align-items: flex-end; }
+    .status-select-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: #AAAAAA; letter-spacing: 0.06em; }
+    .status-select-wrap { display: flex; align-items: center; gap: 0.6rem; }
+    .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; border: 1px solid transparent; }
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .select-wrap { position: relative; display: inline-flex; align-items: center; }
+    .select-wrap--header { min-width: 150px; }
+    .form-select { appearance: none; -webkit-appearance: none; width: 100%; padding: 0.5rem 1.9rem 0.5rem 0.75rem; background: #fff; border: 1.5px solid #E0D8C8; border-radius: 8px; font-size: 0.8125rem; color: #1c1c1c; outline: none; cursor: pointer; transition: all 0.15s ease; font-weight: 600; }
+    .form-select:focus { border-color: #B87333; box-shadow: 0 0 0 3px rgba(184, 115, 51, 0.1); }
+    .form-select:disabled { opacity: 0.6; cursor: not-allowed; }
+    .select-caret { position: absolute; right: 0.7rem; top: 50%; transform: translateY(-50%); color: #AAAAAA; pointer-events: none; }
+
+    .detail-loading { padding: 5rem 1rem; text-align: center; color: #888; display: flex; flex-direction: column; align-items: center; gap: 0.75rem; font-size: 0.85rem; }
+    .spinner-lg { display: inline-block; width: 26px; height: 26px; border: 3px solid rgba(184,115,51,0.15); border-top-color: #B87333; border-radius: 50%; animation: spin 0.8s linear infinite; }
+    .detail-body { display: flex; flex-direction: column; gap: 1.25rem; }
+
     /* 4-column layout */
-    .detail-row-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; }
+    .detail-row-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
     @media (max-width: 1024px) { .detail-row-4 { grid-template-columns: repeat(2, 1fr); } }
     @media (max-width: 600px) { .detail-row-4 { grid-template-columns: 1fr; } }
-    
-    .detail-card { background: #FAFAFA; border: 1px solid #E8E8E8; border-radius: 8px; padding: 1rem; }
-    .shipment-card { background: #fff; border-color: rgba(184,115,51,0.25); }
-    .dc-title { font-size: 0.67rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #AAAAAA; margin-bottom: 0.5rem; }
-    .dc-val { font-size: 0.8125rem; color: #4A5568; margin-top: 2px; }
+
+    .detail-card { background: #fff; border: 1px solid #E0D8C8; border-radius: 12px; padding: 1.1rem; }
+    .shipment-card { background: #fff; border-color: rgba(184,115,51,0.3); }
+    .dc-title { display: flex; align-items: center; gap: 6px; font-size: 0.67rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #AAAAAA; margin-bottom: 0.65rem; }
+    .dc-icon { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 6px; flex-shrink: 0; }
+    .dc-icon--blue { background: rgba(29,78,216,0.1); color: #1D4ED8; }
+    .dc-icon--purple { background: rgba(124,58,237,0.1); color: #7C3AED; }
+    .dc-icon--green { background: rgba(21,128,61,0.1); color: #15803D; }
+    .dc-icon--amber { background: rgba(180,83,9,0.1); color: #B45309; }
+    .dc-icon--copper { background: rgba(184,115,51,0.1); color: #B87333; }
+    .dc-val { font-size: 0.8125rem; color: #555; margin-top: 2px; line-height: 1.4; }
+    .dc-val.muted { color: #AAAAAA; font-style: italic; }
     .fw { font-weight: 600; color: #1C1C1C !important; }
 
-    .badge { display: inline-block; padding: 3px 8px; border-radius: 20px; font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; background: #F0F0F0; color: #888; }
+    .badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 20px; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; background: #F3EFE8; color: #888; }
+    .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
     .pay-paid { background: rgba(21,128,61,0.09); color: #15803D; }
     .pay-pending { background: rgba(180,83,9,0.1); color: #B45309; }
     .pay-failed { background: rgba(220,38,38,0.09); color: #DC2626; }
 
+    .count-chip { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: rgba(184,115,51,0.1); color: #B87333; font-size: 0.65rem; font-weight: 700; }
+
     /* Compact Items table */
-    .items-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; margin-top: 0.5rem; }
-    .items-table th { text-align: left; padding: 0.3rem 0.4rem; font-size: 0.6rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #888; border-bottom: 1px solid #E8E8E8; }
-    .items-table td { padding: 0.35rem 0.4rem; border-bottom: 1px solid #F0F0F0; vertical-align: middle; }
+    .items-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 0.25rem; }
+    .items-table th { text-align: left; padding: 0.5rem 0.5rem; font-size: 0.63rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #AAAAAA; border-bottom: 1px solid #E0D8C8; }
+    .items-table td { padding: 0.55rem 0.5rem; border-bottom: 1px solid #F3EFE8; vertical-align: middle; }
     .items-table tr:last-child td { border-bottom: none; }
-    .item-thumb { width: 28px; height: 28px; object-fit: cover; border-radius: 4px; border: 1px solid #E8E8E8; }
-    .item-thumb-empty { width: 28px; height: 28px; background: #F0F0F0; border-radius: 4px; }
-    .item-name { font-weight: 600; color: #1C1C1C; font-size: 0.78rem; }
-    .item-variant { font-size: 0.7rem; color: #888; margin-top: 1px; }
+    .item-thumb { width: 36px; height: 36px; object-fit: cover; border-radius: 7px; border: 1px solid #E0D8C8; }
+    .item-thumb-empty { width: 36px; height: 36px; background: #F3EFE8; border-radius: 7px; display: flex; align-items: center; justify-content: center; color: #C9BEA8; }
+    .item-name { font-weight: 600; color: #1C1C1C; font-size: 0.82rem; }
+    .item-variant { font-size: 0.72rem; color: #888; margin-top: 1px; }
 
     /* Summary */
     .summary-card { font-size: 0.8125rem; }
-    .summary-row { display: flex; justify-content: space-between; padding: 0.25rem 0; color: #4A5568; border-bottom: 1px solid #F0F0F0; }
+    .summary-row { display: flex; justify-content: space-between; padding: 0.32rem 0; color: #555; border-bottom: 1px solid #F3EFE8; }
     .summary-row:last-child { border-bottom: none; }
     .summary-row.green { color: #15803D; }
-    .summary-row.total { font-weight: 700; color: #1C1C1C; font-size: 0.875rem; border-top: 1px solid #E8E8E8; padding-top: 0.4rem; margin-top: 0.25rem; border-bottom: none; }
+    .summary-row.total { font-weight: 700; color: #1C1C1C; font-size: 0.9rem; border-top: 1.5px solid #E0D8C8; padding-top: 0.55rem; margin-top: 0.3rem; border-bottom: none; }
 
     .track-link { font-size: 0.75rem; color: #B87333; font-weight: 600; text-decoration: underline; display: inline-block; margin-top: 0.25rem; }
 
     /* Layout structure */
-    .detail-main-layout { display: grid; grid-template-columns: 7fr 3fr; gap: 1rem; align-items: start; }
+    .detail-main-layout { display: grid; grid-template-columns: 7fr 3fr; gap: 1.25rem; align-items: start; }
     @media (max-width: 1024px) { .detail-main-layout { grid-template-columns: 1fr; } }
-    .main-left { display: flex; flex-direction: column; gap: 1rem; }
-    .main-right { display: flex; flex-direction: column; gap: 1rem; }
+    .main-left { display: flex; flex-direction: column; gap: 1.25rem; }
+    .main-right { display: flex; flex-direction: column; gap: 1.25rem; }
+    .bottom-actions { display: flex; gap: 0.75rem; }
 
     /* Order History Timeline */
-    .dc-top-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
-    .btn-update-sm { padding: 4px 12px; background: #B87333; color: #fff; border: none; border-radius: 4px; font-size: 0.72rem; font-weight: 700; cursor: pointer; flex-shrink: 0; }
+    .dc-top-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.85rem; }
+    .btn-update-sm { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; background: #B87333; color: #fff; border: none; border-radius: 7px; font-size: 0.72rem; font-weight: 700; cursor: pointer; flex-shrink: 0; transition: opacity 0.15s; }
     .btn-update-sm:hover { opacity: 0.88; }
-    .history-loading { font-size: 0.72rem; color: #888; padding: 0.5rem 0; }
-    .history-empty { font-size: 0.72rem; color: #AAA; font-style: italic; padding: 0.5rem 0; }
+    .history-loading { font-size: 0.75rem; color: #888; padding: 0.5rem 0; display: flex; align-items: center; gap: 6px; }
+    .history-empty { font-size: 0.75rem; color: #AAA; font-style: italic; padding: 0.5rem 0; }
+    .awb-strip { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.4rem; background: #F3EFE8; border-radius: 8px; padding: 0.5rem 0.7rem; margin-bottom: 0.85rem; }
     .status-tl { display: flex; flex-direction: column; padding-top: 0.25rem; }
-    .stl-row { display: flex; gap: 0.65rem; }
+    .stl-row { display: flex; gap: 0.7rem; }
     .stl-aside { display: flex; flex-direction: column; align-items: center; }
-    .stl-dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
-    .stl-line { flex: 1; width: 2px; background: #E8E8E8; margin: 4px 0; min-height: 14px; }
-    .stl-body { padding-bottom: 0.9rem; flex: 1; min-width: 0; }
-    .stl-name { font-size: 0.78rem; font-weight: 700; }
-    .stl-date { font-size: 0.63rem; color: #AAAAAA; margin-top: 2px; }
-    .stl-note { font-size: 0.7rem; color: #4A5568; background: #F7F8FA; border-left: 2px solid #E8E8E8; border-radius: 0 4px 4px 0; padding: 3px 7px; margin-top: 5px; font-style: italic; }
+    .stl-dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; box-shadow: 0 0 0 3px #fff; }
+    .stl-line { flex: 1; width: 2px; background: #E0D8C8; margin: 4px 0; min-height: 14px; }
+    .stl-body { padding-bottom: 1rem; flex: 1; min-width: 0; }
+    .stl-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; }
+    .stl-name { font-size: 0.8rem; font-weight: 700; }
+    .stl-actions { display: flex; gap: 0.35rem; margin-top: -2px; flex-shrink: 0; }
+    .stl-date { font-size: 0.65rem; color: #AAAAAA; margin-top: 3px; font-weight: 600; }
+    .stl-note { font-size: 0.72rem; color: #555; background: #FAF8F5; border-left: 2px solid #E0D8C8; border-radius: 0 6px 6px 0; padding: 5px 9px; margin-top: 6px; font-style: italic; }
 
+    .icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 6px; border: 1px solid transparent; cursor: pointer; transition: all 0.15s ease; flex-shrink: 0; }
+    .icon-btn--edit { background: rgba(184,115,51,0.08); color: #B87333; }
+    .icon-btn--edit:hover { background: rgba(184,115,51,0.16); }
+    .icon-btn--delete { background: #fff; color: #DC2626; border-color: rgba(220,38,38,0.25); }
+    .icon-btn--delete:hover { background: rgba(220,38,38,0.06); }
 
     /* Tabs */
-    .tabs-container { display: flex; border-bottom: 2px solid #E8E8E8; margin-bottom: 0.5rem; }
-    .tab-btn { padding: 0.5rem 1.25rem; background: none; border: none; border-bottom: 2px solid transparent; font-size: 0.875rem; font-weight: 600; color: #666; cursor: pointer; margin-bottom: -2px; transition: all 0.15s; }
+    .tabs-container { display: flex; gap: 0.5rem; border-bottom: 1.5px solid #E0D8C8; margin-bottom: 0.25rem; }
+    .tab-btn { display: inline-flex; align-items: center; gap: 6px; padding: 0.6rem 1.1rem; background: none; border: none; border-bottom: 2px solid transparent; font-size: 0.85rem; font-weight: 600; color: #888; cursor: pointer; margin-bottom: -1.5px; transition: all 0.15s; }
     .tab-btn:hover { color: #B87333; }
     .tab-btn.active { color: #B87333; border-bottom-color: #B87333; }
 
     /* Booking Form Layout */
-    .booking-container { background: #FAFAFA; border: 1px solid #E8E8E8; border-radius: 8px; padding: 1.25rem; }
+    .booking-container { background: #FAF8F5; border: 1px solid #E0D8C8; border-radius: 12px; padding: 1.25rem; }
     .booking-form { display: flex; flex-direction: column; gap: 1.25rem; }
-    .form-section { border: 1px solid #E8E8E8; border-radius: 8px; padding: 1.25rem; background: #fff; }
-    .form-section-title { font-size: 0.8rem; font-weight: 700; color: #1C1C1C; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #F0F0F0; text-transform: uppercase; letter-spacing: 0.05em; }
-    
+    .form-section { border: 1px solid #E0D8C8; border-radius: 12px; padding: 1.25rem; background: #fff; }
+    .form-section-title { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; font-weight: 700; color: #1C1C1C; margin-bottom: 1.1rem; padding-bottom: 0.65rem; border-bottom: 1px solid #F3EFE8; text-transform: uppercase; letter-spacing: 0.05em; }
+    .fs-icon { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 7px; background: #F3EFE8; color: #B87333; flex-shrink: 0; }
+    .fs-icon--copper { background: rgba(184,115,51,0.12); }
+
     .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
     .form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
     .form-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
     @media (max-width: 768px) {
       .form-grid-2, .form-grid-3, .form-grid-4 { grid-template-columns: 1fr; }
     }
-    
+
     .field-group { display: flex; flex-direction: column; gap: 0.35rem; }
-    .field-group label { font-size: 0.7rem; font-weight: 600; color: #666; text-transform: uppercase; letter-spacing: 0.02em; }
-    .field-note { font-size: 0.65rem; color: #888; line-height: 1.2; }
-    .field-error { font-size: 0.68rem; color: #DC2626; font-weight: 600; }
-    
+    .field-group label { font-size: 0.7rem; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.03em; }
+    .field-note { font-size: 0.65rem; color: #AAAAAA; line-height: 1.3; }
+    .field-error { font-size: 0.7rem; color: #DC2626; font-weight: 600; }
+    .field-optional { font-weight: 400; color: #AAAAAA; text-transform: none; letter-spacing: 0; }
+
+    .input-icon-wrap { position: relative; display: flex; align-items: center; }
+    .input-icon-wrap--suffix .form-input { padding-right: 2.6rem; }
+    .input-suffix { position: absolute; right: 0.7rem; font-size: 0.7rem; color: #888; font-weight: 700; pointer-events: none; }
+    .volumetric-box { padding: 0.55rem 0.8rem; background: #F3EFE8; border: 1px solid #E0D8C8; border-radius: 8px; font-size: 0.875rem; font-weight: 700; color: #B87333; }
+
     .radio-group { display: flex; gap: 0.4rem; width: 100%; }
-    .radio-btn { flex: 1; padding: 0.4rem 0.5rem; text-align: center; border: 1.5px solid #E8E8E8; border-radius: 6px; cursor: pointer; font-size: 0.75rem; font-weight: 600; background: #FAFAFA; transition: all 0.15s; outline: none; }
+    .radio-btn { flex: 1; padding: 0.45rem 0.5rem; text-align: center; border: 1.5px solid #E0D8C8; border-radius: 8px; cursor: pointer; font-size: 0.75rem; font-weight: 600; color: #555; background: #FAF8F5; transition: all 0.15s; outline: none; }
     .radio-btn:hover { border-color: #B87333; }
-    .radio-btn.selected { border-color: #B87333; background: rgba(184,115,51,0.05); color: #B87333; }
-    .checkbox-label { display: flex; align-items: center; gap: 0.5rem; font-size: 0.78rem; color: #4A5568; cursor: pointer; font-weight: 600; }
+    .radio-btn.selected { border-color: #B87333; background: rgba(184,115,51,0.08); color: #B87333; }
+    .checkbox-label { display: flex; align-items: center; gap: 0.55rem; font-size: 0.8rem; color: #555; cursor: pointer; font-weight: 600; }
+    .chk-box { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 5px; border: 1.5px solid #E0D8C8; background: #fff; flex-shrink: 0; transition: all 0.15s ease; }
+    .chk-box.checked { background: #B87333; border-color: #B87333; }
+    .chk-native { position: absolute; opacity: 0; width: 18px; height: 18px; margin: 0; cursor: pointer; }
 
     /* Shiprocket rates */
+    .fetch-row { display: flex; gap: 1rem; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; }
     .couriers-loading { font-size: 0.8rem; color: #888; display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0; }
-    .couriers-list { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem; }
-    .courier-card { display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 0.8rem; border: 1.5px solid #E8E8E8; border-radius: 6px; cursor: pointer; background: #FAFAFA; transition: border-color 0.15s; }
-    .courier-card:hover { border-color: #B87333; background: #fff; }
-    .courier-name { font-weight: 600; color: #1C1C1C; font-size: 0.8rem; }
-    .courier-meta { font-size: 0.7rem; color: #888; margin-top: 1px; display: flex; gap: 0.75rem; align-items: center; }
-    .cod-tag { padding: 1px 5px; border-radius: 3px; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; background: rgba(220,38,38,0.08); color: #DC2626; }
+    .couriers-list { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.75rem; }
+    .courier-card { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 0.9rem; border: 1.5px solid #E0D8C8; border-radius: 10px; cursor: pointer; background: #FAF8F5; transition: all 0.15s; }
+    .courier-card:hover { border-color: #B87333; background: #fff; box-shadow: 0 2px 8px rgba(184,115,51,0.08); }
+    .courier-left { display: flex; align-items: center; gap: 0.75rem; }
+    .courier-icon { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 9px; background: rgba(184,115,51,0.1); color: #B87333; flex-shrink: 0; }
+    .courier-name { font-weight: 700; color: #1C1C1C; font-size: 0.85rem; }
+    .courier-meta { font-size: 0.72rem; color: #888; margin-top: 2px; display: flex; gap: 0.75rem; align-items: center; }
+    .star-meta { color: #B45309; font-weight: 600; }
+    .cod-tag { padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; background: rgba(220,38,38,0.08); color: #DC2626; }
     .cod-tag.cod-yes { background: rgba(21,128,61,0.08); color: #15803D; }
     .courier-right { text-align: right; }
-    .courier-rate { font-weight: 700; color: #B87333; font-size: 0.875rem; }
-    .btn-book-sm { padding: 3px 8px; background: #B87333; color: #fff; border: none; border-radius: 4px; font-size: 0.72rem; font-weight: 600; cursor: pointer; margin-top: 0.25rem; }
+    .courier-rate { font-weight: 700; color: #B87333; font-size: 0.95rem; }
+    .btn-book-sm { padding: 4px 12px; background: #B87333; color: #fff; border: none; border-radius: 6px; font-size: 0.72rem; font-weight: 700; cursor: pointer; margin-top: 0.3rem; transition: background 0.15s; }
     .btn-book-sm:hover:not(:disabled) { background: #9d5d22; }
     .btn-book-sm:disabled { opacity: 0.5; cursor: not-allowed; }
 
     /* Modal */
     .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
-    .modal { background: #fff; border: 1px solid #E8E8E8; border-radius: 12px; width: 100%; max-width: 520px; box-shadow: 0 8px 40px rgba(0,0,0,0.12); }
-    .modal-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 1rem 1.25rem; border-bottom: 1px solid #E8E8E8; }
-    .modal-header h2 { font-size: 0.95rem; font-weight: 700; color: #1C1C1C; margin: 0; }
-    .modal-close { background: none; border: none; color: #888; font-size: 1rem; cursor: pointer; padding: 4px 8px; border-radius: 4px; transition: color 0.15s; flex-shrink: 0; }
-    .modal-close:hover { color: #1C1C1C; }
+    .modal { background: #fff; border: 1px solid #E0D8C8; border-radius: 14px; width: 100%; max-width: 520px; box-shadow: 0 8px 40px rgba(0,0,0,0.14); }
+    .modal-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 1.1rem 1.25rem; border-bottom: 1px solid #F3EFE8; }
+    .modal-header h2 { font-size: 0.95rem; font-weight: 700; color: #1C1C1C; margin: 0; display: flex; align-items: center; gap: 8px; }
+    .modal-icon { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 7px; background: rgba(184,115,51,0.1); color: #B87333; flex-shrink: 0; }
+    .modal-close { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; background: none; border: none; color: #888; cursor: pointer; border-radius: 7px; transition: all 0.15s; flex-shrink: 0; }
+    .modal-close:hover { color: #1C1C1C; background: #F3EFE8; }
     .modal-body { padding: 1.25rem; }
-    .modal-footer { display: flex; justify-content: flex-end; gap: 0.75rem; padding: 0.75rem 1.25rem; border-top: 1px solid #E8E8E8; }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 0.75rem; padding: 0.85rem 1.25rem; border-top: 1px solid #F3EFE8; }
 
-    .active-shipment-card { padding: 0.8rem; border: 1.5px solid #276749; border-radius: 8px; background: rgba(39,103,73,0.04); margin-bottom: 1rem; }
+    .active-shipment-card { padding: 0.85rem; border: 1.5px solid rgba(21,128,61,0.3); border-radius: 10px; background: rgba(21,128,61,0.05); margin-bottom: 1rem; }
+    .asc-title { display: flex; align-items: center; gap: 6px; font-weight: 700; color: #15803D; font-size: 0.85rem; margin-bottom: 4px; }
     .field { display: flex; flex-direction: column; gap: 0.4rem; }
-    .field label { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: #888; }
-    .form-input { padding: 0.4rem 0.6rem; background: #fff; border: 1px solid #E8E8E8; border-radius: 6px; color: #1C1C1C; font-size: 0.8125rem; outline: none; width: 100%; box-sizing: border-box; transition: border-color 0.15s; }
+    .field label { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: #888; }
+    .form-input { padding: 0.5rem 0.7rem; background: #fff; border: 1px solid #E0D8C8; border-radius: 8px; color: #1C1C1C; font-size: 0.8125rem; outline: none; width: 100%; box-sizing: border-box; transition: border-color 0.15s; }
     .form-input:focus { border-color: #B87333; box-shadow: 0 0 0 3px rgba(184,115,51,0.1); }
     .form-input::placeholder { color: #AAAAAA; }
 
-    .error-msg { color: #DC2626; padding: 0.6rem; background: rgba(220,38,38,0.06); border: 1px solid rgba(220,38,38,0.15); border-radius: 6px; margin-bottom: 1rem; font-size: 0.8125rem; }
-    .error-msg button { background: none; border: 1px solid #DC2626; color: #DC2626; padding: 2px 8px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; margin-left: 0.5rem; }
-    .success-msg { color: #15803D; padding: 0.6rem; background: rgba(21,128,61,0.06); border: 1px solid rgba(21,128,61,0.2); border-radius: 6px; margin-top: 0.75rem; font-size: 0.8125rem; font-weight: 600; }
-    .btn-secondary { padding: 0.4rem 1rem; background: #fff; border: 1px solid #E8E8E8; color: #555; border-radius: 6px; font-size: 0.8125rem; cursor: pointer; transition: background 0.15s; }
-    .btn-secondary:hover { background: #F7F8FA; }
-    .btn-primary { padding: 0.4rem 1.25rem; background: #B87333; color: #fff; border: none; border-radius: 6px; font-size: 0.8125rem; font-weight: 600; cursor: pointer; transition: opacity 0.15s; }
+    .error-msg { color: #DC2626; padding: 0.65rem 0.75rem; background: rgba(220,38,38,0.06); border: 1px solid rgba(220,38,38,0.18); border-radius: 8px; margin-bottom: 1rem; font-size: 0.8125rem; }
+    .error-msg button { background: none; border: 1px solid #DC2626; color: #DC2626; padding: 3px 10px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; margin-left: 0.5rem; font-weight: 600; }
+    .success-msg { color: #15803D; padding: 0.65rem 0.75rem; background: rgba(21,128,61,0.06); border: 1px solid rgba(21,128,61,0.2); border-radius: 8px; margin-top: 0.75rem; font-size: 0.8125rem; font-weight: 600; }
+    .btn-secondary { display: inline-flex; align-items: center; gap: 6px; padding: 0.5rem 1.1rem; background: #fff; border: 1px solid #E0D8C8; color: #555; border-radius: 8px; font-size: 0.8125rem; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+    .btn-secondary:hover { background: #FAF8F5; }
+    .btn-primary { display: inline-flex; align-items: center; gap: 6px; padding: 0.5rem 1.3rem; background: #B87333; color: #fff; border: none; border-radius: 8px; font-size: 0.8125rem; font-weight: 600; cursor: pointer; transition: opacity 0.15s; }
     .btn-primary:hover:not(:disabled) { opacity: 0.9; }
     .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
     .spinner-sm { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(184,115,51,0.2); border-top-color: #B87333; border-radius: 50%; animation: spin 0.8s linear infinite; }
+    .btn-spinner { display: inline-block; width: 13px; height: 13px; border: 2px solid rgba(255,255,255,0.35); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .empty-cell { text-align: center; color: #AAAAAA; padding: 2rem; font-style: italic; }
-    
+
     .muted-small { font-size: 0.72rem; color: #888; font-style: italic; padding: 1rem 0; text-align: center; }
   `]
 })

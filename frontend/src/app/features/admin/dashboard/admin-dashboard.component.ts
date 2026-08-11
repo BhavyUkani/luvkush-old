@@ -41,35 +41,51 @@ import { IndianCurrencyPipe } from '../shared/indian-currency.pipe';
         <!-- Primary metrics -->
         <div class="stats-grid stats-grid--primary">
           <div class="stat-card stat-info">
-            <div class="stat-icon stat-icon--info">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="1.5" y="5.5" width="17" height="9" rx="1.6" stroke="currentColor" stroke-width="1.3"/><circle cx="10" cy="10" r="2.1" stroke="currentColor" stroke-width="1.2"/><circle cx="4.3" cy="10" r="0.5" fill="currentColor"/><circle cx="15.7" cy="10" r="0.5" fill="currentColor"/></svg>
+            <div class="stat-top-row">
+              <div class="stat-icon stat-icon--info">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="1.5" y="5.5" width="17" height="9" rx="1.6" stroke="currentColor" stroke-width="1.3"/><circle cx="10" cy="10" r="2.1" stroke="currentColor" stroke-width="1.2"/><circle cx="4.3" cy="10" r="0.5" fill="currentColor"/><circle cx="15.7" cy="10" r="0.5" fill="currentColor"/></svg>
+              </div>
+              <div class="stat-stack">
+                <div class="stat-label">Total Sales</div>
+                <div class="stat-value">{{ stats()?.revenue?.total ?? 0 | inr }}</div>
+              </div>
             </div>
-            <div class="stat-label">Total Sales</div>
-            <div class="stat-value">{{ stats()?.revenue?.total ?? 0 | inr }}</div>
             <div class="stat-sub">All-time paid sales</div>
           </div>
           <div class="stat-card stat-success">
-            <div class="stat-icon stat-icon--success">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M2.5 13.5L7.5 8.5L10.8 11.8L17.5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.8 5H17.5V9.7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <div class="stat-top-row">
+              <div class="stat-icon stat-icon--success">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M2.5 13.5L7.5 8.5L10.8 11.8L17.5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.8 5H17.5V9.7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="stat-stack">
+                <div class="stat-label">Total Profit</div>
+                <div class="stat-value">{{ stats()?.profit?.total ?? 0 | inr }}</div>
+              </div>
             </div>
-            <div class="stat-label">Total Profit</div>
-            <div class="stat-value">{{ stats()?.profit?.total ?? 0 | inr }}</div>
             <div class="stat-sub">{{ stats()?.profit?.this_month ?? 0 | inr }} this month</div>
           </div>
           <div class="stat-card stat-purple">
-            <div class="stat-icon stat-icon--purple">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4.5 7H15.5L14.7 16.5C14.65 17.05 14.2 17.5 13.6 17.5H6.4C5.8 17.5 5.35 17.05 5.3 16.5L4.5 7Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M7.3 7V5.3C7.3 3.5 8.5 2 10 2C11.5 2 12.7 3.5 12.7 5.3V7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            <div class="stat-top-row">
+              <div class="stat-icon stat-icon--purple">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4.5 7H15.5L14.7 16.5C14.65 17.05 14.2 17.5 13.6 17.5H6.4C5.8 17.5 5.35 17.05 5.3 16.5L4.5 7Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M7.3 7V5.3C7.3 3.5 8.5 2 10 2C11.5 2 12.7 3.5 12.7 5.3V7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+              </div>
+              <div class="stat-stack">
+                <div class="stat-label">Total Orders</div>
+                <div class="stat-value">{{ stats()?.orders?.total ?? 0 }}</div>
+              </div>
             </div>
-            <div class="stat-label">Total Orders</div>
-            <div class="stat-value">{{ stats()?.orders?.total ?? 0 }}</div>
             <div class="stat-sub">{{ stats()?.orders?.today ?? 0 }} today</div>
           </div>
           <div class="stat-card stat-teal">
-            <div class="stat-icon stat-icon--teal">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="7.3" cy="6.8" r="2.8" stroke="currentColor" stroke-width="1.25"/><circle cx="14" cy="7.3" r="2.2" stroke="currentColor" stroke-width="1.15"/><path d="M2.2 17C2.2 13.7 4.4 11.6 7.3 11.6C9.4 11.6 11.2 12.7 12.1 14.4" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><path d="M11.8 17C12 14 13.9 12.1 16.2 12.1C17.4 12.1 18.4 12.6 19.1 13.4" stroke="currentColor" stroke-width="1.15" stroke-linecap="round"/></svg>
+            <div class="stat-top-row">
+              <div class="stat-icon stat-icon--teal">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="7.3" cy="6.8" r="2.8" stroke="currentColor" stroke-width="1.25"/><circle cx="14" cy="7.3" r="2.2" stroke="currentColor" stroke-width="1.15"/><path d="M2.2 17C2.2 13.7 4.4 11.6 7.3 11.6C9.4 11.6 11.2 12.7 12.1 14.4" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><path d="M11.8 17C12 14 13.9 12.1 16.2 12.1C17.4 12.1 18.4 12.6 19.1 13.4" stroke="currentColor" stroke-width="1.15" stroke-linecap="round"/></svg>
+              </div>
+              <div class="stat-stack">
+                <div class="stat-label">Total Customers</div>
+                <div class="stat-value">{{ stats()?.customers?.total ?? 0 }}</div>
+              </div>
             </div>
-            <div class="stat-label">Total Customers</div>
-            <div class="stat-value">{{ stats()?.customers?.total ?? 0 }}</div>
             <div class="stat-sub">{{ stats()?.customers?.today ?? 0 }} joined today</div>
           </div>
         </div>
@@ -169,16 +185,13 @@ import { IndianCurrencyPipe } from '../shared/indian-currency.pipe';
     @media(max-width:900px) { .stats-grid--secondary { grid-template-columns: repeat(2, 1fr); } }
     @media(max-width:600px) { .stats-grid--primary, .stats-grid--secondary { grid-template-columns: 1fr; } }
 
-    .stat-card { background: #F3EFE8; border: 1px solid #E0D8C8; border-radius: 10px; padding: 1.25rem 1.375rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); transition: box-shadow 0.18s ease, transform 0.18s ease; }
-    .stat-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.08); transform: translateY(-1px); }
-    .stat-card.stat-success { border-color: rgba(21,128,61,0.35); background: linear-gradient(rgba(21,128,61,0.08), rgba(21,128,61,0.08)), #F3EFE8; }
-    .stat-card.stat-warn { border-color: rgba(180,83,9,0.38); background: linear-gradient(rgba(180,83,9,0.1), rgba(180,83,9,0.1)), #F3EFE8; }
-    .stat-card.stat-alert { border-color: rgba(220,38,38,0.32); background: linear-gradient(rgba(220,38,38,0.09), rgba(220,38,38,0.09)), #F3EFE8; }
-    .stat-card.stat-info { border-color: rgba(29,78,216,0.32); background: linear-gradient(rgba(29,78,216,0.07), rgba(29,78,216,0.07)), #F3EFE8; }
-    .stat-card.stat-purple { border-color: rgba(124,58,237,0.32); background: linear-gradient(rgba(124,58,237,0.08), rgba(124,58,237,0.08)), #F3EFE8; }
-    .stat-card.stat-teal { border-color: rgba(13,148,136,0.32); background: linear-gradient(rgba(13,148,136,0.08), rgba(13,148,136,0.08)), #F3EFE8; }
+    .stat-card { background: #fff; border: 1px solid #E0D8C8; border-radius: 10px; padding: 1.25rem 1.375rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); transition: box-shadow 0.18s ease, transform 0.18s ease; }
+    .stat-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.08); transform: translateY(-1px); border-color: #C9BEA8; }
 
+    .stat-top-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.6rem; }
+    .stat-stack { display: flex; flex-direction: column; align-items: flex-end; text-align: right; min-width: 0; }
     .stat-icon { width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; border-radius: 9px; background: rgba(184,115,51,0.1); color: #B87333; margin-bottom: 0.85rem; flex-shrink: 0; }
+    .stat-top-row .stat-icon { margin-bottom: 0; }
     .stat-icon--muted { background: rgba(0,0,0,0.06); color: #888; }
     .stat-icon--success { background: rgba(21,128,61,0.1); color: #15803D; }
     .stat-icon--warn { background: rgba(180,83,9,0.14); color: #B45309; }
@@ -188,9 +201,10 @@ import { IndianCurrencyPipe } from '../shared/indian-currency.pipe';
     .stat-icon--teal { background: rgba(13,148,136,0.1); color: #0D9488; }
 
     .stat-label { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: #888; margin-bottom: 0.4rem; }
-    .stat-value { font-size: 1.85rem; font-weight: 300; color: #1C1C1C; line-height: 1; margin-bottom: 0.3rem; letter-spacing: -0.02em; }
+    .stat-value { font-size: 1.85rem; font-weight: 800; color: #1C1C1C; line-height: 1; margin-bottom: 0.3rem; letter-spacing: -0.01em; }
     .stat-value--sm { font-size: 1.4rem; margin-bottom: 0; }
     .stat-sub { font-size: 0.75rem; color: #888; }
+    .stats-grid--primary .stat-sub { text-align: right; }
 
     .stat-card--sm { padding: 1rem 1.25rem; }
     .stat-card--sm-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.35rem; }

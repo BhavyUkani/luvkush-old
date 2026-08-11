@@ -92,6 +92,13 @@ export class OrderController {
   }
 
   // Admin endpoints
+  async getStatusCounts(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const counts = await this.service.getStatusCounts();
+      res.json({ success: true, data: counts });
+    } catch (err) { next(err); }
+  }
+
   async adminGetAll(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { page = 1, limit = 20, status, payment_status, search } = req.query;

@@ -28,6 +28,7 @@
             "assets": [
               { "glob": "**/*", "input": "src/assets", "output": "assets" },
               { "glob": "favicon.svg", "input": "src", "output": "/" },
+              { "glob": "favicon.png", "input": "src", "output": "/" },
               { "glob": "manifest.webmanifest", "input": "src", "output": "/" }
             ],
             "styles": ["src/styles/global.scss"],
