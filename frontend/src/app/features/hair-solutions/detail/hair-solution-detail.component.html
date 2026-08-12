@@ -1,0 +1,289 @@
+@if (loading()) {
+  <div class="hsd-loading">
+    <div class="hsd-loading__frame"></div>
+    <div class="hsd-loading__lines">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+} @else if (!item()) {
+  <div class="hsd-error">
+    <h2>We couldn't find that piece</h2>
+    <p>It may have sold out or been renamed.</p>
+    <a class="lk-btn lk-btn--solid" routerLink="/hair-wigs">Back to hair systems</a>
+  </div>
+} @else {
+  <div class="hsd-page">
+    <div class="lk-shell">
+
+      <!-- Breadcrumb -->
+      <nav class="hsd-breadcrumb" aria-label="Breadcrumb">
+        <a routerLink="/">Home</a>
+        <span aria-hidden="true">/</span>
+        <a [routerLink]="item()!.type === 'patch' ? '/hair-patches' : '/hair-wigs'">
+          {{ item()!.type === 'patch' ? 'Hair Patches' : 'Hair Wigs' }}
+        </a>
+        <span aria-hidden="true">/</span>
+        <span>{{ item()!.name }}</span>
+      </nav>
+
+      <div class="hsd-layout">
+
+        <!-- ── Image column — the swatch, honestly framed ─────── -->
+        <div class="hsd-stage">
+          <div class="hsd-frame">
+            <img [src]="imgUrl(activeImage())" [alt]="item()!.name" width="480" height="600"
+                 (error)="$any($event.target).src='/assets/images/placeholder.webp'" />
+            <span class="hsd-frame__sheen" aria-hidden="true"></span>
+            @if (discountPct() > 0) {
+              <span class="hsd-frame__save">Save {{ discountPct() }}%</span>
+            }
+          </div>
+          <span class="hsd-frame__contact" aria-hidden="true"></span>
+
+          @if (allImages().length > 1) {
+            <div class="hsd-thumbs">
+              @for (img of allImages(); track img) {
+                <button type="button" class="hsd-thumb" [class.is-active]="img === activeImage()" (click)="activeImage.set(img)">
+                  <img [src]="imgUrl(img)" [alt]="item()!.name" />
+                </button>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- ── Info column ──────────────────────────────────────── -->
+        <div class="hsd-info">
+          <span class="lk-eyebrow">{{ item()!.type === 'patch' ? 'Hair patch' : 'Hair wig' }} · fitted to order</span>
+          <h1 class="hsd-info__title">{{ item()!.name }}</h1>
+
+          @if (product()?.rating_count) {
+            <button type="button" class="hsd-rating" (click)="scrollToReviews()">
+              <span class="hsd-stars" aria-hidden="true">
+                @for (s of stars; track s) {
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" [class.is-on]="s <= (product()?.rating_avg ?? 0)">
+                    <path d="M8 1.6l1.9 4h4.2l-3.4 2.9 1.2 4.2L8 10.3l-3.9 2.4 1.2-4.2L1.9 5.6h4.2L8 1.6Z"/>
+                  </svg>
+                }
+              </span>
+              <span class="hsd-rating__avg">{{ product()?.rating_avg | number:'1.1-1' }}</span>
+              <span class="hsd-rating__count">({{ product()?.rating_count }} reviews)</span>
+            </button>
+          }
+
+          @if (item()!.short_description) {
+            <p class="hsd-info__sub">{{ item()!.short_description }}</p>
+          }
+
+          <div class="hsd-price">
+            <span class="hsd-price__now">₹{{ finalPrice() | number:'1.0-0' }}</span>
+            @if (discountPct() > 0) {
+              <span class="hsd-price__mrp">₹{{ item()!.mrp | number:'1.0-0' }}</span>
+              <span class="hsd-price__save">Save {{ discountPct() }}%</span>
+            }
+          </div>
+
+          <!-- ── Fitting sheet — the real differentiator when photos repeat ── -->
+          @if (fittingSpecs().length > 0) {
+            <dl class="hsd-sheet">
+              @for (row of fittingSpecs(); track row.label) {
+                <div class="hsd-sheet__row">
+                  <dt>{{ row.label }}</dt>
+                  <dd>{{ row.value }}</dd>
+                </div>
+              }
+            </dl>
+          }
+
+          <!-- Size selector -->
+          @if (parsedSizes().length > 0) {
+            <div class="hsd-variants">
+              <p class="hsd-variants__label">Size <strong>{{ selectedSize() ?? 'Select' }}</strong></p>
+              <div class="hsd-variant-row">
+                @for (size of parsedSizes(); track size) {
+                  <button type="button" class="hsd-variant" [class.is-active]="selectedSize() === size" (click)="selectSize(size)">
+                    {{ size }}
+                  </button>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- ── Shopping controls ─────────────────────────────── -->
+          <div class="hsd-cta">
+            @if (maxStock() === 0) {
+              <p class="hsd-oos">Out of stock</p>
+            } @else {
+              <div class="hsd-actions">
+                <div class="hsd-qty">
+                  <button type="button" class="hsd-qty__btn" (click)="decreaseQty()" [disabled]="quantity() <= 1" aria-label="Decrease quantity">−</button>
+                  <span class="hsd-qty__val" aria-live="polite">{{ quantity() }}</span>
+                  <button type="button" class="hsd-qty__btn" (click)="increaseQty()" [disabled]="quantity() >= maxStock()" aria-label="Increase quantity">+</button>
+                </div>
+
+                <div class="hsd-cta-row">
+                  <button type="button" class="lk-btn lk-btn--ghost hsd-btn"
+                    [class.is-added]="addedToCart()"
+                    [disabled]="addingToCart() || loadingProduct()"
+                    (click)="addToCart()">
+                    @if (addingToCart()) {
+                      <span class="hsd-spinner"></span> Adding…
+                    } @else if (addedToCart()) {
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.4l3 3 6-6.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                      Added
+                    } @else {
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 2h1.7l1.6 8.2h7.2L14 4.6H4.3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6.4" cy="13.2" r="1.1" fill="currentColor"/><circle cx="11.8" cy="13.2" r="1.1" fill="currentColor"/></svg>
+                      Add to cart
+                    }
+                  </button>
+                  <button type="button" class="lk-btn lk-btn--primary hsd-btn" [disabled]="addingToCart() || loadingProduct()" (click)="buyNow()">
+                    Buy now
+                  </button>
+                </div>
+
+                @if (paymentMode() !== 'full_cod') {
+                  <div class="hsd-payment-note">
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1" y="3" width="14" height="10" rx="1.5" stroke="currentColor" stroke-width="1.3"/><line x1="1" y1="6.5" x2="15" y2="6.5" stroke="currentColor" stroke-width="1.3"/></svg>
+                    @switch (paymentMode()) {
+                      @case ('full_online') { <span>Online payment only — COD not available for this piece</span> }
+                      @case ('partial') { <span>₹{{ advanceAmount() | number:'1.0-0' }} advance online · remaining on delivery</span> }
+                      @case ('hybrid') { <span>Choose COD, online, or partial payment at checkout</span> }
+                    }
+                  </div>
+                }
+              </div>
+            }
+            <p class="hsd-cta__note">Custom sizing & colour matching available — contact us before ordering if you need something outside the sheet above.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Stacked sections ─────────────────────────────────── -->
+      <div class="hsd-sections">
+
+        @if (item()!.description) {
+          <section class="hsd-section">
+            <h2 class="hsd-section__title">Description</h2>
+            <div class="hsd-section__body hsd-prose" [innerHTML]="item()!.description"></div>
+          </section>
+        }
+
+        @if (item()!.how_to_use) {
+          <section class="hsd-section">
+            <h2 class="hsd-section__title">Care & maintenance</h2>
+            <div class="hsd-section__body hsd-prose" style="white-space: pre-line">{{ item()!.how_to_use }}</div>
+          </section>
+        }
+
+        <!-- Reviews -->
+        <section class="hsd-section" id="hsd-reviews-section">
+          <h2 class="hsd-section__title">
+            Reviews
+            @if (product()?.rating_count) { <span class="hsd-section__count">({{ product()?.rating_count }})</span> }
+          </h2>
+
+          <div class="hsd-section__body">
+            @if (reviewsLoading()) {
+              <div class="hsd-review-skeletons">
+                @for (_ of [1,2,3]; track $index) { <div class="hsd-review-skeleton"></div> }
+              </div>
+            } @else {
+
+              @if (ratingSummary(); as summary) {
+                <div class="hsd-rating-summary">
+                  <div class="hsd-rating-summary__avg">
+                    <span class="hsd-rating-summary__num">{{ summary.average }}</span>
+                    <div class="hsd-stars" aria-hidden="true">
+                      @for (s of stars; track s) {
+                        <svg width="17" height="17" viewBox="0 0 16 16" fill="currentColor" [class.is-on]="s <= summary.average"><path d="M8 1.6l1.9 4h4.2l-3.4 2.9 1.2 4.2L8 10.3l-3.9 2.4 1.2-4.2L1.9 5.6h4.2L8 1.6Z"/></svg>
+                      }
+                    </div>
+                    <span class="hsd-rating-summary__total">{{ summary.total }} reviews</span>
+                  </div>
+                  <div class="hsd-rating-bars">
+                    @for (s of [5,4,3,2,1]; track s) {
+                      <div class="hsd-rating-bar">
+                        <span class="hsd-rating-bar__label">{{ s }}★</span>
+                        <div class="hsd-rating-bar__track"><div class="hsd-rating-bar__fill" [style.width.%]="getRatingPct(s)"></div></div>
+                        <span class="hsd-rating-bar__count">{{ getStar(s) }}</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+
+              @if (reviews().length > 0) {
+                <ul class="hsd-review-list">
+                  @for (rev of reviews(); track rev.id) {
+                    <li class="hsd-review">
+                      <div class="hsd-review__head">
+                        <span class="hsd-review__avatar">{{ rev.user_name ? rev.user_name[0].toUpperCase() : 'A' }}</span>
+                        <div class="hsd-review__meta">
+                          <span class="hsd-review__author">{{ rev.user_name ?? 'Anonymous' }}</span>
+                          @if (rev.is_verified_purchase) { <span class="hsd-review__verified">Verified purchase</span> }
+                        </div>
+                        <time class="hsd-review__date" [attr.datetime]="rev.created_at">{{ rev.created_at | date:'MMM d, y' }}</time>
+                        <div class="hsd-stars hsd-stars--sm" [attr.aria-label]="rev.rating + ' out of 5 stars'">
+                          @for (s of stars; track s) {
+                            <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" [class.is-on]="s <= rev.rating"><path d="M8 1.6l1.9 4h4.2l-3.4 2.9 1.2 4.2L8 10.3l-3.9 2.4 1.2-4.2L1.9 5.6h4.2L8 1.6Z"/></svg>
+                          }
+                        </div>
+                      </div>
+                      @if (rev.title) { <h4 class="hsd-review__title">{{ rev.title }}</h4> }
+                      <p class="hsd-review__body">{{ rev.body }}</p>
+                    </li>
+                  }
+                </ul>
+              } @else if (product()) {
+                <div class="hsd-reviews-empty">
+                  <p>No reviews yet — be the first to share a fitting experience.</p>
+                </div>
+              } @else {
+                <div class="hsd-reviews-empty">
+                  <p>This is a new addition to the range and hasn't collected reviews yet.</p>
+                </div>
+              }
+
+              @if (product()) {
+                @if (auth.isLoggedIn()) {
+                  <div class="hsd-review-form">
+                    <h3 class="hsd-review-form__title">Write a review</h3>
+                    @if (reviewSubmitted()) {
+                      <div class="hsd-review-form__success">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.4l3 3 6-6.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        Thank you — your review has been submitted.
+                      </div>
+                    } @else {
+                      <div class="hsd-review-form__stars">
+                        @for (s of stars; track s) {
+                          <button type="button" class="hsd-review-form__star"
+                            [class.is-active]="s <= (reviewHover() || reviewForm().rating)"
+                            (mouseenter)="reviewHover.set(s)" (mouseleave)="reviewHover.set(0)"
+                            (click)="setReviewRating(s)" [attr.aria-label]="s + ' star'">
+                            <svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.6l1.9 4h4.2l-3.4 2.9 1.2 4.2L8 10.3l-3.9 2.4 1.2-4.2L1.9 5.6h4.2L8 1.6Z"/></svg>
+                          </button>
+                        }
+                      </div>
+                      <input type="text" class="hsd-review-form__input" placeholder="Review title (optional)" maxlength="100"
+                        [value]="reviewForm().title" (input)="setReviewTitle($any($event.target).value)" />
+                      <textarea class="hsd-review-form__textarea" rows="4" placeholder="Share your fitting experience…" maxlength="2000"
+                        [value]="reviewForm().body" (input)="setReviewBody($any($event.target).value)"></textarea>
+                      @if (reviewError()) { <p class="hsd-review-form__error">{{ reviewError() }}</p> }
+                      <button type="button" class="lk-btn lk-btn--solid lk-btn--sm" [disabled]="reviewSubmitting()" (click)="submitReview()">
+                        {{ reviewSubmitting() ? 'Submitting…' : 'Submit review' }}
+                      </button>
+                    }
+                  </div>
+                } @else {
+                  <p class="hsd-review-login">
+                    <a routerLink="/login" [queryParams]="{ returnUrl: router.url }">Sign in</a> to write a review
+                  </p>
+                }
+              }
+            }
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </div>
+}

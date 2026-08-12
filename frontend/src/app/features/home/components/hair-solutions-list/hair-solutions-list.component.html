@@ -1,77 +1,86 @@
-<section class="hl" [attr.aria-label]="title">
+<section class="hs lk-section" [class.hs--cream]="tone === 'cream'" [attr.aria-label]="title">
+  <div class="lk-shell">
 
-  <div class="hl__header reveal">
-    <div class="hl__header-left">
-      <p class="hl__eyebrow">{{ type === 'wig' ? 'Natural Hair Wigs' : 'Custom Hair Patches' }}</p>
-      <h2 class="hl__title">{{ title }}</h2>
-      <p class="hl__sub">{{ subtitle }}</p>
+    <div class="lk-head">
+      <div>
+        <span class="lk-eyebrow">{{ eyebrow }}</span>
+        <h2 class="lk-title">{{ title }}</h2>
+        <p class="lk-lede">{{ subtitle }}</p>
+      </div>
+      <a class="lk-link" [routerLink]="viewAllLink">
+        View the range
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
     </div>
-    <a class="hl__view-all" [routerLink]="viewAllLink">
-      View All {{ type === 'wig' ? 'Wigs' : 'Patches' }}
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-        <path d="M3 7H11M8 4L11 7L8 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </a>
-  </div>
 
-  @if (loading()) {
-    <div class="hl__slider">
-      @for (n of [1, 2, 3, 4]; track n) {
-        <div class="hl__skel skel-block"></div>
-      }
-    </div>
-  }
-
-  @if (!loading() && items().length > 0) {
-    <div class="hl__slider reveal">
-      @for (item of items(); track trackById($index, item)) {
-        <a class="hl__card" [routerLink]="[viewAllLink, item.slug]">
-          <div class="hl__card-img-wrap">
-            <img [src]="imgUrl(item.primary_image)" [alt]="item.name" class="hl__card-img" loading="lazy" />
-            
-            <div class="hl__card-badges">
-              @if (item.gender) {
-                <span class="hl__card-gender">{{ item.gender | titlecase }}</span>
-              }
-              <span class="hl__card-tag">100% Virgin Hair</span>
+    @if (loading()) {
+      <div class="hs__grid">
+        @for (s of skeletons; track s) {
+          <div class="hs__skeleton" aria-hidden="true"></div>
+        }
+      </div>
+    } @else if (items().length) {
+      <div class="hs__grid">
+        @for (item of items(); track item.id; let i = $index) {
+          <a class="hs__card" [routerLink]="[viewAllLink, item.slug]" [lkReveal]="i % 4">
+            <div class="hs__stage">
+              <div class="hs__media">
+                <img
+                  [src]="imgUrl(item.primary_image)"
+                  [alt]="item.name"
+                  loading="lazy"
+                  width="340" height="425"
+                  (error)="$any($event.target).src='/assets/images/placeholder.webp'"
+                />
+              </div>
+              <span class="hs__contact" aria-hidden="true"></span>
             </div>
 
-            @if (item.mrp && item.mrp > item.price) {
-              <span class="hl__card-discount">
-                {{ ((item.mrp - item.price) / item.mrp * 100) | number:'1.0-0' }}% OFF
-              </span>
-            }
-          </div>
-
-          <div class="hl__card-body">
-            <h3 class="hl__card-name">{{ item.name }}</h3>
-
-            <div class="hl__card-rating">
-              <span class="hl__card-stars">★★★★★</span>
-              <span class="hl__card-rating-text">4.9 (48)</span>
-            </div>
-
-            @if (item.short_description) {
-              <p class="hl__card-desc">{{ item.short_description }}</p>
-            }
-
-            <div class="hl__card-price-row">
-              <div class="hl__card-prices">
-                <span class="hl__card-price">₹{{ item.price | number:'1.0-0' }}</span>
-                @if (item.mrp && item.mrp > item.price) {
-                  <span class="hl__card-mrp">₹{{ item.mrp | number:'1.0-0' }}</span>
+            <div class="hs__body">
+              <div class="hs__head">
+                <h3 class="hs__name">{{ item.name }}</h3>
+                @if (item.gender && item.gender !== 'unisex') {
+                  <span class="hs__gender">{{ item.gender === 'male' ? 'Men' : 'Women' }}</span>
                 }
               </div>
-              <button class="hl__card-btn">Explore →</button>
+
+              @if (item.short_description) {
+                <p class="hs__desc">{{ item.short_description }}</p>
+              }
+
+              <!-- The real buying criteria for a hair system — given every unit
+                   in a range shares one photo, these are what differentiate. -->
+              <dl class="hs__specs">
+                @if (item.size_info) {
+                  <div><dt>Fit</dt><dd>{{ item.size_info }}</dd></div>
+                }
+                @if (item.colour_info) {
+                  <div><dt>Shade</dt><dd>{{ item.colour_info }}</dd></div>
+                }
+              </dl>
+
+              <div class="hs__foot">
+                <span class="hs__price">₹{{ item.price | number:'1.0-0' }}</span>
+                @if (discount(item) > 0) {
+                  <span class="hs__mrp">₹{{ item.mrp | number:'1.0-0' }}</span>
+                  <span class="hs__save">Save {{ discount(item) }}%</span>
+                }
+                <span class="hs__cta">
+                  Details
+                  <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </span>
+              </div>
             </div>
-          </div>
-        </a>
-      }
-    </div>
-  }
+          </a>
+        }
+      </div>
+    } @else {
+      <p class="hs__empty">This range is being restocked — check back shortly.</p>
+    }
 
-  @if (!loading() && items().length === 0) {
-    <p class="hl__empty">No solutions available right now.</p>
-  }
-
+  </div>
 </section>

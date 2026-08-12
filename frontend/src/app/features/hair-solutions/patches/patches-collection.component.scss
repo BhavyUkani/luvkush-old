@@ -1,0 +1,278 @@
+// ── Hair Patches — the fitting atelier ───────────────────────────
+// Both patches ship with the same studio photo, so the page is built
+// spec-forward: size and shade lead, and the shared photo is treated
+// honestly as a swatch rather than pretending it's unique photography.
+
+:host { display: block; background: var(--lk-white); }
+
+// ── Atelier hero ──────────────────────────────────────────────
+.atelier {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(165deg, var(--lk-green-900) 0%, var(--lk-green-950) 100%);
+  padding-block: clamp(2.2rem, 5vw, 3.6rem) clamp(2rem, 4vw, 3rem);
+  color: #fff;
+}
+
+.atelier__rail {
+  display: flex;
+  align-items: center;
+  gap: clamp(.6rem, 2vw, 1.2rem);
+  margin-bottom: 1.3rem;
+}
+.atelier__mark {
+  flex: none;
+  font-family: 'Outfit', system-ui, sans-serif;
+  font-size: .64rem;
+  font-weight: 600;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, .5);
+  white-space: nowrap;
+
+  &--mid { color: var(--lk-orange-300); }
+  @media (max-width: 620px) { &:not(&--mid) { display: none; } }
+}
+.atelier__rule {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .18), transparent);
+}
+
+.atelier__title {
+  margin: 0;
+  max-width: 20ch;
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(2rem, 4.4vw, 3.1rem);
+  line-height: 1.1;
+  letter-spacing: -.015em;
+
+  em { font-style: italic; color: var(--lk-orange-300); }
+}
+
+.atelier__lede {
+  margin: .9rem 0 0;
+  max-width: 54ch;
+  font-size: .96rem;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, .76);
+}
+
+.atelier__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .6rem 1.6rem;
+  margin: 1.6rem 0 0;
+  padding: 1.1rem 0 0;
+  list-style: none;
+  border-top: 1px solid rgba(255, 255, 255, .12);
+
+  li {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    font-size: .84rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, .82);
+
+    svg { color: var(--lk-orange-300); flex: none; }
+  }
+}
+
+// ── Body ──────────────────────────────────────────────────────
+.atelier-body { padding-block: clamp(2rem, 4vw, 3rem) clamp(3rem, 6vw, 4.5rem); }
+
+.atelier-empty {
+  text-align: center;
+  padding: 4rem 1.5rem;
+  background: var(--lk-green-50);
+  border-radius: var(--lk-r-lg);
+  border: 1px dashed var(--lk-green-200);
+  color: var(--lk-muted);
+
+  p { margin: 0 0 1.2rem; }
+}
+
+// ── Fitting cards ─────────────────────────────────────────────
+.fit-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(1rem, 2vw, 1.6rem);
+
+  @media (max-width: 860px) { grid-template-columns: 1fr; }
+}
+
+.fit-skeleton {
+  height: 230px;
+  border-radius: var(--lk-r-lg);
+  background: linear-gradient(100deg, var(--lk-green-50) 30%, #fff 50%, var(--lk-green-50) 70%);
+  background-size: 220% 100%;
+  animation: fitShimmer 1.4s linear infinite;
+}
+@keyframes fitShimmer {
+  from { background-position: 200% 0; }
+  to   { background-position: -120% 0; }
+}
+
+.fit-card {
+  display: grid;
+  grid-template-columns: clamp(120px, 15vw, 170px) minmax(0, 1fr);
+  gap: clamp(1.1rem, 2.2vw, 1.6rem);
+  padding: clamp(1rem, 1.8vw, 1.3rem);
+  border-radius: var(--lk-r-lg);
+  background: var(--lk-white);
+  border: 1px solid var(--lk-line-soft);
+  text-decoration: none;
+  box-shadow: 0 1px 3px rgba(22, 33, 26, .05), 0 6px 18px rgba(22, 33, 26, .06);
+  transition: transform var(--lk-t-base), box-shadow var(--lk-t-base), border-color var(--lk-t-base);
+
+  &:hover {
+    transform: translateY(-4px);
+    border-color: var(--lk-green-100);
+    box-shadow: 0 2px 4px rgba(22, 33, 26, .05), 0 16px 36px rgba(22, 33, 26, .12);
+
+    .fit-card__media img { transform: scale(1.06); }
+    .fit-card__contact { transform: scaleX(1.06); opacity: .65; }
+    .fit-card__name { color: var(--lk-green-700); }
+    .fit-card__cta { color: var(--lk-orange-600); }
+    .fit-card__cta svg { transform: translateX(3px); }
+  }
+
+  &:focus-visible { outline: 2px solid var(--lk-green-500); outline-offset: 3px; }
+
+  @media (max-width: 480px) { grid-template-columns: 1fr; }
+}
+
+// ── Swatch (shared photo, honestly framed) ──────────────────────
+.fit-card__stage { position: relative; align-self: start; }
+
+.fit-card__media {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  // Same dome the category shelf and product cards use
+  border-radius: 44% 44% var(--lk-r-sm) var(--lk-r-sm) / 16% 16% 2% 2%;
+  overflow: hidden;
+  background: var(--lk-green-50);
+
+  img { width: 100%; height: 100%; object-fit: cover; transition: transform var(--lk-t-slow); }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: inset 0 0 0 1px rgba(22, 33, 26, .06), inset 0 1px 0 rgba(255, 255, 255, .45);
+    pointer-events: none;
+  }
+}
+
+.fit-card__contact {
+  position: absolute;
+  z-index: -1;
+  left: 10%;
+  right: 10%;
+  bottom: -10px;
+  height: 20px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(22, 33, 26, .26), transparent 70%);
+  filter: blur(10px);
+  opacity: .5;
+  pointer-events: none;
+  transition: transform var(--lk-t-base), opacity var(--lk-t-base);
+}
+
+// ── Body ──────────────────────────────────────────────────────
+.fit-card__body { min-width: 0; display: flex; flex-direction: column; }
+
+.fit-card__n {
+  font-family: 'Outfit', system-ui, sans-serif;
+  font-size: .64rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  color: var(--lk-green-500);
+}
+
+.fit-card__name {
+  margin: .2rem 0 0;
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-weight: 400;
+  font-size: 1.08rem;
+  line-height: 1.28;
+  color: var(--lk-ink);
+  transition: color var(--lk-t-fast);
+}
+
+.fit-card__desc {
+  margin: .4rem 0 0;
+  font-size: .82rem;
+  line-height: 1.5;
+  color: var(--lk-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.fit-card__specs {
+  display: flex;
+  flex-direction: column;
+  gap: .28rem;
+  margin: .65rem 0 0;
+  padding: .6rem 0 0;
+  border-top: 1px solid var(--lk-line-soft);
+
+  div { display: grid; grid-template-columns: minmax(2.6rem, 3.4rem) minmax(0, 1fr); gap: .5rem; align-items: baseline; }
+  dt { font-family: 'Outfit', system-ui, sans-serif; font-size: .6rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--lk-faint); }
+  dd { margin: 0; font-size: .76rem; line-height: 1.4; color: var(--lk-body); }
+}
+
+.fit-card__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: .35rem .5rem;
+  margin-top: auto;
+  padding-top: .85rem;
+}
+
+.fit-card__price { font-family: 'Outfit', system-ui, sans-serif; font-size: 1.05rem; font-weight: 700; color: var(--lk-ink); }
+.fit-card__mrp   { font-size: .78rem; color: var(--lk-muted); text-decoration: line-through; }
+.fit-card__save  {
+  padding: .1rem .44rem;
+  border-radius: var(--lk-r-pill);
+  background: var(--lk-orange-50);
+  border: 1px solid var(--lk-orange-100);
+  font-family: 'Outfit', system-ui, sans-serif;
+  font-size: .62rem;
+  font-weight: 700;
+  color: var(--lk-orange-700);
+  white-space: nowrap;
+}
+.fit-card__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  margin-left: auto;
+  font-family: 'Outfit', system-ui, sans-serif;
+  font-size: .78rem;
+  font-weight: 600;
+  color: var(--lk-green-700);
+  transition: color var(--lk-t-fast);
+  white-space: nowrap;
+
+  svg { transition: transform var(--lk-t-fast); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fit-card, .fit-card__media img, .fit-card__contact, .fit-card__name, .fit-card__cta, .fit-card__cta svg { transition: none; }
+  .fit-skeleton { animation: none; }
+}
+
+// The atelier hero sits on a dark gradient — override the light-mode
+// ::selection default so selected text stays legible on it.
+.atelier ::selection {
+  background: rgba(255, 255, 255, .25);
+  color: #fff;
+}

@@ -100,19 +100,6 @@ $adm-topbar-h:    60px;
     overflow-y: auto;
   }
 
-  &__toggle {
-    height: 44px;
-    @include flex-center;
-    background: none;
-    border: none;
-    border-top: 1px solid $adm-border;
-    color: $adm-text-muted;
-    cursor: pointer;
-    transition: all $transition-fast;
-    flex-shrink: 0;
-
-    &:hover { color: $color-copper; background: $adm-accent-bg; }
-  }
 }
 
 // ── Nav Item ─────────────────────────────

@@ -1,0 +1,312 @@
+// ============================================================
+// LUV KUSH NATURAL — Brand Layer
+// ------------------------------------------------------------
+// Colour discipline (this is the whole point of the system):
+//
+//   Neutrals  ~70%  — page, cards, body copy. Warm, never grey-blue.
+//   Green     ~22%  — brand, structure, trust. Headings, dark bands, borders.
+//   Orange     ~8%  — ACTION ONLY. Primary CTA, savings, active state, rating.
+//
+// Orange is never a large fill and never decorative. If a block of orange is
+// bigger than a button, it is wrong. Green carries the brand; orange earns
+// attention precisely because it is rationed.
+// ============================================================
+
+:root {
+  // ── Green — primary brand ──────────────────────────────
+  --lk-green-950: #0F241A;
+  --lk-green-900: #14301F;
+  --lk-green-800: #1C4229;
+  --lk-green-700: #265539;   // canonical brand green
+  --lk-green-600: #2F6B49;
+  --lk-green-500: #3D8259;   // interactive / links
+  --lk-green-400: #63A47D;
+  --lk-green-300: #94C4A6;
+  --lk-green-200: #C3DFCE;
+  --lk-green-100: #DFEDE4;
+  --lk-green-50:  #F1F7F3;
+
+  // ── Light orange — accent, rationed ────────────────────
+  --lk-orange-700: #A8501F;
+  --lk-orange-600: #C4622B;
+  --lk-orange-500: #E07A3E;  // canonical accent
+  --lk-orange-400: #EE9760;
+  --lk-orange-300: #F5B98C;
+  --lk-orange-200: #FAD6BA;
+  --lk-orange-100: #FCE8D8;
+  --lk-orange-50:  #FDF5EE;
+
+  // ── Warm neutrals ──────────────────────────────────────
+  --lk-ink:    #16211A;      // headings — green-tinted black reads "natural"
+  --lk-body:   #4B564F;      // body copy
+  --lk-muted:  #7B857E;      // meta, captions
+  --lk-faint:  #A8B0AA;      // disabled, dividers on dark
+  --lk-line:   #E3E8E3;      // hairline borders
+  --lk-line-soft: #EFF2EE;
+  --lk-cream:  #FBF9F4;      // alternate section background
+  --lk-sand:   #F5F1E8;      // warmer band
+  --lk-white:  #FFFFFF;
+
+  // ── Semantic ───────────────────────────────────────────
+  --lk-star:   #E0A03E;      // ratings — warm gold, distinct from CTA orange
+  --lk-sale:   var(--lk-orange-600);
+  --lk-success:#2F6B49;
+
+  // ── Elevation — soft, warm, never black ────────────────
+  --lk-shadow-xs: 0 1px 2px rgba(22, 33, 26, .05);
+  --lk-shadow-sm: 0 2px 8px rgba(22, 33, 26, .06);
+  --lk-shadow-md: 0 8px 24px rgba(22, 33, 26, .08);
+  --lk-shadow-lg: 0 18px 48px rgba(22, 33, 26, .12);
+  --lk-shadow-cta: 0 6px 18px rgba(224, 122, 62, .28);
+
+  // ── Geometry ───────────────────────────────────────────
+  --lk-r-sm: 8px;
+  --lk-r-md: 14px;
+  --lk-r-lg: 22px;
+  --lk-r-xl: 32px;
+  --lk-r-pill: 999px;
+
+  // ── Motion — calm, never bouncy ────────────────────────
+  --lk-ease: cubic-bezier(.22, 1, .36, 1);
+  --lk-t-fast: 180ms var(--lk-ease);
+  --lk-t-base: 320ms var(--lk-ease);
+  --lk-t-slow: 620ms var(--lk-ease);
+
+  // ── Rhythm ─────────────────────────────────────────────
+  --lk-section-y: clamp(3.5rem, 7vw, 6.5rem);
+  --lk-gutter: clamp(1rem, 4vw, 2.5rem);
+  --lk-maxw: 1320px;
+}
+
+// ============================================================
+// Shared primitives used across home sections
+// ============================================================
+
+.lk-shell {
+  width: 100%;
+  max-width: var(--lk-maxw);
+  margin-inline: auto;
+  padding-inline: var(--lk-gutter);
+}
+
+.lk-section {
+  padding-block: var(--lk-section-y);
+  position: relative;
+}
+
+// ── Section heading ──────────────────────────────────────
+.lk-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: .55rem;
+  font-family: 'Outfit', system-ui, sans-serif;
+  font-size: .72rem;
+  font-weight: 600;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--lk-orange-600);
+
+  &::before {
+    content: '';
+    width: 22px;
+    height: 1px;
+    background: var(--lk-orange-400);
+  }
+
+  &--center::before { display: none; }
+  &--on-dark {
+    color: var(--lk-orange-300);
+    &::before { background: var(--lk-orange-300); opacity: .6; }
+  }
+}
+
+.lk-title {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(1.85rem, 3.6vw, 2.9rem);
+  line-height: 1.14;
+  letter-spacing: -.015em;
+  color: var(--lk-ink);
+  margin: .7rem 0 0;
+
+  em {
+    font-style: italic;
+    color: var(--lk-green-600);
+  }
+
+  &--on-dark {
+    color: #fff;
+    em { color: var(--lk-orange-300); }
+  }
+}
+
+.lk-lede {
+  margin: .85rem 0 0;
+  max-width: 54ch;
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--lk-body);
+
+  &--on-dark { color: rgba(255, 255, 255, .74); }
+}
+
+.lk-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-bottom: clamp(1.8rem, 3.5vw, 2.8rem);
+
+  &--center {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    .lk-lede { margin-inline: auto; }
+  }
+
+  @media (max-width: 780px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.1rem;
+  }
+}
+
+// ── Buttons ──────────────────────────────────────────────
+.lk-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .55rem;
+  padding: .92rem 1.7rem;
+  border: 1px solid transparent;
+  border-radius: var(--lk-r-pill);
+  font-family: 'Outfit', system-ui, sans-serif;
+  font-size: .93rem;
+  font-weight: 600;
+  letter-spacing: .01em;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--lk-t-fast), color var(--lk-t-fast),
+              border-color var(--lk-t-fast), transform var(--lk-t-fast),
+              box-shadow var(--lk-t-fast);
+
+  svg { flex: none; transition: transform var(--lk-t-fast); }
+  &:hover svg { transform: translateX(3px); }
+  &:active { transform: translateY(1px); }
+
+  &:focus-visible {
+    outline: 2px solid var(--lk-green-500);
+    outline-offset: 3px;
+  }
+
+  // The one place saturated orange belongs
+  &--primary {
+    background: var(--lk-orange-500);
+    color: #fff;
+    box-shadow: var(--lk-shadow-cta);
+    &:hover { background: var(--lk-orange-600); }
+  }
+
+  &--solid {
+    background: var(--lk-green-700);
+    color: #fff;
+    &:hover { background: var(--lk-green-800); }
+  }
+
+  &--ghost {
+    background: transparent;
+    color: var(--lk-green-700);
+    border-color: var(--lk-green-200);
+    &:hover { background: var(--lk-green-50); border-color: var(--lk-green-300); }
+  }
+
+  &--on-dark {
+    background: rgba(255, 255, 255, .1);
+    color: #fff;
+    border-color: rgba(255, 255, 255, .26);
+    backdrop-filter: blur(6px);
+    &:hover { background: rgba(255, 255, 255, .18); border-color: rgba(255, 255, 255, .4); }
+  }
+
+  &--sm { padding: .62rem 1.15rem; font-size: .84rem; }
+}
+
+// Quiet text link with an animated rule — used for "View all"
+.lk-link {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  font-family: 'Outfit', system-ui, sans-serif;
+  font-size: .88rem;
+  font-weight: 600;
+  letter-spacing: .02em;
+  color: var(--lk-green-700);
+  text-decoration: none;
+  padding-bottom: 3px;
+  background-image: linear-gradient(var(--lk-orange-500), var(--lk-orange-500));
+  background-size: 0 1.5px;
+  background-position: left bottom;
+  background-repeat: no-repeat;
+  transition: background-size var(--lk-t-base), color var(--lk-t-fast);
+
+  svg { transition: transform var(--lk-t-fast); }
+  &:hover {
+    background-size: 100% 1.5px;
+    color: var(--lk-orange-600);
+    svg { transform: translateX(3px); }
+  }
+  &--on-dark {
+    color: #fff;
+    background-image: linear-gradient(var(--lk-orange-300), var(--lk-orange-300));
+    &:hover { color: var(--lk-orange-200); }
+  }
+}
+
+// ── Pills / chips ────────────────────────────────────────
+.lk-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .34rem .72rem;
+  border-radius: var(--lk-r-pill);
+  font-family: 'Outfit', system-ui, sans-serif;
+  font-size: .7rem;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  background: var(--lk-green-50);
+  color: var(--lk-green-700);
+  border: 1px solid var(--lk-green-100);
+
+  &--accent {
+    background: var(--lk-orange-50);
+    color: var(--lk-orange-700);
+    border-color: var(--lk-orange-100);
+  }
+  &--solid { background: var(--lk-green-700); color: #fff; border-color: transparent; }
+  &--glass {
+    background: rgba(255, 255, 255, .12);
+    color: #fff;
+    border-color: rgba(255, 255, 255, .22);
+    backdrop-filter: blur(8px);
+  }
+}
+
+// ── Reveal-on-scroll ─────────────────────────────────────
+.lk-reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity var(--lk-t-slow), transform var(--lk-t-slow);
+
+  &.is-in { opacity: 1; transform: none; }
+}
+
+@for $i from 1 through 8 {
+  .lk-reveal[style*="--d:#{$i}"] { transition-delay: #{$i * 70}ms; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lk-reveal { opacity: 1; transform: none; transition: none; }
+  .lk-btn, .lk-link { transition: none; }
+}

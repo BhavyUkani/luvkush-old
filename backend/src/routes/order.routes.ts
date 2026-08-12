@@ -19,6 +19,7 @@ router.delete('/my/:id/abort-payment', authenticate, ctrl.abortPayment.bind(ctrl
 
 // Admin routes
 router.get('/', authenticate, authorize('super_admin', 'admin'), ctrl.adminGetAll.bind(ctrl));
+router.get('/status-counts', authenticate, authorize('super_admin', 'admin'), ctrl.getStatusCounts.bind(ctrl));
 router.get('/:id', authenticate, authorize('super_admin', 'admin'), ctrl.adminGetOrder.bind(ctrl));
 router.get('/:id/couriers', authenticate, authorize('super_admin', 'admin'), ctrl.getCourierRates.bind(ctrl));
 router.get('/:id/shipment-tracking', authenticate, authorize('super_admin', 'admin'), ctrl.getShipmentTracking.bind(ctrl));

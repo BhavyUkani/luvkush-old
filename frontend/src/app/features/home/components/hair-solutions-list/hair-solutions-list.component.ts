@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../../../core/services/api.service';
 import { imageUrl } from '../../../../shared/utils/image-url';
+import { RevealDirective } from '../../../../shared/directives/reveal.directive';
 
 export interface HairSolutionItem {
   id: number;
@@ -23,7 +24,7 @@ export interface HairSolutionItem {
   selector: 'lk-hair-solutions-list',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, RevealDirective],
   templateUrl: './hair-solutions-list.component.html',
   styleUrls: ['./hair-solutions-list.component.scss']
 })
@@ -34,10 +35,19 @@ export class HairSolutionsListComponent implements OnInit {
   @Input({ required: true }) subtitle!: string;
   @Input({ required: true }) type!: 'wig' | 'patch';
   @Input({ required: true }) viewAllLink!: string;
+  @Input() eyebrow = 'Hair solutions';
+  /** Alternate section background so two stacked instances don't merge. */
+  @Input() tone: 'light' | 'cream' = 'light';
 
   items = signal<HairSolutionItem[]>([]);
   loading = signal(true);
   readonly imgUrl = imageUrl;
+  readonly skeletons = [0, 1, 2, 3];
+
+  discount(item: HairSolutionItem): number {
+    if (!item.mrp || item.mrp <= item.price) return 0;
+    return Math.round(((item.mrp - item.price) / item.mrp) * 100);
+  }
 
   ngOnInit(): void {
     const endpoint = this.type === 'wig' ? '/hair-solutions/wigs' : '/hair-solutions/patches';

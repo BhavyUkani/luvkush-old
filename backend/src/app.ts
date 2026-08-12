@@ -40,7 +40,9 @@ app.use(helmet({
 
 // ── CORS ────────────────────────────────
 app.use(cors({
-  origin: config.frontendUrl,
+  origin: config.nodeEnv === 'production'
+    ? config.frontendUrl
+    : (origin, callback) => callback(null, true),
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']

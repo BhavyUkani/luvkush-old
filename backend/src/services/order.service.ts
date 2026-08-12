@@ -229,6 +229,15 @@ export class OrderService {
     return paginated;
   }
 
+  async getStatusCounts(): Promise<Record<string, number>> {
+    const rows = await db.query<{ status: string; cnt: number }[]>(
+      'SELECT status, COUNT(*) as cnt FROM orders GROUP BY status'
+    );
+    const counts: Record<string, number> = {};
+    for (const r of rows) counts[r.status] = Number(r.cnt);
+    return counts;
+  }
+
   async adminGetAll(page = 1, limit = 20, filters: { status?: string; payment_status?: string; search?: string }) {
     const conditions: string[] = [];
     const params: any[] = [];

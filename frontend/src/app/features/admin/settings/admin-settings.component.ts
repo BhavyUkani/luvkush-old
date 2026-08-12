@@ -2,6 +2,8 @@ import { Component, OnInit, ChangeDetectionStrategy, inject, signal, computed } 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
+import { AdminConfirmService } from '../shared/admin-confirm.service';
+import { AdminToastService } from '../shared/admin-toast.service';
 
 interface OrderStatus {
   id: number;
@@ -53,11 +55,27 @@ const EMPTY_FORM = () => ({ name: '', color: '#B87333' });
                   <h2>Order Lifecycle Statuses</h2>
                   <p class="pane-desc">Manage order status flow. Reorder items to adjust how steps appear on user tracking timelines.</p>
                 </div>
-                <button class="btn-primary" (click)="openCreate()">+ Add Custom Status</button>
+                <button class="btn-primary" (click)="openCreate()">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1V13M1 7H13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                  Add Custom Status
+                </button>
               </div>
 
               @if (loading()) {
-                <div class="loading">Loading statuses...</div>
+                <table class="data-table">
+                  <tbody>
+                    @for (i of [1,2,3,4,5]; track i) {
+                      <tr class="skel-row">
+                        <td style="width:100px"></td>
+                        <td><div class="skel-line" style="width:60%"></div></td>
+                        <td><div class="skel-line" style="width:40%"></div></td>
+                        <td><div class="skel-line" style="width:50%"></div></td>
+                        <td><div class="skel-line" style="width:45%"></div></td>
+                        <td><div class="skel-line" style="width:65%;margin-left:auto"></div></td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
               } @else if (error()) {
                 <div class="error-msg">
                   <span>{{ error() }}</span>
@@ -77,24 +95,43 @@ const EMPTY_FORM = () => ({ name: '', color: '#B87333' });
                   </thead>
                   <tbody>
                     @for (status of statuses(); track status.id; let first = $first; let last = $last; let idx = $index) {
-                      <tr>
+                      <tr
+                        [attr.draggable]="true"
+                        class="drag-row"
+                        [class.dragging]="draggedIndex() === idx"
+                        [class.drag-over-top]="dragOverIndex() === idx && draggedIndex() !== null && draggedIndex()! > idx"
+                        [class.drag-over-bottom]="dragOverIndex() === idx && draggedIndex() !== null && draggedIndex()! < idx"
+                        (dragstart)="onDragStart(idx)"
+                        (dragover)="onDragOver($event, idx)"
+                        (dragleave)="onDragLeave(idx)"
+                        (drop)="onDrop($event, idx)"
+                        (dragend)="onDragEnd()">
                         <!-- Reordering Actions -->
                         <td>
-                          <div class="reorder-btns">
-                            <button 
-                              class="btn-arrow" 
-                              [disabled]="first" 
-                              (click)="moveStatus(idx, -1)" 
-                              title="Move Up">
-                              ▲
-                            </button>
-                            <button 
-                              class="btn-arrow" 
-                              [disabled]="last" 
-                              (click)="moveStatus(idx, 1)" 
-                              title="Move Down">
-                              ▼
-                            </button>
+                          <div class="reorder-cell">
+                            <span class="drag-handle" draggable="false" title="Drag to reorder">
+                              <svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor"><circle cx="2" cy="2" r="1.5"/><circle cx="8" cy="2" r="1.5"/><circle cx="2" cy="8" r="1.5"/><circle cx="8" cy="8" r="1.5"/><circle cx="2" cy="14" r="1.5"/><circle cx="8" cy="14" r="1.5"/></svg>
+                            </span>
+                            <!--
+                            <div class="reorder-btns">
+                              <button
+                                class="btn-arrow"
+                                draggable="false"
+                                [disabled]="first"
+                                (click)="moveStatus(idx, -1)"
+                                title="Move Up">
+                                <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2.5 7.5L6 4L9.5 7.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                              </button>
+                              <button
+                                class="btn-arrow"
+                                draggable="false"
+                                [disabled]="last"
+                                (click)="moveStatus(idx, 1)"
+                                title="Move Down">
+                                <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                              </button>
+                            </div>
+                            -->
                           </div>
                         </td>
 
@@ -129,11 +166,14 @@ const EMPTY_FORM = () => ({ name: '', color: '#B87333' });
                         <!-- Row Actions -->
                         <td>
                           <div class="action-btns">
-                            <button class="btn-edit" (click)="openEdit(status)">Edit</button>
+                            <button class="btn-edit" draggable="false" (click)="openEdit(status)">Edit</button>
                             @if (!status.is_system) {
-                              <button class="btn-delete" (click)="confirmDelete(status)">Delete</button>
+                              <button class="btn-delete" draggable="false" (click)="confirmDelete(status)">Delete</button>
                             } @else {
-                              <span class="locked-action" title="System status cannot be deleted">🔒 Locked</span>
+                              <span class="locked-action" title="System status cannot be deleted">
+                                <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="7" rx="1.3" stroke="currentColor" stroke-width="1.3"/><path d="M5.5 7V4.8C5.5 3.25 6.6 2 8 2C9.4 2 10.5 3.25 10.5 4.8V7" stroke="currentColor" stroke-width="1.3"/></svg>
+                                Locked
+                              </span>
                             }
                           </div>
                         </td>
@@ -159,7 +199,9 @@ const EMPTY_FORM = () => ({ name: '', color: '#B87333' });
         <div class="modal" (click)="$event.stopPropagation()">
           <div class="modal-header">
             <h2>{{ editingId() ? 'Edit Status' : 'Add Custom Status' }}</h2>
-            <button class="modal-close" (click)="closeForm()">✕</button>
+            <button class="modal-close" (click)="closeForm()">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2L12 12M12 2L2 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </button>
           </div>
           <div class="modal-body">
             <div class="form-grid">
@@ -232,8 +274,10 @@ const EMPTY_FORM = () => ({ name: '', color: '#B87333' });
     .pane-header h2 { font-size: 1.15rem; font-weight: 700; color: #1C1C1C; margin: 0 0 4px 0; }
     .pane-desc { font-size: 0.8rem; color: #666; margin: 0; }
     
-    .loading { color: #888; padding: 2rem; text-align: center; }
     .error-msg { display: flex; align-items: center; justify-content: space-between; color: #DC2626; padding: 0.75rem 1rem; background: rgba(220,38,38,0.06); border: 1px solid rgba(220,38,38,0.15); border-radius: 6px; margin-bottom: 1rem; font-size: 0.875rem; }
+    .skel-row td { padding: 0.75rem 1rem; border-bottom: 1px solid #F0F0F0; }
+    .skel-line { height: 10px; border-radius: 4px; background: linear-gradient(90deg, #F0F0F0 25%, #F7F7F7 37%, #F0F0F0 63%); background-size: 400% 100%; animation: skel-shimmer 1.4s ease infinite; }
+    @keyframes skel-shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
     .error-msg button { background: none; border: 1px solid #DC2626; color: #DC2626; padding: 3px 10px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 600; transition: all 0.15s ease; }
     .error-msg button:hover { background: #DC2626; color: #fff; }
     
@@ -243,10 +287,19 @@ const EMPTY_FORM = () => ({ name: '', color: '#B87333' });
     .data-table tr:last-child td { border-bottom: none; }
     .data-table tr:hover td { background: #FCFCFD; }
     
+    .reorder-cell { display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .drag-handle { display: flex; align-items: center; justify-content: center; width: 20px; height: 26px; color: #C4B8A0; cursor: grab; flex-shrink: 0; border-radius: 4px; transition: color 0.15s ease, background 0.15s ease; }
+    .drag-handle:hover { color: #B87333; background: rgba(184,115,51,0.06); }
+    .drag-row:active .drag-handle { cursor: grabbing; }
     .reorder-btns { display: flex; gap: 4px; justify-content: center; }
     .btn-arrow { display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; font-size: 0.7rem; background: #FFF; border: 1px solid #DDD; color: #555; border-radius: 4px; cursor: pointer; transition: all 0.1s ease; }
     .btn-arrow:hover:not(:disabled) { border-color: #B87333; color: #B87333; background: rgba(184, 115, 51, 0.03); }
     .btn-arrow:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    .drag-row { transition: opacity 0.15s ease; }
+    .drag-row.dragging { opacity: 0.4; }
+    .drag-row.drag-over-top td { box-shadow: inset 0 2px 0 0 #B87333; }
+    .drag-row.drag-over-bottom td { box-shadow: inset 0 -2px 0 0 #B87333; }
     
     .status-title { font-weight: 600; color: #1C1C1C; }
     .font-mono { font-family: monospace; font-size: 0.8rem; }
@@ -263,7 +316,7 @@ const EMPTY_FORM = () => ({ name: '', color: '#B87333' });
     .btn-edit:hover { background: rgba(184,115,51,0.15); }
     .btn-delete { padding: 4px 10px; background: none; border: 1px solid rgba(220,38,38,0.3); color: #DC2626; border-radius: 4px; font-size: 0.75rem; cursor: pointer; font-weight: 500; transition: background 0.15s; }
     .btn-delete:hover { background: rgba(220,38,38,0.06); }
-    .locked-action { font-size: 0.75rem; color: #999; padding: 4px 8px; background: #FAFAFA; border: 1px solid #EEE; border-radius: 4px; cursor: default; }
+    .locked-action { display: inline-flex; align-items: center; gap: 5px; font-size: 0.75rem; color: #999; padding: 4px 8px; background: #FAFAFA; border: 1px solid #EEE; border-radius: 4px; cursor: default; }
     
     .empty-cell { text-align: center; color: #AAAAAA; padding: 3rem; font-style: italic; }
     
@@ -301,6 +354,8 @@ const EMPTY_FORM = () => ({ name: '', color: '#B87333' });
 })
 export class AdminSettingsComponent implements OnInit {
   private readonly api = inject(ApiService);
+  private readonly confirmSvc = inject(AdminConfirmService);
+  private readonly toast = inject(AdminToastService);
 
   activeTab = signal<'statuses'>('statuses');
   statuses = signal<OrderStatus[]>([]);
@@ -313,6 +368,9 @@ export class AdminSettingsComponent implements OnInit {
   saving = signal(false);
   formError = signal('');
   form = signal(EMPTY_FORM());
+
+  draggedIndex = signal<number | null>(null);
+  dragOverIndex = signal<number | null>(null);
 
   ngOnInit(): void {
     this.loadStatuses();
@@ -380,6 +438,7 @@ export class AdminSettingsComponent implements OnInit {
       next: () => {
         this.saving.set(false);
         this.showForm.set(false);
+        this.toast.success(editId ? 'Status updated' : 'Status created');
         this.loadStatuses();
       },
       error: (err) => {
@@ -389,16 +448,23 @@ export class AdminSettingsComponent implements OnInit {
     });
   }
 
-  confirmDelete(status: OrderStatus): void {
+  async confirmDelete(status: OrderStatus): Promise<void> {
     if (status.is_system) return;
-    if (!confirm(`Are you sure you want to delete the custom status "${status.name}"?`)) return;
+    const ok = await this.confirmSvc.confirm({
+      title: 'Delete Status',
+      message: `Are you sure you want to delete the custom status "${status.name}"?`,
+      confirmLabel: 'Delete',
+      danger: true
+    });
+    if (!ok) return;
 
     this.api.delete<any>(`/admin/order-statuses/${status.id}`).subscribe({
       next: () => {
+        this.toast.success('Status deleted');
         this.loadStatuses();
       },
       error: (err) => {
-        alert(err.userMessage || 'Delete failed');
+        this.toast.error(err.userMessage || 'Delete failed');
       }
     });
   }
@@ -413,6 +479,10 @@ export class AdminSettingsComponent implements OnInit {
     list[index] = list[targetIdx];
     list[targetIdx] = temp;
 
+    this.applyNewOrder(list);
+  }
+
+  private applyNewOrder(list: OrderStatus[]): void {
     // Instantly update UI for snappy feeling
     this.statuses.set(list);
 
@@ -420,10 +490,41 @@ export class AdminSettingsComponent implements OnInit {
     const ids = list.map(s => s.id);
     this.api.put<any>('/admin/order-statuses/reorder', { ids }).subscribe({
       error: (err) => {
-        console.error('Failed to save status order', err);
-        // Rollback on error
+        this.toast.error(err.userMessage || 'Failed to save new order');
         this.loadStatuses();
       }
     });
+  }
+
+  onDragStart(index: number): void {
+    this.draggedIndex.set(index);
+  }
+
+  onDragOver(event: DragEvent, index: number): void {
+    event.preventDefault();
+    if (this.draggedIndex() === null || this.draggedIndex() === index) return;
+    this.dragOverIndex.set(index);
+  }
+
+  onDragLeave(index: number): void {
+    if (this.dragOverIndex() === index) this.dragOverIndex.set(null);
+  }
+
+  onDrop(event: DragEvent, dropIndex: number): void {
+    event.preventDefault();
+    const fromIndex = this.draggedIndex();
+    this.dragOverIndex.set(null);
+    if (fromIndex === null || fromIndex === dropIndex) return;
+
+    const list = [...this.statuses()];
+    const [moved] = list.splice(fromIndex, 1);
+    list.splice(dropIndex, 0, moved);
+
+    this.applyNewOrder(list);
+  }
+
+  onDragEnd(): void {
+    this.draggedIndex.set(null);
+    this.dragOverIndex.set(null);
   }
 }

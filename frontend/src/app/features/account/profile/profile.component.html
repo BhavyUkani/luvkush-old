@@ -1,36 +1,54 @@
 <div class="ac">
   <lk-account-nav />
   <div class="ac-content">
-    <h1 class="ac-page-title">Account Details</h1>
+    <div class="ac-page-head">
+      <div>
+        <span class="lk-eyebrow">Your account</span>
+        <h1 class="ac-page-title">Account details</h1>
+      </div>
+    </div>
+
+    <div class="ac-card pf-summary">
+      <span class="pf-summary__avatar" aria-hidden="true">{{ auth.fullName ? auth.fullName[0].toUpperCase() : 'U' }}</span>
+      <div>
+        <p class="pf-summary__name">{{ auth.fullName || 'My Account' }}</p>
+        <p class="pf-summary__email">{{ auth.user()?.email }}</p>
+      </div>
+      @if (auth.user()?.role && auth.user()?.role !== 'customer') {
+        <span class="ac-status ac-status--confirmed">{{ auth.user()?.role | titlecase }}</span>
+      }
+    </div>
+
     <div class="ac-card">
+      <h2 class="pf-card-title">Personal information</h2>
       <form [formGroup]="form" (ngSubmit)="onSave()" novalidate>
         <div class="pf-row">
-          <div class="pf-field">
-            <label class="pf-label" for="pf-fn">First name</label>
-            <input id="pf-fn" type="text" formControlName="first_name" class="pf-input"
-              [class.pf-input--invalid]="submitted && f.first_name.invalid" placeholder="First name" />
-            @if (submitted && f.first_name.invalid) { <span class="pf-error">Required</span> }
+          <div class="ac-field">
+            <label class="ac-label" for="pf-fn">First name</label>
+            <input id="pf-fn" type="text" formControlName="first_name" class="ac-input"
+              [class.ac-input--invalid]="submitted && f.first_name.invalid" placeholder="First name" />
+            @if (submitted && f.first_name.invalid) { <span class="ac-err">Required</span> }
           </div>
-          <div class="pf-field">
-            <label class="pf-label" for="pf-ln">Last name</label>
-            <input id="pf-ln" type="text" formControlName="last_name" class="pf-input"
-              [class.pf-input--invalid]="submitted && f.last_name.invalid" placeholder="Last name" />
-            @if (submitted && f.last_name.invalid) { <span class="pf-error">Required</span> }
+          <div class="ac-field">
+            <label class="ac-label" for="pf-ln">Last name</label>
+            <input id="pf-ln" type="text" formControlName="last_name" class="ac-input"
+              [class.ac-input--invalid]="submitted && f.last_name.invalid" placeholder="Last name" />
+            @if (submitted && f.last_name.invalid) { <span class="ac-err">Required</span> }
           </div>
         </div>
-        <div class="pf-field">
-          <label class="pf-label">Email address</label>
-          <input type="email" [value]="auth.user()?.email ?? ''" class="pf-input pf-input--disabled" disabled />
-          <span class="pf-hint">Email cannot be changed</span>
+        <div class="ac-field">
+          <label class="ac-label">Email address</label>
+          <input type="email" [value]="auth.user()?.email ?? ''" class="ac-input ac-input--disabled" disabled />
+          <span class="ac-hint">Email cannot be changed</span>
         </div>
-        <div class="pf-field">
-          <label class="pf-label" for="pf-ph">Mobile number</label>
-          <input id="pf-ph" type="tel" formControlName="phone" class="pf-input" placeholder="10-digit mobile" inputmode="numeric" />
-          @if (submitted && f.phone.invalid) { <span class="pf-error">Enter a valid 10-digit mobile number</span> }
+        <div class="ac-field">
+          <label class="ac-label" for="pf-ph">Mobile number</label>
+          <input id="pf-ph" type="tel" formControlName="phone" class="ac-input" placeholder="10-digit mobile" inputmode="numeric" />
+          @if (submitted && f.phone.invalid) { <span class="ac-err">Enter a valid 10-digit mobile number</span> }
         </div>
         <div class="pf-actions">
-          <button type="submit" class="pf-save" [disabled]="saving()">
-            @if (saving()) { Saving… } @else { Save Changes }
+          <button type="submit" class="lk-btn lk-btn--solid lk-btn--sm" [disabled]="saving()">
+            @if (saving()) { Saving… } @else { Save changes }
           </button>
         </div>
       </form>

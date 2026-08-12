@@ -1,97 +1,145 @@
-<!-- Hero Banner -->
+<!-- ── Hero ─────────────────────────────────────────────────────── -->
 <section class="ab-hero">
-  <div class="ab-hero__inner">
-    <p class="ab-hero__eyebrow">Est. 2023 · Rajkot, Gujarat</p>
-    <h1 class="ab-hero__title">Rooted in Ancient<br>Herbal Wisdom</h1>
-    <p class="ab-hero__sub">We blend 5000 years of herbal tradition with modern quality standards to bring you hair care that truly works — without compromise.</p>
+  <div class="lk-shell">
+    <div class="ab-hero__rail" aria-hidden="true">
+      <span class="ab-hero__mark">Est. 2023</span>
+      <span class="ab-hero__rule"></span>
+      <span class="ab-hero__mark ab-hero__mark--mid">Rajkot, Gujarat</span>
+      <span class="ab-hero__rule"></span>
+      <span class="ab-hero__mark">Luv Kush Natural</span>
+    </div>
+    <h1 class="ab-hero__title">Rooted in <em>ancient herbal wisdom</em></h1>
+    <p class="ab-hero__sub">
+      We blend 5000 years of herbal tradition with modern quality standards, to bring you
+      hair and skin care that actually works — without compromise.
+    </p>
   </div>
-  <div class="ab-hero__leaf" aria-hidden="true">🌿</div>
 </section>
 
-<!-- Brand Story -->
-<section class="ab-story">
-  <div class="ab-story__inner">
-    <div class="ab-story__text">
-      <p class="ab-section-eyebrow">Our Story</p>
-      <h2 class="ab-section-title">From Our Grandmothers'<br>Kitchen to Your Home</h2>
-      <p>Luv Kush Natural was born from a simple truth: the most effective hair care formulas were already in our grandmothers' kitchens. Cold-pressed amla, slow-infused bhringraj, fresh-ground brahmi — these weren't exotic treatments. They were rituals.</p>
-      <p>We founded Luv Kush Natural to honour these rituals and make them accessible to every Indian household. Our oils and treatments are formulated exactly as they would have been centuries ago — without shortcuts, synthetic preservatives, or marketing gimmicks.</p>
-    </div>
-    <div class="ab-story__visual">
+<!-- ── Story ────────────────────────────────────────────────────── -->
+<section class="lk-section ab-story">
+  <div class="lk-shell ab-story__grid">
+    <div class="ab-story__media" lkReveal>
+      <img src="/assets/images/ingredient-amla.jpg" alt="Amla, hand-harvested for cold-pressing" width="480" height="600" />
+      <span class="ab-story__sheen" aria-hidden="true"></span>
+      <span class="ab-story__contact" aria-hidden="true"></span>
       <div class="ab-story__badge">
         <span class="ab-story__badge-num">5000+</span>
-        <span class="ab-story__badge-label">Years of<br>Herbal Heritage</span>
+        <span class="ab-story__badge-label">years of herbal heritage</span>
       </div>
+    </div>
+
+    <div class="ab-story__text" [lkReveal]="1">
+      <span class="lk-eyebrow">Our story</span>
+      <h2 class="lk-title">From our grandmothers' <em>kitchen</em>, to your home</h2>
+      <p>
+        Luv Kush Natural was born from a simple truth: the most effective hair care formulas
+        were already in our grandmothers' kitchens. Cold-pressed amla, slow-infused bhringraj,
+        fresh-ground neem — these weren't exotic treatments. They were rituals.
+      </p>
+      <p>
+        We founded Luv Kush Natural to honour those rituals and make them accessible to every
+        Indian household. Our oils and treatments are formulated exactly as they would have been
+        centuries ago — without shortcuts, synthetic preservatives, or marketing gimmicks.
+      </p>
     </div>
   </div>
 </section>
 
-<!-- Mission & Values -->
+<!-- ── Mission ──────────────────────────────────────────────────── -->
 <section class="ab-mission">
-  <div class="ab-mission__inner">
-    <div class="ab-mission__header">
-      <p class="ab-section-eyebrow ab-section-eyebrow--light">Our Mission</p>
-      <h2 class="ab-section-title ab-section-title--light">Transparency First.<br>Always.</h2>
+  <div class="lk-shell">
+    <span class="lk-eyebrow lk-eyebrow--center lk-eyebrow--on-dark">Our mission</span>
+    <blockquote class="ab-mission__quote">
+      “To make authentic natural and herbal hair care accessible to every household —
+      with <em>transparency</em> in ingredients, honesty in claims, and a commitment to
+      natural beauty.”
+    </blockquote>
+  </div>
+</section>
+
+<!-- ── Values ───────────────────────────────────────────────────── -->
+<section class="lk-section ab-values-section">
+  <div class="lk-shell">
+    <div class="lk-head lk-head--center">
+      <div>
+        <span class="lk-eyebrow lk-eyebrow--center">What we stand for</span>
+        <h2 class="lk-title">Four things we <em>never</em> compromise on</h2>
+      </div>
     </div>
-    <div class="ab-mission__quote">
-      <p>"To make authentic natural and herbal hair care accessible to every household — with transparency in ingredients, honesty in claims, and a commitment to natural beauty."</p>
-    </div>
+
     <div class="ab-values">
-      @for (val of values; track val.title) {
-        <div class="ab-value">
-          <span class="ab-value__icon" aria-hidden="true">{{ val.icon }}</span>
+      @for (val of values; track val.title; let i = $index) {
+        <article class="ab-value" [lkReveal]="i">
+          <span class="ab-value__icon" aria-hidden="true">
+            @switch (val.icon) {
+              @case ('leaf') {
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 3c6 5 9 9.6 9 14a9 9 0 0 1-18 0c0-4.4 3-9 9-14Z" stroke="currentColor" stroke-width="1.5"/><path d="M12 5v15" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+              }
+              @case ('flask') {
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M9 3h6M10 3v6.2L4.8 18a2 2 0 0 0 1.7 3h11a2 2 0 0 0 1.7-3L14 9.2V3" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7.3 15h9.4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+              }
+              @case ('heart') {
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21.2l7.8-7.8 1-1.1a5.5 5.5 0 0 0 0-7.7Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+              }
+              @case ('globe') {
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"/><path d="M3 12h18M12 3c2.8 2.5 4.2 5.7 4.2 9s-1.4 6.5-4.2 9c-2.8-2.5-4.2-5.7-4.2-9S9.2 5.5 12 3Z" stroke="currentColor" stroke-width="1.3"/></svg>
+              }
+            }
+          </span>
           <h3 class="ab-value__title">{{ val.title }}</h3>
           <p class="ab-value__desc">{{ val.desc }}</p>
-        </div>
+        </article>
       }
     </div>
   </div>
 </section>
 
-<!-- Product Range -->
-<section class="ab-range">
-  <div class="ab-range__inner">
-    <p class="ab-section-eyebrow">What We Offer</p>
-    <h2 class="ab-section-title">Our Complete Range</h2>
+<!-- ── Product range ────────────────────────────────────────────── -->
+<section class="lk-section ab-range">
+  <div class="lk-shell">
+    <div class="lk-head lk-head--center">
+      <div>
+        <span class="lk-eyebrow lk-eyebrow--center">What we offer</span>
+        <h2 class="lk-title">Our complete <em>range</em></h2>
+      </div>
+    </div>
+
     <div class="ab-range__grid">
-      <div class="ab-range__card">
-        <span class="ab-range__icon" aria-hidden="true">🫒</span>
-        <h3>Hair Oils</h3>
-        <p>Cold-pressed and steam-extracted — amla, bhringraj, brahmi, neem, hibiscus blended with precision.</p>
-      </div>
-      <div class="ab-range__card">
-        <span class="ab-range__icon" aria-hidden="true">🧴</span>
-        <h3>Shampoos & Conditioners</h3>
-        <p>Herbal formulations free from sulfates, parabens, and synthetic fragrances.</p>
-      </div>
-      <div class="ab-range__card">
-        <span class="ab-range__icon" aria-hidden="true">💆</span>
-        <h3>Scalp Treatments</h3>
-        <p>Targeted serums and masks for dandruff, dryness, and scalp health restoration.</p>
-      </div>
-      <div class="ab-range__card">
-        <span class="ab-range__icon" aria-hidden="true">✨</span>
-        <h3>Hair Wigs & Patches</h3>
-        <p>Custom-crafted with natural hairlines — undetectable, comfortable, confidence-restoring.</p>
-      </div>
+      @for (r of range; track r.title; let i = $index) {
+        <a class="ab-range__card" [routerLink]="r.link" [lkReveal]="i">
+          <div class="ab-range__media">
+            <img [src]="r.image" [alt]="r.title" loading="lazy" width="300" height="300" />
+          </div>
+          <span class="ab-range__contact" aria-hidden="true"></span>
+          <h3 class="ab-range__title">{{ r.title }}</h3>
+          <p class="ab-range__desc">{{ r.desc }}</p>
+        </a>
+      }
     </div>
   </div>
 </section>
 
-<!-- Promise Section -->
-<section class="ab-promise">
-  <div class="ab-promise__inner">
-    <p class="ab-section-eyebrow">Our Promise</p>
-    <h2 class="ab-section-title">No Shortcuts.<br>Ever.</h2>
-    <p class="ab-promise__body">Every product is formulated without parabens, sulfates, or mineral oils. We source our herbs from trusted farms across India and maintain full traceability of our ingredient supply chain. If we wouldn't use it ourselves, it doesn't go into our products.</p>
-    <div class="ab-promise__badges">
-      <span class="ab-badge">🌿 Paraben Free</span>
-      <span class="ab-badge">✓ Sulfate Free</span>
-      <span class="ab-badge">🔬 No Mineral Oils</span>
-      <span class="ab-badge">🇮🇳 Made in India</span>
-      <span class="ab-badge">🌱 100% Botanical</span>
-    </div>
-    <p class="ab-promise__contact">
+<!-- ── Promise ──────────────────────────────────────────────────── -->
+<section class="lk-section ab-promise">
+  <div class="lk-shell ab-promise__inner">
+    <span class="lk-eyebrow lk-eyebrow--center">Our promise</span>
+    <h2 class="lk-title">No shortcuts. <em>Ever.</em></h2>
+    <p class="ab-promise__body">
+      Every product is formulated without parabens, sulphates, or mineral oils. We source our
+      herbs from trusted farms across India and maintain full traceability of our ingredient
+      supply chain. If we wouldn't use it ourselves, it doesn't go into our products.
+    </p>
+
+    <ul class="ab-badges">
+      <li class="lk-chip">Paraben free</li>
+      <li class="lk-chip">Sulphate free</li>
+      <li class="lk-chip">No mineral oils</li>
+      <li class="lk-chip">Made in India</li>
+      <li class="lk-chip">100% botanical</li>
+    </ul>
+
+    <p class="ab-promise__cta">
       Questions? Visit our <a routerLink="/contact">contact page</a> or email us at
       <a href="mailto:luvkushnaturalproducts@gmail.com">luvkushnaturalproducts&#64;gmail.com</a>
     </p>

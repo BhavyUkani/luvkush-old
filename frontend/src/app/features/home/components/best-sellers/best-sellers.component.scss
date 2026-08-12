@@ -1,128 +1,79 @@
-@use "../../../../../styles/variables" as *;
-@use "../../../../../styles/mixins" as *;
-
-// ─── Keyframes ─────────────────────────────────────────────────────────────
-@keyframes shimmer {
-  from { background-position: 200% center; }
-  to   { background-position: -200% center; }
+// ── Bestsellers ───────────────────────────────────────────────
+.bs {
+  background: var(--lk-cream);
 }
 
-// ─── Section ───────────────────────────────────────────────────────────────
-.bs {
-  padding: clamp(2.5rem, 5vw, 4rem) clamp(1.25rem, 4vw, 3rem);
-  background: $color-bg-subtle;
-  position: relative;
+// ── Tabs ──────────────────────────────────────────────────────
+.bs__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .45rem;
+  margin-bottom: clamp(1.4rem, 2.5vw, 2rem);
+  padding-bottom: 1.15rem;
+  // Same shelf rule the category grid rests on
+  border-bottom: 1px solid var(--lk-line);
+}
 
-  &__header {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: $space-4;
-    margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
-    max-width: 1400px;
-    margin-inline: auto;
-    flex-wrap: wrap;
+.bs__tab {
+  padding: .58rem 1.15rem;
+  border: 1px solid var(--lk-line);
+  border-radius: var(--lk-r-pill);
+  background: var(--lk-white);
+  font-family: 'Outfit', system-ui, sans-serif;
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--lk-body);
+  cursor: pointer;
+  transition: background var(--lk-t-fast), color var(--lk-t-fast),
+              border-color var(--lk-t-fast);
+
+  &:hover {
+    border-color: var(--lk-green-300);
+    color: var(--lk-green-700);
   }
 
-  &__header-left {}
-
-  &__eyebrow {
-    font-family: $font-ui;
-    font-size: 11px;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: $color-copper-gold;
-    margin: 0 0 0.4rem;
-    font-weight: $fw-semibold;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-
-    &::before {
-      content: '';
-      display: block;
-      width: 24px;
-      height: 2px;
-      background: $color-copper-gold;
-      border-radius: 1px;
-    }
+  &.is-active {
+    background: var(--lk-green-700);
+    border-color: var(--lk-green-700);
+    color: #fff;
   }
 
-  &__title {
-    font-family: $font-heading;
-    font-size: clamp(1.5rem, 3vw, 2.2rem);
-    font-weight: $fw-semibold;
-    color: $color-charcoal-true;
-    margin: 0 0 $space-1;
-    letter-spacing: -0.01em;
-    line-height: 1.2;
+  &:focus-visible {
+    outline: 2px solid var(--lk-green-500);
+    outline-offset: 2px;
   }
+}
 
-  &__sub {
-    font-family: $font-body;
-    font-size: $fs-sm;
-    color: $color-text-muted;
-    margin: 0;
-    line-height: 1.5;
-  }
+// ── Grid ──────────────────────────────────────────────────────
+.bs__grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(.9rem, 1.6vw, 1.4rem);
 
-  &__view-all {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-family: $font-ui;
-    font-size: $fs-sm;
-    font-weight: $fw-semibold;
-    color: $color-forest-deep;
-    text-decoration: none;
-    white-space: nowrap;
-    flex-shrink: 0;
-    padding: 9px 18px;
-    border: 1.5px solid rgba($color-forest-deep, 0.2);
-    border-radius: $radius-pill;
-    background: rgba($color-forest-deep, 0.03);
-    transition: all 0.25s ease;
+  @media (max-width: 1100px) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  @media (max-width: 820px)  { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 
-    svg { transition: transform 0.25s ease; }
+.bs__skeleton {
+  aspect-ratio: 3 / 4.3;
+  border-radius: var(--lk-r-lg);
+  background: linear-gradient(100deg, var(--lk-green-50) 30%, #fff 50%, var(--lk-green-50) 70%);
+  background-size: 220% 100%;
+  animation: bsShimmer 1.4s linear infinite;
+}
 
-    &:hover {
-      background: rgba($color-forest-deep, 0.08);
-      border-color: rgba($color-forest-deep, 0.45);
-      svg { transform: translateX(3px); }
-    }
-  }
+@keyframes bsShimmer {
+  from { background-position: 200% 0; }
+  to   { background-position: -120% 0; }
+}
 
-  &__grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: clamp(0.75rem, 1.8vw, 1.25rem);
-    max-width: 1400px;
-    margin: 0 auto;
+.bs__empty {
+  padding: 3rem 0;
+  text-align: center;
+  color: var(--lk-muted);
+}
 
-    @include respond-to("sm") { grid-template-columns: repeat(3, 1fr); }
-    @include respond-to("md") { grid-template-columns: repeat(4, 1fr); }
-    @include respond-to("lg") { grid-template-columns: repeat(5, 1fr); }
-  }
-
-  &__skel {
-    aspect-ratio: 3 / 4;
-    border-radius: $radius-lg;
-    background: linear-gradient(90deg,
-      rgba($color-bg-muted, 0.5) 25%,
-      rgba($color-bg-muted, 0.9) 50%,
-      rgba($color-bg-muted, 0.5) 75%
-    );
-    background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
-  }
-
-  &__empty {
-    text-align: center;
-    color: $color-text-muted;
-    font-family: $font-body;
-    font-size: $fs-sm;
-    padding: $space-8 0;
-    max-width: 1400px;
-    margin: 0 auto;
-  }
+@media (prefers-reduced-motion: reduce) {
+  .bs__skeleton { animation: none; }
+  .bs__tab { transition: none; }
 }

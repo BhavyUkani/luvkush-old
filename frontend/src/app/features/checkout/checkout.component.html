@@ -1,13 +1,18 @@
 <div class="ck-page">
-  <div class="ck-container">
+  <div class="lk-shell">
 
     <!-- Stepper -->
     @if (step() !== 'confirmation') {
       <div class="ck-stepper">
         @for (s of STEPS.slice(0,4); track s; let i = $index) {
           <div class="ck-step" [class.ck-step--done]="stepIndex() > i" [class.ck-step--active]="stepIndex() === i"
+               [class.ck-step--clickable]="stepIndex() > i"
                (click)="goToStep(s)">
-            <span class="ck-step__dot">@if (stepIndex() > i) { ✓ } @else { {{ i + 1 }} }</span>
+            <span class="ck-step__dot">
+              @if (stepIndex() > i) {
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.4l3 3 6-6.8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              } @else { {{ i + 1 }} }
+            </span>
             <span class="ck-step__label">{{ STEP_LABELS[s] }}</span>
           </div>
           @if (i < 3) { <div class="ck-step__line" [class.ck-step__line--done]="stepIndex() > i"></div> }
@@ -22,213 +27,262 @@
         <!-- Step 1: Address -->
         @if (step() === 'address') {
           <div class="ck-card">
-            <h2 class="ck-card__title">Delivery Address</h2>
+            <h2 class="ck-card__title">Delivery address</h2>
             @if (savedAddresses().length) {
               <div class="ck-addr-list">
                 @for (addr of savedAddresses(); track addr.id) {
                   <label class="ck-addr-opt" [class.ck-addr-opt--sel]="selectedAddrId() === addr.id">
                     <input type="radio" name="addr" [value]="addr.id"
                       [checked]="selectedAddrId() === addr.id" (change)="selectAddress(addr.id)" />
+                    <span class="ck-addr-opt__radio" aria-hidden="true"></span>
                     <div class="ck-addr-opt__body">
                       @if (addr.is_default) { <span class="ck-addr-opt__badge">Default</span> }
-                      <strong>{{ addr.full_name }}</strong> &mdash; {{ addr.phone }}
-                      <p>{{ addr.address_line1 }}@if(addr.address_line2){, {{ addr.address_line2 }}}</p>
-                      <p>{{ addr.city }}, {{ addr.state }} – {{ addr.pincode }}</p>
+                      <p class="ck-addr-opt__name">{{ addr.full_name }} <span>— {{ addr.phone }}</span></p>
+                      <p class="ck-addr-opt__line">{{ addr.address_line1 }}@if(addr.address_line2){, {{ addr.address_line2 }}}</p>
+                      <p class="ck-addr-opt__line">{{ addr.city }}, {{ addr.state }} – {{ addr.pincode }}</p>
                     </div>
                   </label>
                 }
-                <button class="ck-link-btn" (click)="useNewAddress()">+ Use a different address</button>
+                <button type="button" class="lk-link ck-use-new" (click)="useNewAddress()">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                  Use a different address
+                </button>
               </div>
             }
 
             @if (newAddress()) {
               <form [formGroup]="addrForm" novalidate class="ck-addr-form">
                 <div class="ck-form-row">
-                  <div class="ck-form-field">
+                  <div class="ck-field">
                     <label>Full name *</label>
-                    <input type="text" formControlName="full_name" class="ck-input" [class.ck-input--err]="addrSubmitted && af.full_name.invalid" />
+                    <input type="text" formControlName="full_name" class="ck-input" [class.ck-input--err]="addrSubmitted && af.full_name.invalid" placeholder="Recipient's full name" />
                     @if (addrSubmitted && af.full_name.invalid) { <span class="ck-err">Required</span> }
                   </div>
-                  <div class="ck-form-field">
+                  <div class="ck-field">
                     <label>Mobile *</label>
-                    <input type="tel" formControlName="phone" class="ck-input" [class.ck-input--err]="addrSubmitted && af.phone.invalid" inputmode="numeric" />
+                    <input type="tel" formControlName="phone" class="ck-input" [class.ck-input--err]="addrSubmitted && af.phone.invalid" inputmode="numeric" placeholder="10-digit mobile" />
                     @if (addrSubmitted && af.phone.invalid) { <span class="ck-err">Valid 10-digit number</span> }
                   </div>
                 </div>
-                <div class="ck-form-field ck-form-field--full">
+                <div class="ck-field">
                   <label>Address line 1 *</label>
-                  <input type="text" formControlName="address_line1" class="ck-input" [class.ck-input--err]="addrSubmitted && af.address_line1.invalid" />
+                  <input type="text" formControlName="address_line1" class="ck-input" [class.ck-input--err]="addrSubmitted && af.address_line1.invalid" placeholder="House no., building, street" />
                   @if (addrSubmitted && af.address_line1.invalid) { <span class="ck-err">Required</span> }
                 </div>
-                <div class="ck-form-field ck-form-field--full">
+                <div class="ck-field">
                   <label>Address line 2</label>
-                  <input type="text" formControlName="address_line2" class="ck-input" />
+                  <input type="text" formControlName="address_line2" class="ck-input" placeholder="Landmark, area (optional)" />
                 </div>
                 <div class="ck-form-row ck-form-row--3">
-                  <div class="ck-form-field">
+                  <div class="ck-field">
                     <label>City *</label>
                     <input type="text" formControlName="city" class="ck-input" [class.ck-input--err]="addrSubmitted && af.city.invalid" />
                     @if (addrSubmitted && af.city.invalid) { <span class="ck-err">Required</span> }
                   </div>
-                  <div class="ck-form-field">
+                  <div class="ck-field">
                     <label>State *</label>
-                    <select formControlName="state" class="ck-input" [class.ck-input--err]="addrSubmitted && af.state.invalid">
-                      <option value="">Select</option>
+                    <select formControlName="state" class="ck-select" [class.ck-input--err]="addrSubmitted && af.state.invalid">
+                      <option value="">Select state</option>
                       @for (s of STATES; track s) { <option [value]="s">{{ s }}</option> }
                     </select>
                     @if (addrSubmitted && af.state.invalid) { <span class="ck-err">Required</span> }
                   </div>
-                  <div class="ck-form-field">
+                  <div class="ck-field">
                     <label>Pincode *</label>
-                    <input type="text" formControlName="pincode" class="ck-input" [class.ck-input--err]="addrSubmitted && af.pincode.invalid" inputmode="numeric" maxlength="6" />
+                    <input type="text" formControlName="pincode" class="ck-input" [class.ck-input--err]="addrSubmitted && af.pincode.invalid" inputmode="numeric" maxlength="6" placeholder="6-digit PIN" />
                     @if (addrSubmitted && af.pincode.invalid) { <span class="ck-err">6-digit code</span> }
                   </div>
                 </div>
               </form>
             }
 
-            <button class="ck-next-btn" (click)="nextFromAddress()">Continue to Shipping</button>
+            <button class="lk-btn lk-btn--solid ck-next-btn" (click)="nextFromAddress()">Continue to shipping</button>
           </div>
         }
 
         <!-- Step 2: Shipping -->
         @if (step() === 'shipping') {
           <div class="ck-card">
-            <h2 class="ck-card__title">Shipping Method</h2>
-            <div class="ck-shipping-opts">
-              <label class="ck-ship-opt" [class.ck-ship-opt--sel]="shippingMethod() === 'standard'">
+            <h2 class="ck-card__title">Shipping method</h2>
+            <div class="ck-opt-list">
+              <label class="ck-opt" [class.ck-opt--sel]="shippingMethod() === 'standard'">
                 <input type="radio" name="ship" value="standard" [checked]="shippingMethod() === 'standard'" (change)="shippingMethod.set('standard')" />
-                <div class="ck-ship-opt__body">
-                  <strong>Standard Delivery</strong>
-                  <span class="ck-ship-opt__eta">5–7 business days</span>
-                </div>
-                <span class="ck-ship-opt__price">{{ cart.subtotal() >= 499 ? 'FREE' : '₹49' }}</span>
+                <span class="ck-opt__radio" aria-hidden="true"></span>
+                <span class="ck-opt__icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                </span>
+                <span class="ck-opt__body">
+                  <strong>Standard delivery</strong>
+                  <span class="ck-opt__meta">5–7 business days</span>
+                </span>
+                <span class="ck-opt__price">{{ cart.subtotal() >= 499 ? 'Free' : '₹49' }}</span>
               </label>
-              <label class="ck-ship-opt" [class.ck-ship-opt--sel]="shippingMethod() === 'express'">
+              <label class="ck-opt" [class.ck-opt--sel]="shippingMethod() === 'express'">
                 <input type="radio" name="ship" value="express" [checked]="shippingMethod() === 'express'" (change)="shippingMethod.set('express')" />
-                <div class="ck-ship-opt__body">
-                  <strong>Express Delivery</strong>
-                  <span class="ck-ship-opt__eta">2–3 business days</span>
-                </div>
-                <span class="ck-ship-opt__price">₹99</span>
+                <span class="ck-opt__radio" aria-hidden="true"></span>
+                <span class="ck-opt__icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M13 2 3 14h8l-1 8 10-12h-8l1-8z"/></svg>
+                </span>
+                <span class="ck-opt__body">
+                  <strong>Express delivery</strong>
+                  <span class="ck-opt__meta">2–3 business days</span>
+                </span>
+                <span class="ck-opt__price">₹99</span>
               </label>
             </div>
-            <button class="ck-next-btn" (click)="nextFromShipping()">Continue to Payment</button>
+            <button class="lk-btn lk-btn--solid ck-next-btn" (click)="nextFromShipping()">Continue to payment</button>
           </div>
         }
 
         <!-- Step 3: Payment -->
         @if (step() === 'payment') {
           <div class="ck-card">
-            <h2 class="ck-card__title">Payment Method</h2>
+            <h2 class="ck-card__title">Payment method</h2>
 
             @if (effectivePaymentMode() === 'partial') {
-              <div class="ck-advance-box">
-                <div class="ck-advance-box__icon">🔒</div>
-                <div class="ck-advance-box__content">
-                  <h3>Online Payment Required</h3>
+              <div class="ck-advance">
+                <span class="ck-advance__icon" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                </span>
+                <div class="ck-advance__content">
+                  <h3>Online payment required</h3>
                   @if (paymentMethod() === 'partial') {
                     <p>This order requires an online payment of <strong>₹{{ advanceAmount() | number:'1.0-0' }}</strong> now.</p>
-                    <p class="ck-advance-box__remaining">Remaining <strong>₹{{ (orderTotal - advanceAmount()) | number:'1.0-0' }}</strong> due on delivery.</p>
+                    <p class="ck-advance__remaining">Remaining <strong>₹{{ (orderTotal - advanceAmount()) | number:'1.0-0' }}</strong> due on delivery.</p>
                   } @else {
                     <p>You are paying the full order amount of <strong>₹{{ orderTotal | number:'1.0-0' }}</strong> online now.</p>
                   }
                 </div>
               </div>
 
-              <div class="ck-pay-options-title" style="margin: 1.5rem 0 0.75rem; font-weight: 600; font-size: 0.95rem; color: #1c1c1c;">
-                Choose how to pay the remaining amount:
-              </div>
+              <p class="ck-pay-subhead">Choose how to pay the remaining amount</p>
 
-              <div class="ck-pay-opts">
-                <!-- COD for remaining -->
-                <label class="ck-pay-opt" [class.ck-pay-opt--sel]="paymentMethod() === 'partial'">
+              <div class="ck-opt-list">
+                <label class="ck-opt" [class.ck-opt--sel]="paymentMethod() === 'partial'">
                   <input type="radio" name="pay" value="partial" [checked]="paymentMethod() === 'partial'" (change)="paymentMethod.set('partial')" />
-                  <span class="ck-pay-opt__icon">💵</span>
-                  <div>
-                    <strong>Cash on Delivery (COD)</strong>
-                    <p>Pay remaining ₹{{ (orderTotal - advanceAmount()) | number:'1.0-0' }} on delivery</p>
-                  </div>
+                  <span class="ck-opt__radio" aria-hidden="true"></span>
+                  <span class="ck-opt__icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>
+                  </span>
+                  <span class="ck-opt__body">
+                    <strong>Cash on delivery</strong>
+                    <span class="ck-opt__meta">Pay remaining ₹{{ (orderTotal - advanceAmount()) | number:'1.0-0' }} on delivery</span>
+                  </span>
                 </label>
-
-                <!-- Online for remaining -->
-                <label class="ck-pay-opt" [class.ck-pay-opt--sel]="paymentMethod() === 'online'">
+                <label class="ck-opt" [class.ck-opt--sel]="paymentMethod() === 'online'">
                   <input type="radio" name="pay" value="online" [checked]="paymentMethod() === 'online'" (change)="paymentMethod.set('online')" />
-                  <span class="ck-pay-opt__icon">💳</span>
-                  <div>
-                    <strong>Pay Full Online</strong>
-                    <p>Pay full ₹{{ orderTotal | number:'1.0-0' }} online now</p>
-                  </div>
+                  <span class="ck-opt__radio" aria-hidden="true"></span>
+                  <span class="ck-opt__icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                  </span>
+                  <span class="ck-opt__body">
+                    <strong>Pay full online</strong>
+                    <span class="ck-opt__meta">Pay full ₹{{ orderTotal | number:'1.0-0' }} online now</span>
+                  </span>
                 </label>
               </div>
             } @else {
-              <div class="ck-pay-opts">
-                <!-- COD — hidden for full_online -->
+              <div class="ck-opt-list">
                 @if (effectivePaymentMode() !== 'full_online') {
-                  <label class="ck-pay-opt" [class.ck-pay-opt--sel]="paymentMethod() === 'cod'">
+                  <label class="ck-opt" [class.ck-opt--sel]="paymentMethod() === 'cod'">
                     <input type="radio" name="pay" value="cod" [checked]="paymentMethod() === 'cod'" (change)="paymentMethod.set('cod')" />
-                    <span class="ck-pay-opt__icon">💵</span>
-                    <div>
-                      <strong>Cash on Delivery</strong>
-                      <p>Pay when your order arrives</p>
-                    </div>
+                    <span class="ck-opt__radio" aria-hidden="true"></span>
+                    <span class="ck-opt__icon">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>
+                    </span>
+                    <span class="ck-opt__body">
+                      <strong>Cash on delivery</strong>
+                      <span class="ck-opt__meta">Pay when your order arrives</span>
+                    </span>
                   </label>
                 }
-                <!-- Online — hidden for full_cod -->
                 @if (effectivePaymentMode() !== 'full_cod') {
-                  <label class="ck-pay-opt" [class.ck-pay-opt--sel]="paymentMethod() === 'online'">
+                  <label class="ck-opt" [class.ck-opt--sel]="paymentMethod() === 'online'">
                     <input type="radio" name="pay" value="online" [checked]="paymentMethod() === 'online'" (change)="paymentMethod.set('online')" />
-                    <span class="ck-pay-opt__icon">💳</span>
-                    <div>
-                      <strong>Online Payment</strong>
-                      <p>UPI, Cards, Net Banking via Razorpay</p>
-                    </div>
+                    <span class="ck-opt__radio" aria-hidden="true"></span>
+                    <span class="ck-opt__icon">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                    </span>
+                    <span class="ck-opt__body">
+                      <strong>Online payment</strong>
+                      <span class="ck-opt__meta">UPI, cards, net banking via Razorpay</span>
+                    </span>
                   </label>
                 }
               </div>
             }
 
-            <button class="ck-next-btn" (click)="nextFromPayment()">Review Order</button>
+            <button class="lk-btn lk-btn--solid ck-next-btn" (click)="nextFromPayment()">Review order</button>
           </div>
         }
 
         <!-- Step 4: Review -->
         @if (step() === 'review') {
           <div class="ck-card">
-            <h2 class="ck-card__title">Review Your Order</h2>
+            <h2 class="ck-card__title">Review your order</h2>
 
             @if (selectedAddress) {
-              <div class="ck-review-section">
-                <h3 class="ck-review-label">Delivery to</h3>
-                <p class="ck-review-text">{{ selectedAddress.full_name }}, {{ selectedAddress.phone }}</p>
-                <p class="ck-review-text">{{ selectedAddress.address_line1 }}, {{ selectedAddress.city }}, {{ selectedAddress.state }} {{ selectedAddress.pincode }}</p>
+              <div class="ck-review">
+                <span class="ck-review__icon" aria-hidden="true">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                </span>
+                <div class="ck-review__body">
+                  <h3>Delivery to</h3>
+                  <p>{{ selectedAddress.full_name }} · {{ selectedAddress.phone }}</p>
+                  <p>{{ selectedAddress.address_line1 }}@if(selectedAddress.address_line2){, {{ selectedAddress.address_line2 }}}, {{ selectedAddress.city }}, {{ selectedAddress.state }} {{ selectedAddress.pincode }}</p>
+                </div>
+                <button type="button" class="ck-review__edit" (click)="goToStep('address')">Edit</button>
               </div>
             }
 
-            <div class="ck-review-section">
-              <h3 class="ck-review-label">Shipping</h3>
-              <p class="ck-review-text">{{ shippingMethod() === 'express' ? 'Express (2–3 days)' : 'Standard (5–7 days)' }}</p>
+            <div class="ck-review">
+              <span class="ck-review__icon" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+              </span>
+              <div class="ck-review__body">
+                <h3>Shipping</h3>
+                <p>{{ shippingMethod() === 'express' ? 'Express delivery (2–3 days)' : 'Standard delivery (5–7 days)' }}</p>
+              </div>
+              <button type="button" class="ck-review__edit" (click)="goToStep('shipping')">Edit</button>
             </div>
 
-            <div class="ck-review-section">
-              <h3 class="ck-review-label">Items ({{ cart.count() }})</h3>
+            <div class="ck-review">
+              <span class="ck-review__icon" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+              </span>
+              <div class="ck-review__body">
+                <h3>Payment</h3>
+                <p>
+                  @switch (paymentMethod()) {
+                    @case ('cod') { Cash on delivery }
+                    @case ('online') { Online payment (UPI, cards, net banking) }
+                    @case ('partial') { Advance online · ₹{{ advanceAmount() | number:'1.0-0' }} now, remaining on delivery }
+                  }
+                </p>
+              </div>
+              <button type="button" class="ck-review__edit" (click)="goToStep('payment')">Edit</button>
+            </div>
+
+            <div class="ck-review-items">
+              <h3 class="ck-review-items__title">Items <span>({{ cart.count() }})</span></h3>
               @for (item of cart.items(); track item.id) {
                 <div class="ck-review-item">
-                  <img [src]="item.image || '/assets/images/placeholder.webp'" [alt]="item.name" class="ck-review-item__img" />
+                  <span class="ck-review-item__media"><img [src]="item.image || '/assets/images/placeholder.webp'" [alt]="item.name" /></span>
                   <div class="ck-review-item__info">
                     <p class="ck-review-item__name">{{ item.name }}</p>
                     @if (item.variant) { <p class="ck-review-item__var">{{ item.variant }}</p> }
+                    <p class="ck-review-item__qty">Qty {{ item.quantity }}</p>
                   </div>
-                  <p class="ck-review-item__price">{{ item.quantity }} × ₹{{ item.price | number }}</p>
+                  <p class="ck-review-item__price">₹{{ (item.price * item.quantity) | number }}</p>
                 </div>
               }
             </div>
 
-            <button class="ck-place-btn" (click)="placeOrder()" [disabled]="placing()">
-              @if (placing()) { Placing Order… }
-              @else if (paymentMethod() === 'partial') { Pay Advance & Place Order — ₹{{ advanceAmount() | number:'1.0-0' }} }
-              @else if (paymentMethod() === 'online') { Pay & Place Order — ₹{{ orderTotal | number:'1.0-0' }} }
-              @else { Place Order — ₹{{ orderTotal | number:'1.0-0' }} }
+            <button class="lk-btn lk-btn--primary ck-place-btn" (click)="placeOrder()" [disabled]="placing()">
+              @if (placing()) { Placing order… }
+              @else if (paymentMethod() === 'partial') { Pay advance &amp; place order — ₹{{ advanceAmount() | number:'1.0-0' }} }
+              @else if (paymentMethod() === 'online') { Pay &amp; place order — ₹{{ orderTotal | number:'1.0-0' }} }
+              @else { Place order — ₹{{ orderTotal | number:'1.0-0' }} }
             </button>
           </div>
         }
@@ -236,13 +290,16 @@
         <!-- Step 5: Confirmation -->
         @if (step() === 'confirmation') {
           <div class="ck-confirm">
-            <div class="ck-confirm__icon">✅</div>
-            <h1 class="ck-confirm__title">Order Placed!</h1>
-            <p class="ck-confirm__sub">Thank you for your order. Your order ID is <strong>#{{ orderId() }}</strong>.</p>
-            <p class="ck-confirm__note">You'll receive a confirmation SMS/email shortly. We'll notify you when it ships.</p>
+            <span class="ck-confirm__icon" aria-hidden="true">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+            </span>
+            <span class="lk-eyebrow lk-eyebrow--center">Order confirmed</span>
+            <h1 class="ck-confirm__title">Thank you</h1>
+            <p class="ck-confirm__sub">Your order ID is <strong>#{{ orderId() }}</strong>.</p>
+            <p class="ck-confirm__note">You'll receive a confirmation SMS/email shortly. We'll notify you the moment it ships.</p>
             <div class="ck-confirm__actions">
-              <a [routerLink]="['/account/orders']" class="ck-confirm__orders-btn">View My Orders</a>
-              <a routerLink="/shop" class="ck-confirm__shop-btn">Continue Shopping</a>
+              <a [routerLink]="['/account/orders']" class="lk-btn lk-btn--solid">View my orders</a>
+              <a routerLink="/shop" class="lk-btn lk-btn--ghost">Continue shopping</a>
             </div>
           </div>
         }
@@ -251,26 +308,29 @@
 
       <!-- ── Order Summary Sidebar ── -->
       @if (step() !== 'confirmation') {
-        <div class="ck-summary">
-          <h3 class="ck-summary__title">Order Summary</h3>
-          @for (item of cart.items(); track item.id) {
-            <div class="ck-summary__item">
-              <img [src]="item.image || '/assets/images/placeholder.webp'" [alt]="item.name" class="ck-summary__img" />
-              <div class="ck-summary__item-info">
-                <p class="ck-summary__item-name">{{ item.name }}</p>
-                <p class="ck-summary__item-qty">Qty: {{ item.quantity }}</p>
+        <aside class="ck-summary">
+          <h3 class="ck-summary__title">Order summary</h3>
+          <div class="ck-summary__items">
+            @for (item of cart.items(); track item.id) {
+              <div class="ck-summary__item">
+                <span class="ck-summary__img"><img [src]="item.image || '/assets/images/placeholder.webp'" [alt]="item.name" /></span>
+                <div class="ck-summary__item-info">
+                  <p class="ck-summary__item-name">{{ item.name }}</p>
+                  <p class="ck-summary__item-qty">Qty: {{ item.quantity }}</p>
+                </div>
+                <span class="ck-summary__item-price">₹{{ (item.price * item.quantity) | number }}</span>
               </div>
-              <span class="ck-summary__item-price">₹{{ (item.price * item.quantity) | number }}</span>
-            </div>
-          }
-          <div class="ck-summary__divider"></div>
-          <div class="ck-summary__row"><span>Subtotal</span><span>₹{{ cart.subtotal() | number }}</span></div>
-          @if (discount > 0) {
-            <div class="ck-summary__row ck-summary__row--green"><span>Discount</span><span>−₹{{ discount | number }}</span></div>
-          }
-          <div class="ck-summary__row"><span>Shipping</span><span>{{ shippingCost === 0 ? 'FREE' : '₹' + shippingCost }}</span></div>
-          <div class="ck-summary__row ck-summary__row--total"><span>Total</span><span>₹{{ orderTotal | number }}</span></div>
-        </div>
+            }
+          </div>
+          <dl class="ck-sheet">
+            <div><dt>Subtotal</dt><dd>₹{{ cart.subtotal() | number }}</dd></div>
+            @if (discount > 0) {
+              <div><dt>Discount</dt><dd class="ck-sheet__save">−₹{{ discount | number }}</dd></div>
+            }
+            <div><dt>Shipping</dt><dd class="ck-sheet__ship">{{ shippingCost === 0 ? 'Free' : ('₹' + shippingCost) }}</dd></div>
+            <div class="ck-sheet__total"><dt>Total</dt><dd>₹{{ orderTotal | number }}</dd></div>
+          </dl>
+        </aside>
       }
     </div>
   </div>

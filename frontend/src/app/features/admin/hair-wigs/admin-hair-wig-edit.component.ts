@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
 import { imageUrl } from '../../../shared/utils/image-url';
+import { AdminToastService } from '../shared/admin-toast.service';
 
 const EMPTY = () => ({
   name: '', short_description: '', description: '',
@@ -25,14 +26,26 @@ const PANEL_W = 344;
 
       <!-- Top Bar -->
       <div class="top-bar">
-        <button class="btn-back" (click)="goBack()">← Hair Wigs</button>
+        <button class="btn-back" (click)="goBack()">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Hair Wigs
+        </button>
         <div class="top-title">
           <span>{{ isNew() ? 'Add Hair Wig' : (form().name || 'Edit Hair Wig') }}</span>
+          @if (!isNew() && !loading() && !error()) { <span class="top-title-badge">{{ form().status }}</span> }
         </div>
         <div class="top-actions">
-          <button class="btn-secondary" (click)="goBack()">Discard</button>
+          <button class="btn-secondary" (click)="goBack()">
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2 2L12 12M12 2L2 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            Discard
+          </button>
           <button class="btn-primary" (click)="save()" [disabled]="saving() || loading()">
-            {{ saving() ? 'Saving…' : (isNew() ? 'Create Wig' : 'Save Changes') }}
+            @if (saving()) {
+              <span class="btn-spinner"></span> Saving…
+            } @else {
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7.5L5.5 10.5L11.5 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              {{ isNew() ? 'Create Wig' : 'Save Changes' }}
+            }
           </button>
         </div>
       </div>
@@ -53,7 +66,10 @@ const PANEL_W = 344;
 
             <!-- General -->
             <div class="card">
-              <div class="card-heading">General</div>
+              <div class="card-heading">
+                <span class="card-icon"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.3" stroke="currentColor" stroke-width="1.3"/><path d="M8 7.2V11.5M8 5V5.1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></span>
+                General
+              </div>
               <div class="form-grid">
                 <div class="field field-full">
                   <label>Name *</label>
@@ -65,27 +81,36 @@ const PANEL_W = 344;
                 </div>
                 <div class="field">
                   <label>Gender</label>
-                  <select [(ngModel)]="form().gender" class="form-input">
-                    <option value="">Select…</option>
-                    <option value="male">Men</option>
-                    <option value="female">Women</option>
-                    <option value="unisex">Unisex</option>
-                  </select>
+                  <div class="select-wrap">
+                    <select [(ngModel)]="form().gender" class="form-input form-select">
+                      <option value="">Select…</option>
+                      <option value="male">Men</option>
+                      <option value="female">Women</option>
+                      <option value="unisex">Unisex</option>
+                    </select>
+                    <svg class="select-caret" width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </div>
                 </div>
                 <div class="field">
                   <label>Status</label>
-                  <select [(ngModel)]="form().status" class="form-input">
-                    <option value="active">Active</option>
-                    <option value="draft">Draft</option>
-                    <option value="archived">Archived</option>
-                  </select>
+                  <div class="select-wrap">
+                    <select [(ngModel)]="form().status" class="form-input form-select">
+                      <option value="active">Active</option>
+                      <option value="draft">Draft</option>
+                      <option value="archived">Archived</option>
+                    </select>
+                    <svg class="select-caret" width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </div>
                 </div>
               </div>
             </div>
 
             <!-- Image -->
             <div class="card">
-              <div class="card-heading">Image</div>
+              <div class="card-heading">
+                <span class="card-icon"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5" stroke="currentColor" stroke-width="1.2"/><circle cx="5.5" cy="6" r="1.2" stroke="currentColor" stroke-width="1.1"/><path d="M1.5 11L5.5 7.5L8.5 10.5L11 8.5L14.5 11.5" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg></span>
+                Image
+              </div>
               @if (isNew()) {
                 <div class="new-img-note">Save the wig first, then upload an image from the edit page.</div>
               } @else {
@@ -97,16 +122,20 @@ const PANEL_W = 344;
                   }
                   <label class="img-upload-btn">
                     <input type="file" accept="image/*" (change)="onImagePick($event)" hidden />
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 3V13M3 8H13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
                     {{ imgPreview() ? 'Change Image' : (form().primary_image ? 'Replace Image' : 'Upload Image') }}
                   </label>
-                  @if (imgUploading()) { <span class="uploading-msg">Uploading…</span> }
+                  @if (imgUploading()) { <span class="uploading-msg"><span class="btn-spinner btn-spinner--dark"></span> Uploading…</span> }
                 </div>
               }
             </div>
 
             <!-- Description -->
             <div class="card">
-              <div class="card-heading">Description</div>
+              <div class="card-heading">
+                <span class="card-icon"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3.5 1.5H10L13 4.5V14.5H3.5V1.5Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M6 8H11M6 10.5H11M6 5.5H8" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg></span>
+                Description
+              </div>
               <div class="form-grid">
                 <div class="field field-full">
                   <label>Full Description</label>
@@ -121,7 +150,10 @@ const PANEL_W = 344;
 
             <!-- Variants -->
             <div class="card">
-              <div class="card-heading">Variants</div>
+              <div class="card-heading">
+                <span class="card-icon"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 5C2 3.9 2.9 3 4 3H7L9 5H14C15.1 5 16 5.9 16 7V14C16 15.1 15.1 16 14 16H4C2.9 16 2 15.1 2 14V5Z" stroke="currentColor" stroke-width="1.2"/></svg></span>
+                Variants
+              </div>
               <div class="form-grid">
                 <div class="field field-full">
                   <label>Size Info</label>
@@ -136,15 +168,24 @@ const PANEL_W = 344;
 
             <!-- Pricing -->
             <div class="card">
-              <div class="card-heading">Pricing</div>
+              <div class="card-heading">
+                <span class="card-icon"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="4.5" width="13" height="7.5" rx="1.4" stroke="currentColor" stroke-width="1.2"/><circle cx="8" cy="8.25" r="1.7" stroke="currentColor" stroke-width="1.1"/></svg></span>
+                Pricing
+              </div>
               <div class="form-grid">
                 <div class="field">
-                  <label>Price (₹) *</label>
-                  <input type="number" [(ngModel)]="form().base_price" class="form-input" placeholder="5000" />
+                  <label>Price *</label>
+                  <div class="input-icon-wrap">
+                    <span class="input-icon">₹</span>
+                    <input type="number" [(ngModel)]="form().base_price" class="form-input has-icon" placeholder="5000" />
+                  </div>
                 </div>
                 <div class="field">
-                  <label>MRP (₹)</label>
-                  <input type="number" [(ngModel)]="form().mrp" class="form-input" placeholder="8000" />
+                  <label>MRP</label>
+                  <div class="input-icon-wrap">
+                    <span class="input-icon">₹</span>
+                    <input type="number" [(ngModel)]="form().mrp" class="form-input has-icon" placeholder="8000" />
+                  </div>
                 </div>
                 @if (form().base_price && form().mrp && +form().mrp > +form().base_price) {
                   <div class="field-full">
@@ -158,21 +199,30 @@ const PANEL_W = 344;
 
             <!-- Payment -->
             <div class="card">
-              <div class="card-heading">Payment</div>
+              <div class="card-heading">
+                <span class="card-icon"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="3.5" width="13" height="9" rx="1.4" stroke="currentColor" stroke-width="1.2"/><path d="M1.5 6.5H14.5" stroke="currentColor" stroke-width="1.2"/><path d="M3.5 9.5H6.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></span>
+                Payment
+              </div>
               <div class="form-grid">
                 <div class="field field-full">
                   <label>Payment Mode</label>
-                  <select [(ngModel)]="form().payment_mode" class="form-input">
-                    <option value="full_cod">Complete COD — Pay on delivery</option>
-                    <option value="full_online">Complete Online — No COD</option>
-                    <option value="partial">Partial — Advance + rest on delivery</option>
-                    <option value="hybrid">Hybrid — Customer chooses</option>
-                  </select>
+                  <div class="select-wrap">
+                    <select [(ngModel)]="form().payment_mode" class="form-input form-select">
+                      <option value="full_cod">Complete COD — Pay on delivery</option>
+                      <option value="full_online">Complete Online — No COD</option>
+                      <option value="partial">Partial — Advance + rest on delivery</option>
+                      <option value="hybrid">Hybrid — Customer chooses</option>
+                    </select>
+                    <svg class="select-caret" width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </div>
                 </div>
                 @if (form().payment_mode === 'partial') {
                   <div class="field">
-                    <label>Advance Amount (₹)</label>
-                    <input type="number" [(ngModel)]="form().advance_amount" class="form-input" placeholder="2000" />
+                    <label>Advance Amount</label>
+                    <div class="input-icon-wrap">
+                      <span class="input-icon">₹</span>
+                      <input type="number" [(ngModel)]="form().advance_amount" class="form-input has-icon" placeholder="2000" />
+                    </div>
                     <span class="hint">Paid online; balance on delivery.</span>
                   </div>
                 }
@@ -180,9 +230,17 @@ const PANEL_W = 344;
             </div>
 
             <div class="bottom-bar">
-              <button class="btn-secondary" (click)="goBack()">Discard</button>
+              <button class="btn-secondary" (click)="goBack()">
+                <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2 2L12 12M12 2L2 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                Discard
+              </button>
               <button class="btn-primary" (click)="save()" [disabled]="saving()">
-                {{ saving() ? 'Saving…' : (isNew() ? 'Create Wig' : 'Save Changes') }}
+                @if (saving()) {
+                  <span class="btn-spinner"></span> Saving…
+                } @else {
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7.5L5.5 10.5L11.5 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  {{ isNew() ? 'Create Wig' : 'Save Changes' }}
+                }
               </button>
             </div>
 
@@ -289,10 +347,14 @@ const PANEL_W = 344;
   styles: [`
     .edit-page { min-height: 100vh; background: #F7F8FA; }
     .top-bar { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; gap: 1rem; padding: 0.7rem 2rem; background: #fff; border-bottom: 1px solid #E8E8E8; }
-    .btn-back { padding: 0.4rem 0.8rem; background: none; border: 1px solid #E8E8E8; color: #555; border-radius: 6px; font-size: 0.8rem; cursor: pointer; }
+    .btn-back { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.45rem 0.9rem; background: none; border: 1px solid #E0D8C8; color: #555; border-radius: 8px; font-size: 0.8rem; font-weight: 500; cursor: pointer; transition: background 0.15s; }
     .btn-back:hover { background: #F7F8FA; }
-    .top-title { flex: 1; font-size: 0.95rem; font-weight: 700; color: #1C1C1C; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .top-title { flex: 1; font-size: 0.95rem; font-weight: 700; color: #1C1C1C; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: flex; align-items: center; gap: 0.6rem; }
+    .top-title-badge { font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 2px 8px; border-radius: 20px; background: rgba(184,115,51,0.1); color: #B87333; }
     .top-actions { display: flex; gap: 0.6rem; }
+    .btn-spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
+    .btn-spinner--dark { border-color: rgba(184,115,51,0.25); border-top-color: #B87333; }
+    @keyframes spin { to { transform: rotate(360deg); } }
     .center-state { padding: 4rem; text-align: center; color: #888; font-size: 0.9rem; }
     .error-text { color: #DC2626; }
     .error-text p { margin-bottom: 1rem; }
@@ -300,33 +362,43 @@ const PANEL_W = 344;
     .layout { display: grid; grid-template-columns: 1fr 380px; gap: 1.5rem; padding: 1.5rem 2rem; align-items: start; }
     @media (max-width: 1024px) { .layout { grid-template-columns: 1fr; } }
     .cards-col { display: flex; flex-direction: column; gap: 1rem; }
-    .card { background: #fff; border: 1px solid #E8E8E8; border-radius: 10px; padding: 1.5rem; }
-    .card-heading { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #1C1C1C; margin-bottom: 1.1rem; }
+    .card { background: #fff; border: 1px solid #E8E8E8; border-radius: 12px; padding: 1.5rem; transition: box-shadow 0.15s; }
+    .card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
+    .card-heading { display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #1C1C1C; margin-bottom: 1.1rem; }
+    .card-icon { width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; border-radius: 7px; background: rgba(184,115,51,0.1); color: #B87333; flex-shrink: 0; }
     .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
     .field { display: flex; flex-direction: column; gap: 0.3rem; }
     .field-full { grid-column: 1 / -1; }
     .field label { font-size: 0.63rem; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: #888; }
-    .form-input { padding: 0.5rem 0.7rem; border: 1px solid #E8E8E8; border-radius: 6px; color: #1C1C1C; font-size: 0.875rem; outline: none; width: 100%; box-sizing: border-box; background: #fff; transition: border-color 0.15s; }
+    .form-input { padding: 0.55rem 0.75rem; border: 1px solid #E0D8C8; border-radius: 8px; color: #1C1C1C; font-size: 0.875rem; outline: none; width: 100%; box-sizing: border-box; background: #fff; transition: border-color 0.15s, box-shadow 0.15s; }
+    .form-input:hover { border-color: #D0C4AE; }
     .form-input:focus { border-color: #B87333; box-shadow: 0 0 0 3px rgba(184,115,51,0.1); }
     .form-input::placeholder { color: #CCCCCC; }
-    .form-textarea { padding: 0.5rem 0.7rem; border: 1px solid #E8E8E8; border-radius: 6px; color: #1C1C1C; font-size: 0.875rem; outline: none; width: 100%; box-sizing: border-box; resize: vertical; font-family: inherit; line-height: 1.55; background: #fff; transition: border-color 0.15s; }
+    .form-select { appearance: none; padding-right: 2rem; cursor: pointer; }
+    .select-wrap { position: relative; display: flex; align-items: center; }
+    .select-wrap .select-caret { position: absolute; right: 0.85rem; color: #999; pointer-events: none; }
+    .input-icon-wrap { position: relative; display: flex; align-items: center; }
+    .input-icon { position: absolute; left: 0.75rem; color: #999; font-size: 0.8rem; font-weight: 600; pointer-events: none; }
+    .form-input.has-icon { padding-left: 1.9rem; }
+    .form-textarea { padding: 0.55rem 0.75rem; border: 1px solid #E0D8C8; border-radius: 8px; color: #1C1C1C; font-size: 0.875rem; outline: none; width: 100%; box-sizing: border-box; resize: vertical; font-family: inherit; line-height: 1.55; background: #fff; transition: border-color 0.15s, box-shadow 0.15s; }
+    .form-textarea:hover { border-color: #D0C4AE; }
     .form-textarea:focus { border-color: #B87333; box-shadow: 0 0 0 3px rgba(184,115,51,0.1); }
     .form-textarea::placeholder { color: #CCCCCC; }
     .hint { font-size: 0.65rem; color: #AAAAAA; margin-top: 2px; }
     .calc-row { display: flex; gap: 0.5rem; }
-    .calc-chip { font-size: 0.77rem; color: #555; background: #F0F7F0; padding: 0.28rem 0.7rem; border-radius: 20px; }
-    .calc-chip strong { color: #3D5A47; }
-    .new-img-note { font-size: 0.8rem; color: #888; background: #F7F8FA; border: 1px dashed #E8E8E8; border-radius: 6px; padding: 0.75rem 1rem; }
+    .calc-chip { font-size: 0.77rem; color: #555; background: rgba(21,128,61,0.07); border: 1px solid rgba(21,128,61,0.2); padding: 0.32rem 0.8rem; border-radius: 20px; }
+    .calc-chip strong { color: #15803D; }
+    .new-img-note { font-size: 0.8rem; color: #888; background: #FAF8F5; border: 1px dashed #E0D8C8; border-radius: 8px; padding: 0.75rem 1rem; }
     .img-upload-area { display: flex; flex-direction: column; gap: 0.75rem; }
-    .current-img { width: 140px; height: 140px; object-fit: cover; border-radius: 8px; border: 1px solid #E8E8E8; }
-    .img-placeholder { width: 140px; height: 140px; background: #F0F0F0; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #AAA; font-size: 0.78rem; }
-    .img-upload-btn { display: inline-flex; align-items: center; padding: 0.45rem 1rem; border: 1px dashed #B87333; border-radius: 6px; color: #B87333; font-size: 0.8rem; font-weight: 600; cursor: pointer; background: rgba(184,115,51,0.04); }
-    .img-upload-btn:hover { background: rgba(184,115,51,0.1); }
-    .uploading-msg { font-size: 0.8rem; color: #B87333; }
-    .btn-primary { padding: 0.5rem 1.25rem; background: #B87333; color: #fff; border: none; border-radius: 6px; font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: opacity 0.15s; }
+    .current-img { width: 140px; height: 140px; object-fit: cover; border-radius: 10px; border: 1px solid #E8E8E8; }
+    .img-placeholder { width: 140px; height: 140px; background: #F0F0F0; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #AAA; font-size: 0.78rem; }
+    .img-upload-btn { display: inline-flex; align-items: center; gap: 0.4rem; width: fit-content; padding: 0.5rem 1rem; border: 1px dashed rgba(184,115,51,0.5); border-radius: 8px; color: #B87333; font-size: 0.8rem; font-weight: 600; cursor: pointer; background: rgba(184,115,51,0.04); transition: background 0.15s, border-color 0.15s; }
+    .img-upload-btn:hover { background: rgba(184,115,51,0.1); border-color: #B87333; }
+    .uploading-msg { display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; color: #B87333; }
+    .btn-primary { display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.55rem 1.25rem; background: #B87333; color: #fff; border: none; border-radius: 8px; font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: opacity 0.15s; }
     .btn-primary:hover { opacity: 0.88; }
     .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
-    .btn-secondary { padding: 0.5rem 1.1rem; background: #fff; border: 1px solid #E8E8E8; color: #555; border-radius: 6px; font-size: 0.875rem; cursor: pointer; }
+    .btn-secondary { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.55rem 1.1rem; background: #fff; border: 1px solid #E0D8C8; color: #555; border-radius: 8px; font-size: 0.875rem; cursor: pointer; }
     .btn-secondary:hover { background: #F7F8FA; }
     .bottom-bar { display: flex; justify-content: flex-end; gap: 0.75rem; padding-top: 0.5rem; }
 
@@ -412,6 +484,7 @@ export class AdminHairWigEditComponent implements OnInit {
   private readonly api = inject(ApiService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly toast = inject(AdminToastService);
   readonly imgUrl = imageUrl;
 
   isNew = signal(false);
@@ -493,7 +566,7 @@ export class AdminHairWigEditComponent implements OnInit {
         this.imgUploading.set(false);
         this.form.update((f: any) => ({ ...f, primary_image: res.data?.primary_image }));
       },
-      error: () => { this.imgUploading.set(false); alert('Image upload failed'); }
+      error: () => { this.imgUploading.set(false); this.toast.error('Image upload failed'); }
     });
   }
 
@@ -515,6 +588,7 @@ export class AdminHairWigEditComponent implements OnInit {
     req.subscribe({
       next: (res: any) => {
         this.saving.set(false);
+        this.toast.success(this.isNew() ? 'Hair wig created' : 'Hair wig updated');
         if (this.isNew()) {
           const newId = res.data?.id;
           newId

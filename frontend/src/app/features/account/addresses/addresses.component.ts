@@ -39,6 +39,8 @@ export class AddressesComponent implements OnInit {
   editingId   = signal<number | null>(null);
   submitted   = false;
 
+  readonly LABELS = ["Home", "Work", "Other"];
+
   readonly STATES = [
     "Andhra Pradesh","Arunachal Pradesh","Assam","Bihar","Chhattisgarh","Goa","Gujarat",
     "Haryana","Himachal Pradesh","Jharkhand","Karnataka","Kerala","Madhya Pradesh",

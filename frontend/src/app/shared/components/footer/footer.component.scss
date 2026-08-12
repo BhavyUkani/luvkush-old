@@ -2,8 +2,12 @@
 @use '../../../../styles/mixins' as *;
 
 .footer {
-  background: $color-charcoal;
-  color: rgba($color-ivory, 0.7);
+  // Was $color-charcoal (#1C1C1C) — an unrelated near-black lifted from the
+  // pre-redesign system. The page's other dark sections (ingredients showcase,
+  // promo banner) both run this same green-900→950 gradient; the footer now
+  // closes the page in the same dark, not a different one.
+  background: linear-gradient(165deg, var(--lk-green-900) 0%, var(--lk-green-950) 100%);
+  color: rgba(255, 255, 255, 0.7);
   position: relative;
   overflow: hidden;
 
@@ -63,7 +67,7 @@
     font-weight: $fw-regular;
     letter-spacing: $ls-caps;
     text-transform: uppercase;
-    color: $color-ivory;
+    color: #ffffff;
   }
 
   &__logo-tagline {
@@ -72,14 +76,14 @@
     font-weight: $fw-light;
     letter-spacing: $ls-widest;
     text-transform: uppercase;
-    color: $color-copper;
+    color: var(--lk-orange-300);
     opacity: 0.7;
   }
 
   &__brand-desc {
     @include body-text;
     font-size: $fs-sm;
-    color: rgba($color-ivory, 0.5);
+    color: rgba(255, 255, 255, 0.5);
     line-height: 1.8;
     max-width: 320px;
   }
@@ -100,9 +104,9 @@
     font-weight: $fw-medium;
     letter-spacing: $ls-wide;
     text-transform: uppercase;
-    color: rgba($color-ivory, 0.4);
+    color: rgba(255, 255, 255, 0.4);
 
-    svg { color: $color-copper; flex-shrink: 0; }
+    svg { color: var(--lk-orange-300); flex-shrink: 0; }
   }
 
   // Social
@@ -116,16 +120,16 @@
     height: 40px;
     border-radius: 50%;
     @include flex-center;
-    background: rgba($color-ivory, 0.05);
-    border: 1px solid rgba($color-ivory, 0.08);
-    color: rgba($color-ivory, 0.5);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.5);
     text-decoration: none;
     transition: all $transition-base;
 
     &:hover {
-      background: rgba($color-copper, 0.15);
-      border-color: rgba($color-copper, 0.3);
-      color: $color-copper;
+      background: rgba(238, 151, 96, 0.15);
+      border-color: rgba(238, 151, 96, 0.3);
+      color: var(--lk-orange-300);
       transform: translateY(-2px);
     }
   }
@@ -143,7 +147,7 @@
     font-weight: $fw-regular;
     letter-spacing: $ls-caps;
     text-transform: uppercase;
-    color: rgba($color-ivory, 0.9);
+    color: rgba(255, 255, 255, 0.9);
   }
 
   &__col-links {
@@ -156,7 +160,7 @@
   &__link {
     font-family: $font-body;
     font-size: $fs-sm;
-    color: rgba($color-ivory, 0.45);
+    color: rgba(255, 255, 255, 0.45);
     text-decoration: none;
     transition: color $transition-fast;
     display: inline-flex;
@@ -168,14 +172,14 @@
       content: '';
       width: 12px;
       height: 1px;
-      background: $color-copper;
+      background: var(--lk-orange-400);
       opacity: 0;
       transition: opacity $transition-fast, width $transition-base;
       flex-shrink: 0;
     }
 
     &:hover {
-      color: rgba($color-ivory, 0.85);
+      color: rgba(255, 255, 255, 0.85);
 
       &::before {
         opacity: 0.6;
@@ -194,7 +198,7 @@
   &__divider-line {
     flex: 1;
     height: 1px;
-    background: rgba($color-copper, 0.12);
+    background: rgba(238, 151, 96, 0.12);
   }
 
   &__divider-ornament {
@@ -217,7 +221,7 @@
   &__copyright {
     font-family: $font-ui;
     font-size: $fs-xs;
-    color: rgba($color-ivory, 0.3);
+    color: rgba(255, 255, 255, 0.3);
     flex: 1;
     min-width: 200px;
   }
@@ -228,15 +232,15 @@
     gap: $space-3;
     font-family: $font-ui;
     font-size: $fs-xs;
-    color: rgba($color-ivory, 0.2);
+    color: rgba(255, 255, 255, 0.2);
   }
 
   &__legal-link {
-    color: rgba($color-ivory, 0.35);
+    color: rgba(255, 255, 255, 0.35);
     text-decoration: none;
     transition: color $transition-fast;
 
-    &:hover { color: rgba($color-ivory, 0.7); }
+    &:hover { color: rgba(255, 255, 255, 0.7); }
   }
 
   &__payment {
@@ -248,7 +252,7 @@
   &__payment-label {
     font-family: $font-ui;
     font-size: $fs-xs;
-    color: rgba($color-ivory, 0.2);
+    color: rgba(255, 255, 255, 0.2);
     letter-spacing: $ls-wide;
     text-transform: uppercase;
   }
@@ -264,8 +268,8 @@
     font-size: 9px;
     font-weight: $fw-bold;
     letter-spacing: $ls-wide;
-    color: rgba($color-ivory, 0.3);
-    border: 1px solid rgba($color-ivory, 0.08);
+    color: rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 3px;
     text-transform: uppercase;
   }
@@ -279,11 +283,18 @@
     font-family: $font-heading;
     font-size: clamp(5rem, 12vw, 14rem);
     font-weight: $fw-light;
-    color: rgba($color-ivory, 0.02);
+    color: rgba(255, 255, 255, 0.02);
     white-space: nowrap;
     pointer-events: none;
     user-select: none;
     letter-spacing: -0.03em;
     line-height: 1;
   }
+}
+
+// Dark green background — the light-mode ::selection default is illegible
+// here, so give selected text a highlight that reads against it.
+.footer ::selection {
+  background: rgba(255, 255, 255, .25);
+  color: #fff;
 }

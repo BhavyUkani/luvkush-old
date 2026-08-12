@@ -1,135 +1,109 @@
-<article class="pc" [class.pc--added]="isAdded()" (click)="navigateToProduct($event)" style="cursor: pointer;">
+<article class="pc" [class.pc--added]="isAdded()" [class.pc--list]="layout === 'list'" (click)="navigateToProduct($event)">
 
-  <!-- ── Image Zone ──────────────────────────────────────────── -->
-  <div class="pc__image-wrap">
+  <!-- ── Media ────────────────────────────────────────────── -->
+  <div class="pc__media">
+    <img
+      class="pc__img"
+      [src]="imageUrl"
+      [alt]="product.name"
+      loading="lazy"
+      width="400" height="400"
+      (error)="$any($event.target).src='/assets/images/placeholder.webp'"
+    />
 
-    <a [routerLink]="productUrl" class="pc__image-link" [attr.aria-label]="product.name" tabindex="-1">
-      <!-- Primary image -->
-      <img
-        class="pc__image pc__image--primary"
-        [src]="imageUrl"
-        [alt]="product.name"
-        loading="lazy"
-        width="400"
-        height="500"
-        (error)="$any($event.target).src='/assets/images/placeholder.webp'"
-      />
-      <!-- Hover alternate image -->
-      @if (hoverImage) {
-        <img
-          class="pc__image pc__image--hover"
-          [src]="hoverImage"
-          [alt]="product.name + ' alternate view'"
-          loading="lazy"
-          width="400"
-          height="500"
-          aria-hidden="true"
-          (error)="$any($event.target).style.display='none'"
-        />
-      }
-    </a>
+    <!-- One flag only. "Bestseller" moved into the body, so a grid of cards
+         reads as a shelf rather than a sticker sheet. -->
+    @if (discount > 0) {
+      <span class="pc__flag pc__flag--save">Save {{ discount }}%</span>
+    } @else if (product.is_new) {
+      <span class="pc__flag pc__flag--new">New</span>
+    }
 
-    <!-- Shimmer sweep on hover -->
-    <div class="pc__shimmer" aria-hidden="true"></div>
-
-    <!-- Badges — top left -->
-    <div class="pc__badges">
-      @if (product.is_bestseller) {
-        <span class="pc__badge pc__badge--bs">Bestseller</span>
-      }
-      @if (product.is_new) {
-        <span class="pc__badge pc__badge--new">New</span>
-      }
-      @if (isLowStock) {
-        <span class="pc__badge pc__badge--stock">Only {{ stockCount }} left</span>
-      }
-    </div>
-
-    <!-- Wishlist — top right -->
     <button
+      type="button"
       class="pc__wish"
-      [class.pc__wish--active]="wishlist.isWishlisted(product.id)"
+      [class.is-on]="wishlist.isWishlisted(product.id)"
       (click)="toggleWishlist($event)"
-      [attr.aria-label]="wishlist.isWishlisted(product.id) ? 'Remove from wishlist' : 'Add to wishlist'">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-        <path d="M8 14S2 10 2 5.5A3.5 3.5 0 0 1 8 3.5 3.5 3.5 0 0 1 14 5.5C14 10 8 14 8 14Z"
-          stroke="currentColor" stroke-width="1.4"
-          [attr.fill]="wishlist.isWishlisted(product.id) ? 'currentColor' : 'none'"/>
+      [attr.aria-label]="wishlist.isWishlisted(product.id) ? 'Remove from wishlist' : 'Add to wishlist'"
+    >
+      <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <path d="M10 17s-6.4-4.1-6.4-8.4A3.6 3.6 0 0 1 10 6.2a3.6 3.6 0 0 1 6.4 2.4C16.4 12.9 10 17 10 17Z"
+              stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
       </svg>
     </button>
-  </div>
 
-  <!-- ── Info Panel ──────────────────────────────────────────── -->
-  <div class="pc__info">
-    @if (product.category_name) {
-      <span class="pc__category">{{ product.category_name }}</span>
+    @if (stockCount === 0) {
+      <div class="pc__oos"><span>Out of stock</span></div>
     }
 
-    <a [routerLink]="productUrl" class="pc__name-link">
-      <h3 class="pc__name">{{ product.name }}</h3>
-    </a>
-
-    <!-- Rating -->
-    @if (product.rating_avg && (product.rating_count ?? 0) > 0) {
-      <div class="pc__rating" [attr.aria-label]="product.rating_avg + ' out of 5'">
-        <div class="pc__stars" role="img">
-          @for (s of stars; track s) {
-            <svg class="pc__star" [class.pc__star--on]="s <= ratingInt"
-              width="11" height="11" viewBox="0 0 12 12" fill="none">
-               <path d="M6 1L7.5 4.5H11.5L8.5 6.8L9.5 10.5L6 8.3L2.5 10.5L3.5 6.8L0.5 4.5H4.5L6 1Z"
-                stroke="currentColor" stroke-width="0.7"
-                [attr.fill]="s <= ratingInt ? 'currentColor' : 'none'"/>
-            </svg>
-          }
-        </div>
-        <span class="pc__rating-count">({{ product.rating_count }})</span>
-      </div>
-    }
-
-    <!-- Price -->
-    <div class="pc__price-row">
-      <span class="pc__price">₹{{ product.price | number:'1.0-0' }}</span>
-      @if (product.mrp && product.mrp > product.price) {
-        <span class="pc__mrp">₹{{ product.mrp | number:'1.0-0' }}</span>
-        @if (discount >= 10) {
-          <span class="pc__discount">{{ discount }}% off</span>
-        }
-      }
-    </div>
-
-    <!-- Payment indicator -->
-    @if (paymentLabel) {
-      <div class="pc__payment-label">
-        <svg width="9" height="9" viewBox="0 0 10 10" fill="none" aria-hidden="true">
-          <rect x="1" y="2.5" width="8" height="6" rx="1" stroke="currentColor" stroke-width="0.9"/>
-          <path d="M1 4.5h8" stroke="currentColor" stroke-width="0.9"/>
-        </svg>
-        {{ paymentLabel }}
-      </div>
-    }
-  </div>
-
-  <!-- ── Action Bar ──────────────────────────────────────────── -->
-  <div class="pc__action-wrap">
+    <!-- Slides up on hover; always reachable on touch via the card link -->
     <button
+      type="button"
       class="pc__action-btn"
-      [class.pc__action-btn--added]="isAdded()"
+      [disabled]="stockCount === 0"
       (click)="addToCart($event)"
-      [attr.aria-label]="'Add ' + product.name + ' to cart'">
+    >
       @if (isAdded()) {
-        <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-          <path d="M2 7L5.5 10.5L12 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M3.5 8.4l3 3 6-6.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
         Added
       } @else {
-        <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-          <path d="M1 1H2.5L4.5 10H11.5L13 5H4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-          <circle cx="5.5" cy="12" r="1" fill="currentColor"/>
-          <circle cx="10.5" cy="12" r="1" fill="currentColor"/>
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M2 2h1.7l1.6 8.2h7.2L14 4.6H4.3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="6.4" cy="13.2" r="1.1" fill="currentColor"/>
+          <circle cx="11.8" cy="13.2" r="1.1" fill="currentColor"/>
         </svg>
-        Add to Cart
+        Add to cart
       }
     </button>
+  </div>
+
+  <!-- ── Body ─────────────────────────────────────────────── -->
+  <div class="pc__body">
+    <div class="pc__kicker">
+      @if (product.category_name) {
+        <span class="pc__cat">{{ product.category_name }}</span>
+      }
+      @if (product.is_bestseller) {
+        <span class="pc__best">Bestseller</span>
+      }
+    </div>
+
+    <h3 class="pc__name">
+      <a [routerLink]="productUrl">{{ product.name }}</a>
+    </h3>
+
+    @if (product.subtitle) {
+      <p class="pc__sub">{{ product.subtitle }}</p>
+    }
+
+    @if (product.rating_count) {
+      <div class="pc__rating">
+        <span class="pc__stars" aria-hidden="true">
+          @for (s of stars; track s) {
+            <svg width="12" height="12" viewBox="0 0 16 16" [class.is-on]="s <= ratingInt" fill="currentColor">
+              <path d="M8 1.6l1.9 4h4.2l-3.4 2.9 1.2 4.2L8 10.3l-3.9 2.4 1.2-4.2L1.9 5.6h4.2L8 1.6Z"/>
+            </svg>
+          }
+        </span>
+        <span class="pc__rating-txt">{{ product.rating_avg }} ({{ product.rating_count }})</span>
+      </div>
+    }
+
+    <div class="pc__foot">
+      <div class="pc__price">
+        <span class="pc__now">₹{{ product.price | number:'1.0-0' }}</span>
+        @if (discount > 0) {
+          <span class="pc__was">₹{{ product.mrp | number:'1.0-0' }}</span>
+        }
+      </div>
+      @if (isLowStock) {
+        <span class="pc__stock">Only {{ stockCount }} left</span>
+      } @else if (paymentLabel) {
+        <span class="pc__pay">{{ paymentLabel }}</span>
+      }
+    </div>
   </div>
 
 </article>

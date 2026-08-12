@@ -45,6 +45,12 @@ export class CartService {
   readonly summary = this._summary.asReadonly();
   readonly appliedCoupon = this._appliedCoupon.asReadonly();
   readonly loading = this._loading.asReadonly();
+
+  constructor() {
+    // Otherwise the next person on this browser (or this same tab, post
+    // logout) inherits whatever the previous account left in the cart.
+    this.auth.loggedOut$.subscribe(() => this.clearCart());
+  }
   readonly count = computed(() => this._items().reduce((sum, i) => sum + i.quantity, 0));
   readonly subtotal = computed(() => this._items().reduce((sum, i) => sum + i.price * i.quantity, 0));
   readonly savings = computed(() => this._items().reduce((sum, i) => sum + (i.mrp - i.price) * i.quantity, 0));

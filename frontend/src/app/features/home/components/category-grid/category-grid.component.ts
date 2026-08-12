@@ -1,37 +1,69 @@
 import {
   Component, OnInit, ChangeDetectionStrategy, inject, signal
-} from "@angular/core";
-import { CommonModule } from "@angular/common";
-import { RouterLink } from "@angular/router";
-import { ProductApiService, Category } from "../../../../core/services/product-api.service";
-import { imageUrl } from "../../../../shared/utils/image-url";
+} from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
+import { ProductApiService, Category } from '../../../../core/services/product-api.service';
+import { imageUrl } from '../../../../shared/utils/image-url';
+import { RevealDirective } from '../../../../shared/directives/reveal.directive';
+
+/** Editorial line shown under each category name, keyed by slug. */
+const BLURBS: Record<string, string> = {
+  'hair-oil':     'Slow-infused, cold-pressed, never diluted.',
+  'shampoo':      'Sulphate-free cleansers that respect your scalp.',
+  'hair-mask':    'Deep weekly treatments for tired hair.',
+  'soap':         'Hand-cut bars, cured the traditional way.',
+  'face-care':    'Kumkumadi, aloe and sandalwood classics.',
+  'men-wigs':     'Undetectable lace fronts, custom fitted.',
+  'ladies-wigs':  'Virgin Indian hair, part it anywhere.',
+  'hair-patches': 'Instant density where you need it.',
+};
 
 @Component({
-  selector: "lk-category-grid",
+  selector: 'lk-category-grid',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterLink],
-  templateUrl: "./category-grid.component.html",
-  styleUrls: ["./category-grid.component.scss"]
+  imports: [CommonModule, RouterLink, RevealDirective],
+  templateUrl: './category-grid.component.html',
+  styleUrls: ['./category-grid.component.scss']
 })
 export class CategoryGridComponent implements OnInit {
   private readonly productApi = inject(ProductApiService);
 
-  categories = signal<Category[]>([]);
-  loading    = signal(true);
+  readonly categories = signal<Category[]>([]);
+  readonly loading = signal(true);
   readonly imgUrl = imageUrl;
+  readonly skeletons = [0, 1, 2, 3, 4];
 
   ngOnInit(): void {
     this.productApi.getCategories().subscribe({
       next: (res) => {
-        this.categories.set((res.data ?? []).slice(0, 6));
+        // Care ranges only — hair systems get their own dedicated sections below.
+        const wanted = ['hair-oil', 'shampoo', 'hair-mask', 'soap', 'face-care'];
+        const all = res.data ?? [];
+        const ordered = wanted
+          .map(slug => all.find(c => c.slug === slug))
+          .filter((c): c is Category => !!c);
+
+        this.categories.set(ordered.length ? ordered : all.slice(0, 5));
         this.loading.set(false);
       },
       error: () => this.loading.set(false)
     });
   }
 
-  trackById(_: number, item: Category): number {
-    return item.id;
+  blurb(slug: string): string {
+    return BLURBS[slug] ?? '';
+  }
+
+  /** Catalogue reference for the card, matching the hero's plate numbering. */
+  ref(i: number): string {
+    return String(i + 1).padStart(2, '0');
+  }
+
+  /** Real stock depth, straight from the API. Blank when a range is empty. */
+  countLabel(cat: Category): string {
+    const n = cat.product_count ?? 0;
+    return n > 0 ? `${n} ${n === 1 ? 'formula' : 'formulas'}` : '';
   }
 }

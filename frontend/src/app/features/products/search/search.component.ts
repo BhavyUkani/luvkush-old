@@ -4,8 +4,8 @@ import {
 import { CommonModule, isPlatformBrowser } from "@angular/common";
 import { RouterLink, ActivatedRoute, Router } from "@angular/router";
 import { FormsModule } from "@angular/forms";
-import { Subject } from "rxjs";
-import { takeUntil, debounceTime, distinctUntilChanged } from "rxjs/operators";
+import { Subject, Observable, of } from "rxjs";
+import { switchMap, tap, catchError, takeUntil } from "rxjs/operators";
 import { ProductApiService, Product } from "../../../core/services/product-api.service";
 import { ProductCardComponent } from "../../../shared/components/product-card/product-card.component";
 import { SeoService } from "../../../core/services/seo.service";
@@ -25,7 +25,12 @@ export class SearchComponent implements OnInit, OnDestroy {
   private readonly router     = inject(Router);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly destroy$   = new Subject<void>();
-  private readonly input$     = new Subject<string>();
+
+  // Typing alone never searches — only a deliberate action does (Enter,
+  // the Search button, a trending/history chip, or a shared ?q= link).
+  // That's the only way to guarantee exactly one request per search, no
+  // matter how someone paces their typing.
+  private readonly search$ = new Subject<string>();
 
   query     = signal("");
   results   = signal<Product[]>([]);
@@ -38,16 +43,15 @@ export class SearchComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadHistory();
 
-    this.input$.pipe(
-      debounceTime(350),
-      distinctUntilChanged(),
+    this.search$.pipe(
+      switchMap(q => this.runSearch(q)),
       takeUntil(this.destroy$)
-    ).subscribe(q => this.doSearch(q));
+    ).subscribe();
 
     this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(qp => {
       if (qp["q"]) {
         this.query.set(qp["q"]);
-        this.doSearch(qp["q"]);
+        this.search$.next(qp["q"]);
       }
     });
   }
@@ -56,34 +60,45 @@ export class SearchComponent implements OnInit, OnDestroy {
 
   onInput(q: string): void {
     this.query.set(q);
-    this.input$.next(q);
   }
 
   onSubmit(): void {
     const q = this.query().trim();
     if (!q) return;
+    // Navigating updates the URL's ?q= param, which the queryParams
+    // subscription below picks up and turns into the actual search — firing
+    // it again here too would double up on every Enter/Search click.
     this.router.navigate([], { queryParams: { q }, replaceUrl: true });
-    this.doSearch(q);
   }
 
-  doSearch(q: string): void {
+  private runSearch(q: string): Observable<unknown> {
     const trimmed = q.trim();
-    if (!trimmed) { this.results.set([]); this.searched.set(false); return; }
+    if (!trimmed) {
+      this.results.set([]);
+      this.searched.set(false);
+      this.loading.set(false);
+      return of(null);
+    }
+
     this.loading.set(true);
     this.searched.set(true);
-    this.seo.updateSeo({ title: `"${trimmed}" â€” Search â€” Luv Kush Natural` });
-    this.productApi.search(trimmed, 24).pipe(takeUntil(this.destroy$)).subscribe({
-      next: (res) => {
+    this.seo.updateSeo({ title: `"${trimmed}" — Search — Luv Kush Natural` });
+
+    return this.productApi.search(trimmed, 24).pipe(
+      tap(res => {
         this.results.set(res.data ?? []);
         this.loading.set(false);
         this.saveHistory(trimmed);
-      },
-      error: () => this.loading.set(false)
-    });
+      }),
+      catchError(() => {
+        this.loading.set(false);
+        return of(null);
+      })
+    );
   }
 
-  searchTrend(term: string): void { this.query.set(term); this.doSearch(term); }
-  searchHistory(term: string): void { this.query.set(term); this.doSearch(term); }
+  searchTrend(term: string): void { this.query.set(term); this.search$.next(term); }
+  searchHistory(term: string): void { this.query.set(term); this.search$.next(term); }
   clearHistory(): void { this.history.set([]); if (isPlatformBrowser(this.platformId)) localStorage.removeItem("lk_search_history"); }
 
   private loadHistory(): void {

@@ -9,259 +9,199 @@ import { RouterLink } from '@angular/router';
   imports: [CommonModule, RouterLink],
   template: `
     <div class="sol-page">
-      <!-- Premium Hero Banner -->
-      <div class="sol-hero">
-        <div class="sol-hero__inner">
-          <p class="sol-hero__eyebrow">Luv Kush Natural · Core Offerings</p>
-          <h1 class="sol-hero__title">Hair Solutions</h1>
-          <p class="sol-hero__sub">Discover custom-crafted wigs and patches designed to restore your confidence with 100% natural human hair.</p>
+      <!-- Hero -->
+      <section class="sol-hero">
+        <div class="lk-shell">
+          <div class="sol-hero__rail" aria-hidden="true">
+            <span class="sol-hero__mark">Core offerings</span>
+            <span class="sol-hero__rule"></span>
+            <span class="sol-hero__mark sol-hero__mark--mid">Human Remy hair</span>
+            <span class="sol-hero__rule"></span>
+            <span class="sol-hero__mark">Luv Kush Natural</span>
+          </div>
+          <h1 class="sol-hero__title">Hair systems, <em>fitted to you</em></h1>
+          <p class="sol-hero__sub">Custom-crafted wigs and patches built from 100% natural human hair — designed to restore your confidence, not just your hairline.</p>
         </div>
-        <div class="sol-hero__leaf" aria-hidden="true">🌿</div>
-      </div>
+      </section>
 
-      <!-- Categories Selection Grid -->
-      <div class="sol-grid-section">
-        <div class="sol-grid">
-          
-          <!-- Wigs Card -->
-          <a routerLink="/hair-wigs" class="sol-card sol-card--wigs">
-            <div class="sol-card__bg-image"></div>
-            <div class="sol-card__overlay"></div>
-            <div class="sol-card__content">
-              <span class="sol-card__badge">Full Coverage</span>
-              <h2 class="sol-card__title">Premium Wigs</h2>
-              <p class="sol-card__desc">Undetectable natural hairlines, custom-sized and meticulously styled. Available for men, women, and unisex requirements.</p>
-              <span class="sol-card__cta">
-                Explore Wigs Collection
-                <svg class="sol-card__arrow" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M3 8H13M10 5L13 8L10 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </span>
-            </div>
+      <!-- Selector grid -->
+      <section class="sol-grid-section">
+        <div class="lk-shell sol-grid">
+
+          <a routerLink="/hair-wigs" class="sol-card">
+            <span class="sol-card__media">
+              <img src="/assets/images/premium_hair_wig.png" alt="Premium hair wigs" loading="lazy" width="360" height="360" />
+            </span>
+            <span class="sol-card__contact" aria-hidden="true"></span>
+            <span class="sol-card__badge">Full coverage</span>
+            <h2 class="sol-card__title">Premium wigs</h2>
+            <p class="sol-card__desc">Undetectable natural hairlines, custom-sized and meticulously styled — for men, women, and unisex requirements.</p>
+            <span class="sol-card__cta">
+              Explore wigs collection
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8H13M10 5L13 8L10 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
           </a>
 
-          <!-- Patches Card -->
-          <a routerLink="/hair-patches" class="sol-card sol-card--patches">
-            <div class="sol-card__bg-image"></div>
-            <div class="sol-card__overlay"></div>
-            <div class="sol-card__content">
-              <span class="sol-card__badge">Partial Coverage</span>
-              <h2 class="sol-card__title">Custom Patches</h2>
-              <p class="sol-card__desc">Seamless scalp blending and instant volume where you need it most. Breathable bases crafted for everyday durability.</p>
-              <span class="sol-card__cta">
-                Explore Patches Collection
-                <svg class="sol-card__arrow" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M3 8H13M10 5L13 8L10 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </span>
-            </div>
+          <a routerLink="/hair-patches" class="sol-card">
+            <span class="sol-card__media">
+              <img src="/assets/images/hair_patch.png" alt="Custom hair patches" loading="lazy" width="360" height="360" />
+            </span>
+            <span class="sol-card__contact" aria-hidden="true"></span>
+            <span class="sol-card__badge">Partial coverage</span>
+            <h2 class="sol-card__title">Custom patches</h2>
+            <p class="sol-card__desc">Seamless scalp blending and instant volume where you need it most, on breathable bases built for everyday durability.</p>
+            <span class="sol-card__cta">
+              Explore patches collection
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8H13M10 5L13 8L10 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
           </a>
 
         </div>
-      </div>
+      </section>
     </div>
   `,
   styles: [`
-    .sol-page {
-      min-height: 80vh;
-      background: #FAF7F2;
-    }
+    :host { display: block; background: var(--lk-white); }
 
-    /* ─── Hero ─── */
     .sol-hero {
       position: relative;
-      background: linear-gradient(135deg, #0f2417 0%, #20362A 100%);
-      color: #FAF7F2;
-      padding: clamp(4rem, 8vw, 6rem) clamp(1rem, 4vw, 2.5rem);
-      text-align: center;
       overflow: hidden;
+      background:
+        radial-gradient(110% 90% at 85% 0%, var(--lk-green-50) 0%, transparent 60%),
+        linear-gradient(178deg, #FCFBF7 0%, var(--lk-cream) 100%);
+      padding-block: clamp(2.4rem, 5vw, 3.6rem) clamp(2.4rem, 5vw, 3.4rem);
+      border-bottom: 1px solid var(--lk-line);
     }
-
-    .sol-hero::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at 80% 20%, rgba(184, 132, 71, 0.15) 0%, transparent 60%);
-      pointer-events: none;
-    }
-
-    .sol-hero__inner {
-      position: relative;
-      z-index: 2;
-      max-width: 800px;
-      margin: 0 auto;
-    }
-
-    .sol-hero__eyebrow {
-      font-family: 'Outfit', sans-serif;
-      font-size: 0.75rem;
+    .sol-hero__rail { display: flex; align-items: center; gap: clamp(.6rem, 2vw, 1.2rem); margin-bottom: 1.3rem; }
+    .sol-hero__mark {
+      flex: none;
+      font-family: 'Outfit', system-ui, sans-serif;
+      font-size: .64rem;
       font-weight: 600;
-      letter-spacing: 0.15em;
+      letter-spacing: .2em;
       text-transform: uppercase;
-      color: #E2C97E;
-      margin-bottom: 12px;
+      color: var(--lk-muted);
+      white-space: nowrap;
+
+      &--mid { color: var(--lk-green-700); }
+      @media (max-width: 620px) { &:not(&--mid) { display: none; } }
     }
+    .sol-hero__rule { flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--lk-line), transparent); }
 
     .sol-hero__title {
-      font-family: 'DM Serif Display', serif;
-      font-size: clamp(2rem, 5vw, 3.5rem);
-      font-weight: 400;
-      margin: 0 0 16px;
-      line-height: 1.15;
-      letter-spacing: -0.01em;
-      text-shadow: 0 2px 10px rgba(0,0,0,0.15);
-    }
-
-    .sol-hero__sub {
-      font-family: 'DM Sans', sans-serif;
-      font-size: clamp(0.95rem, 2vw, 1.15rem);
-      color: rgba(250, 247, 242, 0.75);
-      line-height: 1.6;
       margin: 0;
-    }
+      max-width: 20ch;
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-weight: 400;
+      font-size: clamp(2.2rem, 4.8vw, 3.4rem);
+      line-height: 1.1;
+      letter-spacing: -.015em;
+      color: var(--lk-ink);
 
-    .sol-hero__leaf {
-      position: absolute;
-      bottom: -20px;
-      right: 4%;
-      font-size: 8rem;
-      opacity: 0.05;
-      pointer-events: none;
-      user-select: none;
+      em { font-style: italic; color: var(--lk-green-600); }
     }
+    .sol-hero__sub { margin: 1.1rem 0 0; max-width: 56ch; font-size: 1rem; line-height: 1.65; color: var(--lk-body); }
 
-    /* ─── Grid ─── */
-    .sol-grid-section {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: clamp(3rem, 6vw, 6rem) clamp(1rem, 4vw, 2.5rem);
-    }
+    .sol-grid-section { padding-block: clamp(3rem, 6vw, 5rem); }
 
     .sol-grid {
       display: grid;
       grid-template-columns: 1fr;
-      gap: 2.5rem;
+      gap: 2.6rem;
+      max-width: 760px;
+      @media (min-width: 640px) { grid-template-columns: 1fr 1fr; gap: 2rem; }
     }
 
-    @media (min-width: 768px) {
-      .sol-grid {
-        grid-template-columns: 1fr 1fr;
-      }
-    }
-
-    /* ─── Card ─── */
+    // A specimen card, not a hero banner — same restrained vocabulary as the
+    // product range on the About page: a dome portrait, then text beneath it.
     .sol-card {
-      position: relative;
-      border-radius: 20px;
-      overflow: hidden;
-      aspect-ratio: 1.6;
-      display: flex;
-      align-items: flex-end;
-      padding: clamp(1.5rem, 4vw, 2.5rem);
+      display: block;
       text-decoration: none;
-      color: #FAF7F2;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.06);
-      transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-                  box-shadow 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-                  border-color 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-      background: #20362A;
-      border: 1px solid rgba(226, 201, 126, 0.15);
+      text-align: center;
+    }
+
+    .sol-card__media {
+      position: relative;
+      display: block;
+      aspect-ratio: 1 / 1;
+      max-width: 260px;
+      margin: 0 auto;
+      border-radius: 44% 44% var(--lk-r-md) var(--lk-r-md) / 16% 16% 2% 2%;
+      overflow: hidden;
+      background: var(--lk-green-50);
+      box-shadow: var(--lk-shadow-xs), 0 8px 22px rgba(22, 33, 26, .09);
+      transition: transform var(--lk-t-base), box-shadow var(--lk-t-base);
+
+      img { width: 100%; height: 100%; object-fit: cover; transition: transform var(--lk-t-slow); }
+    }
+
+    .sol-card__contact {
+      display: block;
+      height: 18px;
+      max-width: 260px;
+      margin: -9px auto 0;
+      border-radius: 50%;
+      background: radial-gradient(ellipse at center, rgba(22, 33, 26, .24), transparent 70%);
+      filter: blur(9px);
+      opacity: .55;
     }
 
     .sol-card:hover {
-      transform: translateY(-8px);
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-      border-color: rgba(226, 201, 126, 0.35);
-    }
-
-    .sol-card:hover .sol-card__bg-image {
-      transform: scale(1.06);
-    }
-
-    .sol-card:hover .sol-card__cta {
-      color: #E2C97E;
-    }
-
-    .sol-card:hover .sol-card__arrow {
-      transform: translateX(4px);
-    }
-
-    .sol-card--wigs .sol-card__bg-image {
-      background-image: linear-gradient(135deg, rgba(32, 54, 42, 0.85) 0%, rgba(15, 36, 23, 0.95) 100%);
-    }
-
-    .sol-card--patches .sol-card__bg-image {
-      background-image: linear-gradient(135deg, rgba(107, 58, 42, 0.85) 0%, rgba(45, 26, 18, 0.95) 100%);
-    }
-
-    .sol-card__bg-image {
-      position: absolute;
-      inset: 0;
-      background-size: cover;
-      background-position: center;
-      transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
-      z-index: 1;
-    }
-
-    .sol-card__overlay {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 60%, transparent 100%);
-      z-index: 2;
-    }
-
-    .sol-card__content {
-      position: relative;
-      z-index: 3;
-      width: 100%;
+      .sol-card__media { transform: translateY(-5px); box-shadow: var(--lk-shadow-md); img { transform: scale(1.06); } }
+      .sol-card__title { color: var(--lk-green-700); }
+      .sol-card__cta { color: var(--lk-orange-600); svg { transform: translateX(3px); } }
     }
 
     .sol-card__badge {
       display: inline-block;
-      font-family: 'Outfit', sans-serif;
-      font-size: 10px;
+      margin: 1.2rem 0 0;
+      padding: .28rem .75rem;
+      border-radius: var(--lk-r-pill);
+      background: var(--lk-orange-50);
+      border: 1px solid var(--lk-orange-100);
+      color: var(--lk-orange-700);
+      font-family: 'Outfit', system-ui, sans-serif;
+      font-size: .66rem;
       font-weight: 700;
+      letter-spacing: .08em;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
-      padding: 4px 10px;
-      background: rgba(226, 201, 126, 0.15);
-      border: 1px solid rgba(226, 201, 126, 0.3);
-      color: #E2C97E;
-      border-radius: 40px;
-      margin-bottom: 12px;
     }
 
     .sol-card__title {
-      font-family: 'DM Serif Display', serif;
-      font-size: clamp(1.5rem, 3vw, 2.2rem);
+      margin: .6rem 0 0;
+      font-family: 'DM Serif Display', Georgia, serif;
       font-weight: 400;
-      margin: 0 0 10px;
-      letter-spacing: -0.01em;
-      color: #FAF7F2;
+      font-size: 1.35rem;
+      letter-spacing: -.01em;
+      color: var(--lk-ink);
+      transition: color var(--lk-t-fast);
     }
 
     .sol-card__desc {
-      font-family: 'DM Sans', sans-serif;
-      font-size: clamp(0.85rem, 1.5vw, 0.95rem);
-      color: rgba(250, 247, 242, 0.7);
-      line-height: 1.5;
-      margin: 0 0 20px;
+      margin: .55rem auto 0;
+      max-width: 34ch;
+      font-size: .87rem;
+      line-height: 1.6;
+      color: var(--lk-muted);
     }
 
     .sol-card__cta {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      font-family: 'Outfit', sans-serif;
-      font-size: 0.85rem;
+      gap: .45rem;
+      margin-top: 1rem;
+      font-family: 'Outfit', system-ui, sans-serif;
+      font-size: .84rem;
       font-weight: 600;
-      letter-spacing: 0.05em;
-      color: #FAF7F2;
-      transition: color 0.3s ease;
+      letter-spacing: .02em;
+      color: var(--lk-green-700);
+      transition: color var(--lk-t-fast);
+
+      svg { transition: transform var(--lk-t-fast); }
     }
 
-    .sol-card__arrow {
-      transition: transform 0.3s ease;
+    @media (prefers-reduced-motion: reduce) {
+      .sol-card__media, .sol-card__media img, .sol-card__title, .sol-card__cta, .sol-card__cta svg { transition: none; }
     }
   `]
 })
