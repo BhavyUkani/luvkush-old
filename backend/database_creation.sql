@@ -233,7 +233,6 @@ CREATE TABLE `cart_items` (
   `product_id` INT UNSIGNED NOT NULL,
   `variant_id` INT UNSIGNED DEFAULT NULL,
   `quantity` INT NOT NULL DEFAULT 1,
-  `unit_price` DECIMAL(10,2) NOT NULL,
   `customisation_data` TEXT DEFAULT NULL, -- JSON configuration placeholder
   `added_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -273,6 +272,7 @@ CREATE TABLE `orders` (
   `status` VARCHAR(50) NOT NULL DEFAULT 'pending',
   `payment_status` VARCHAR(50) NOT NULL DEFAULT 'pending',
   `payment_method` VARCHAR(50) NOT NULL,
+  `shipping_method` VARCHAR(20) NOT NULL DEFAULT 'standard',
   `subtotal` DECIMAL(10,2) NOT NULL,
   `discount_amount` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
   `shipping_amount` DECIMAL(10,2) NOT NULL DEFAULT 0.00,

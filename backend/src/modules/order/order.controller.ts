@@ -8,7 +8,7 @@ export class OrderController {
 
   async create(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { address_id, address, shipping_address: rawShipping, coupon_code, notes, payment_method } = req.body;
+      const { address_id, address, shipping_address: rawShipping, coupon_code, notes, payment_method, shipping_method } = req.body;
       if (!payment_method) throw new AppError('Payment method is required', 400);
 
       let shippingAddr = rawShipping || address;
@@ -35,7 +35,7 @@ export class OrderController {
       if (!shippingAddr) throw new AppError('Shipping address is required', 400);
 
       const order = await this.service.createFromCart(req.user!.userId, {
-        shipping_address: shippingAddr, coupon_code, notes, payment_method
+        shipping_address: shippingAddr, coupon_code, notes, payment_method, shipping_method
       });
       res.status(201).json({ success: true, data: order, message: 'Order placed successfully' });
     } catch (err) { next(err); }
@@ -254,7 +254,6 @@ export class OrderController {
           tracking_url: bookingRes.label_url
         });
 
-        const { logActivity } = await import('../../utils/activity-logger');
         logActivity({
           action: 'order_shipment_booked',
           userId: req.user?.userId,

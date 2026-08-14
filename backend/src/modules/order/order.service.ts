@@ -1,3 +1,4 @@
+import { PoolConnection } from 'mysql2/promise';
 import { db } from '../../utils/database';
 import { logger } from '../../utils/logger';
 import { AppError } from '../../middleware/error.middleware';
@@ -5,6 +6,7 @@ import { CouponService } from '../coupon/coupon.service';
 import { CartService } from '../cart/cart.service';
 import { randomToken } from '../../utils/helpers';
 import { logActivity } from '../../utils/activity-logger';
+import { calculateShippingCost, calculateTax, ShippingMethod } from '../../config/business-rules';
 
 const couponService = new CouponService();
 const cartService = new CartService();
@@ -12,11 +14,38 @@ const cartService = new CartService();
 const TERMINAL_STATUSES = ['cancelled', 'refunded', 'returned'];
 const RESTOCK_STATUSES = ['cancelled', 'returned'];
 
+// Fixed pipeline position for the built-in ("system") statuses only —
+// admins can define arbitrary extra statuses via order_statuses
+// (is_system = 0) for custom workflows, and those intentionally fall
+// outside this ranking so they stay unconstrained. Within the known
+// pipeline, this is what actually stops something like delivered→pending.
+const STATUS_RANK: Record<string, number> = {
+  pending: 0,
+  confirmed: 1,
+  processing: 2,
+  quality_check: 3,
+  shipped: 4,
+  out_for_delivery: 5,
+  delivered: 6
+};
+
+/** True if `to` would move a known-pipeline order backward. Moves into a
+ * terminal status (cancel/return/refund) or moves involving a custom status
+ * are never considered illegal here — see STATUS_RANK comment. */
+function isBackwardTransition(from: string, to: string): boolean {
+  if (from === to || TERMINAL_STATUSES.includes(to)) return false;
+  const fromRank = STATUS_RANK[from];
+  const toRank = STATUS_RANK[to];
+  if (fromRank === undefined || toRank === undefined) return false;
+  return toRank < fromRank;
+}
+
 interface CreateOrderData {
   shipping_address: Record<string, any>;
   coupon_code?: string;
   notes?: string;
   payment_method: string;
+  shipping_method?: string;
 }
 
 export class OrderService {
@@ -53,8 +82,9 @@ export class OrderService {
       freeShipping = coupon.discount_type === 'free_shipping';
     }
 
-    const shippingCost = freeShipping || (subtotal - discount) >= 999 ? 0 : 99;
-    const taxAmount = Math.round((subtotal - discount) * 0.18);
+    const shippingMethod: ShippingMethod = data.shipping_method === 'express' ? 'express' : 'standard';
+    const shippingCost = calculateShippingCost(subtotal - discount, shippingMethod, freeShipping);
+    const taxAmount = calculateTax(subtotal - discount);
     const totalAmount = subtotal - discount + shippingCost + taxAmount;
 
     const shippingAddressJson = JSON.stringify(data.shipping_address);
@@ -69,14 +99,14 @@ export class OrderService {
         const createdOrderId = await db.transaction(async (conn) => {
           const [orderResult] = await conn.execute<any>(`
             INSERT INTO orders (
-              user_id, order_number, status, payment_status, payment_method,
+              user_id, order_number, status, payment_status, payment_method, shipping_method,
               subtotal, discount_amount, shipping_amount, tax_amount, total_amount,
               coupon_code, coupon_discount,
               shipping_address,
               special_instructions, created_at, updated_at
-            ) VALUES (?, ?, 'pending', 'pending', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+            ) VALUES (?, ?, 'pending', 'pending', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
           `, [
-            userId, orderNumber, data.payment_method,
+            userId, orderNumber, data.payment_method, shippingMethod,
             subtotal, discount, shippingCost, taxAmount, totalAmount,
             couponCode, discount,
             shippingAddressJson,
@@ -154,7 +184,7 @@ export class OrderService {
     const params = userId ? [orderId, userId] : [orderId];
 
     const order = await db.queryOne<any>(`
-      SELECT o.id, o.user_id, o.order_number, o.status, o.payment_status, o.payment_method,
+      SELECT o.id, o.user_id, o.order_number, o.status, o.payment_status, o.payment_method, o.shipping_method,
         o.subtotal, o.discount_amount, o.shipping_amount, o.tax_amount, o.total_amount,
         o.coupon_code, o.coupon_discount, o.shipping_address, o.special_instructions,
         o.tracking_number, o.tracking_url, o.shiprocket_order_id, o.shiprocket_shipment_id,
@@ -208,7 +238,6 @@ export class OrderService {
           }
         } catch (err) {
           // Log and ignore so page load doesn't crash if Shiprocket API fails
-          const { logger } = await import('../../utils/logger');
           logger.error('Failed to auto-sync order status with Shiprocket:', err);
         }
       }
@@ -314,47 +343,58 @@ export class OrderService {
     const validStatuses = statuses.map(s => s.slug);
     if (!validStatuses.includes(status)) throw new AppError('Invalid order status', 400);
 
-    const order = await db.queryOne<any>('SELECT id, status FROM orders WHERE id = ?', [orderId]);
-    if (!order) throw new AppError('Order not found', 404);
+    // Every side effect of a status change — the status itself, the audit
+    // history row, stock restoration, and the coupon usage decrement — is
+    // one atomic unit: a failure partway through (e.g. the history insert)
+    // must not leave stock restored against a status update that never
+    // actually committed, or vice versa.
+    await db.transaction(async (conn) => {
+      const [rows] = await conn.execute<any>(
+        'SELECT id, status, coupon_code FROM orders WHERE id = ? FOR UPDATE',
+        [orderId]
+      );
+      const order = rows[0];
+      if (!order) throw new AppError('Order not found', 404);
 
-    if (TERMINAL_STATUSES.includes(order.status) && order.status !== status) {
-      throw new AppError(`Order is already ${order.status} and cannot be moved to ${status}`, 400);
-    }
+      if (TERMINAL_STATUSES.includes(order.status) && order.status !== status) {
+        throw new AppError(`Order is already ${order.status} and cannot be moved to ${status}`, 400);
+      }
+      if (isBackwardTransition(order.status, status)) {
+        throw new AppError(`Cannot move an order from "${order.status}" back to "${status}"`, 400);
+      }
 
-    const previousStatus = order.status;
-    await db.query('UPDATE orders SET status = ?, updated_at = NOW() WHERE id = ?', [status, orderId]);
+      const previousStatus = order.status;
+      await conn.execute('UPDATE orders SET status = ?, updated_at = NOW() WHERE id = ?', [status, orderId]);
 
-    try {
       const historyDate = date ? new Date(date) : new Date();
-      await db.query(
+      await conn.execute(
         'INSERT INTO order_status_history (order_id, status, note, changed_by, created_at) VALUES (?, ?, ?, ?, ?)',
         [orderId, status, note || null, changedBy || null, historyDate]
       );
-    } catch (histErr) {
-      logger.error('[OrderService] Failed to save status history:', histErr);
-    }
 
-    // Restore stock exactly once, only on the transition INTO a
-    // restock-eligible status (not on repeat updates that are already there —
-    // an admin double-clicking "cancel" must not double-restore inventory).
-    if (RESTOCK_STATUSES.includes(status) && !RESTOCK_STATUSES.includes(previousStatus)) {
-      const items = await db.query<any[]>('SELECT * FROM order_items WHERE order_id = ?', [orderId]);
-      for (const item of items) {
-        if (item.variant_id) {
-          await db.query('UPDATE product_variants SET stock_quantity = stock_quantity + ? WHERE id = ?', [item.quantity, item.variant_id]);
-        } else {
-          await db.query('UPDATE products SET stock_quantity = stock_quantity + ?, sales_count = GREATEST(0, sales_count - ?) WHERE id = ?', [item.quantity, item.quantity, item.product_id]);
+      // Restore stock exactly once, only on the transition INTO a
+      // restock-eligible status (not on repeat updates that are already
+      // there — an admin double-clicking "cancel" must not double-restore
+      // inventory).
+      if (RESTOCK_STATUSES.includes(status) && !RESTOCK_STATUSES.includes(previousStatus)) {
+        const [items] = await conn.execute<any>('SELECT * FROM order_items WHERE order_id = ?', [orderId]);
+        for (const item of items) {
+          if (item.variant_id) {
+            await conn.execute('UPDATE product_variants SET stock_quantity = stock_quantity + ? WHERE id = ?', [item.quantity, item.variant_id]);
+          } else {
+            await conn.execute('UPDATE products SET stock_quantity = stock_quantity + ?, sales_count = GREATEST(0, sales_count - ?) WHERE id = ?', [item.quantity, item.quantity, item.product_id]);
+          }
         }
       }
-    }
 
-    // Cancelling a coupon-bearing order frees up its usage slot again.
-    if (status === 'cancelled' && previousStatus !== 'cancelled') {
-      await db.query(
-        "UPDATE coupons SET usage_count = GREATEST(0, usage_count - 1) WHERE code = (SELECT coupon_code FROM orders WHERE id = ?) AND usage_count > 0",
-        [orderId]
-      );
-    }
+      // Cancelling a coupon-bearing order frees up its usage slot again.
+      if (status === 'cancelled' && previousStatus !== 'cancelled' && order.coupon_code) {
+        await conn.execute(
+          'UPDATE coupons SET usage_count = GREATEST(0, usage_count - 1) WHERE code = ? AND usage_count > 0',
+          [order.coupon_code]
+        );
+      }
+    });
   }
 
   async getStatusHistory(orderId: number) {
@@ -429,21 +469,64 @@ export class OrderService {
         throw new AppError('Only online payments can be aborted this way', 400);
       }
 
-      const [items] = await conn.execute<any>('SELECT * FROM order_items WHERE order_id = ?', [orderId]);
-      for (const item of items) {
-        if (item.variant_id) {
-          await conn.execute('UPDATE product_variants SET stock_quantity = stock_quantity + ? WHERE id = ?', [item.quantity, item.variant_id]);
-        } else if (item.product_id) {
-          await conn.execute(
-            'UPDATE products SET stock_quantity = stock_quantity + ?, sales_count = GREATEST(0, sales_count - ?) WHERE id = ?',
-            [item.quantity, item.quantity, item.product_id]
-          );
-        }
-      }
-
-      await conn.execute('DELETE FROM order_items WHERE order_id = ?', [orderId]);
-      await conn.execute('DELETE FROM orders WHERE id = ?', [orderId]);
+      await this.releaseReservedStockAndDeleteOrder(conn, orderId);
     });
+  }
+
+  // Sweeps online-payment orders that were left in status='pending',
+  // payment_status='pending' past the abandonment window — the same
+  // outcome as abortOnlineOrder(), but for checkouts where the browser
+  // was closed/crashed before the modal-dismiss handler ever ran, so
+  // stock would otherwise stay reserved forever.
+  async releaseAbandonedOnlineOrders(olderThanMinutes: number): Promise<number> {
+    const candidates = await db.query<any[]>(
+      `SELECT id FROM orders
+       WHERE payment_method IN ('razorpay', 'online')
+         AND status = 'pending' AND payment_status = 'pending'
+         AND updated_at < DATE_SUB(NOW(), INTERVAL ? MINUTE)`,
+      [olderThanMinutes]
+    );
+
+    let released = 0;
+    for (const { id } of candidates) {
+      try {
+        await db.transaction(async (conn) => {
+          // Re-check under lock: a payment could have been verified or a
+          // webhook could have landed between the SELECT above and now.
+          const [rows] = await conn.execute<any>(
+            "SELECT id FROM orders WHERE id = ? AND status = 'pending' AND payment_status = 'pending' FOR UPDATE",
+            [id]
+          );
+          if (!rows[0]) return;
+          await this.releaseReservedStockAndDeleteOrder(conn, id);
+        });
+        released++;
+      } catch (err) {
+        logger.error(`[OrderService] Failed to release abandoned order ${id}:`, err);
+      }
+    }
+
+    if (released > 0) {
+      logger.info(`[OrderService] Released stock for ${released} abandoned online checkout(s)`);
+    }
+    return released;
+  }
+
+  private async releaseReservedStockAndDeleteOrder(conn: PoolConnection, orderId: number) {
+    const [items] = await conn.execute<any>('SELECT * FROM order_items WHERE order_id = ?', [orderId]);
+    for (const item of items) {
+      if (item.variant_id) {
+        await conn.execute('UPDATE product_variants SET stock_quantity = stock_quantity + ? WHERE id = ?', [item.quantity, item.variant_id]);
+      } else if (item.product_id) {
+        await conn.execute(
+          'UPDATE products SET stock_quantity = stock_quantity + ?, sales_count = GREATEST(0, sales_count - ?) WHERE id = ?',
+          [item.quantity, item.quantity, item.product_id]
+        );
+      }
+    }
+
+    await conn.execute('DELETE FROM order_items WHERE order_id = ?', [orderId]);
+    await conn.execute('DELETE FROM orders WHERE id = ?', [orderId]);
   }
 
   async syncStatusWithShiprocket(orderId: number, currentDbStatus: string, srStatus: string): Promise<boolean> {

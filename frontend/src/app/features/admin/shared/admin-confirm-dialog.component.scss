@@ -1,0 +1,17 @@
+
+    .acd-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 1.5rem; animation: acd-fade 0.15s ease; }
+    @keyframes acd-fade { from { opacity: 0; } to { opacity: 1; } }
+    .acd-modal { background: #fff; border: 1px solid #E8E8E8; border-radius: 12px; width: 100%; max-width: 380px; box-shadow: 0 8px 40px rgba(0,0,0,0.16); padding: 1.75rem; text-align: center; animation: acd-pop 0.16s ease; }
+    @keyframes acd-pop { from { opacity: 0; transform: translateY(4px) scale(0.98); } to { opacity: 1; transform: none; } }
+    .acd-icon { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; background: rgba(184,115,51,0.1); color: #B87333; }
+    .acd-icon--danger { background: rgba(220,38,38,0.09); color: #DC2626; }
+    .acd-title { font-size: 1rem; font-weight: 700; color: #1C1C1C; margin: 0 0 0.5rem; }
+    .acd-message { font-size: 0.85rem; color: #666; line-height: 1.5; margin: 0 0 1.5rem; }
+    .acd-actions { display: flex; gap: 0.75rem; }
+    .acd-btn { flex: 1; padding: 0.55rem 1rem; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: opacity 0.15s, background 0.15s; }
+    .acd-btn--cancel { background: #fff; border: 1px solid #E8E8E8; color: #555; }
+    .acd-btn--cancel:hover { background: #F7F8FA; }
+    .acd-btn--primary { background: #B87333; border: none; color: #fff; }
+    .acd-btn--primary:hover { opacity: 0.9; }
+    .acd-btn--danger { background: #DC2626; border: none; color: #fff; }
+    .acd-btn--danger:hover { opacity: 0.9; }

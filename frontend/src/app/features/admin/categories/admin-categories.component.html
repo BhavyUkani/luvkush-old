@@ -1,0 +1,212 @@
+
+    <div class="page">
+      <div class="page-header">
+        <h1>Categories <span class="count">{{ visibleCategories().length }}</span></h1>
+        <button class="btn-primary" (click)="openCreate()">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1V13M1 7H13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          Add Category
+        </button>
+      </div>
+
+      <div class="info-note">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.3" stroke="currentColor" stroke-width="1.2"/><path d="M8 7.2V11.5M8 5V5.1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        Hair Wigs and Hair Patches are managed as dedicated modules and are excluded from this list.
+      </div>
+
+      <!-- Bulk Actions Bar -->
+      @if (selectedIds().size > 0) {
+        <div class="bulk-bar">
+          <div class="bulk-count">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.5L13 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            {{ selectedIds().size }} selected
+          </div>
+          <div class="select-wrap select-wrap--bulk">
+            <select class="bulk-select" [(ngModel)]="bulkAction">
+              <option value="">Bulk Action...</option>
+              <option value="active">Activate Selected</option>
+              <option value="inactive">Deactivate Selected</option>
+              <option value="delete">Delete Selected</option>
+            </select>
+            <svg class="select-caret" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <button class="btn-bulk-apply" [disabled]="!bulkAction" (click)="applyBulk()">Apply</button>
+          <button class="btn-bulk-clear" (click)="clearSelection()">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 2L10 10M10 2L2 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            Clear
+          </button>
+        </div>
+      }
+
+      @if (loading()) {
+        <table class="data-table">
+          <tbody>
+            @for (i of [1,2,3,4,5]; track i) {
+              <tr class="skel-row">
+                <td style="width:36px"></td>
+                <td><div class="prod-cell"><div class="skel-thumb"></div><div style="flex:1"><div class="skel-line" style="width:60%;margin-bottom:6px"></div><div class="skel-line" style="width:40%;height:8px"></div></div></div></td>
+                <td><div class="skel-line" style="width:40%"></div></td>
+                <td><div class="skel-line" style="width:30%"></div></td>
+                <td><div class="skel-line" style="width:30%"></div></td>
+                <td><div class="skel-line" style="width:50%"></div></td>
+                <td><div class="skel-line" style="width:70%"></div></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      } @else if (error()) {
+        <div class="error-msg">{{ error() }} <button (click)="load()">Retry</button></div>
+      } @else {
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width:36px"><input type="checkbox" class="cb" [checked]="allSelected()" (change)="toggleSelectAll()" /></th>
+              <th>Category</th>
+              <th>Slug</th>
+              <th>Products</th>
+              <th>Order</th>
+              <th>Status</th>
+              <th class="ta-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (cat of visibleCategories(); track cat.id) {
+              <tr [class.row-selected]="selectedIds().has(cat.id)">
+                <td><input type="checkbox" class="cb" [checked]="selectedIds().has(cat.id)" (change)="toggleSelect(cat.id)" /></td>
+                <td>
+                  <div class="prod-cell">
+                    @if (cat.image_url) {
+                      <img [src]="imgUrl(cat.image_url)" class="thumb" [alt]="cat.name" />
+                    } @else {
+                      <div class="thumb-empty">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 5C2 3.9 2.9 3 4 3H7L9 5H14C15.1 5 16 5.9 16 7V14C16 15.1 15.1 16 14 16H4C2.9 16 2 15.1 2 14V5Z" stroke="currentColor" stroke-width="1.2"/></svg>
+                      </div>
+                    }
+                    <div class="prod-info">
+                      <div class="cat-name">{{ cat.name }}</div>
+                      @if (cat.description) { <div class="cat-desc">{{ cat.description }}</div> }
+                    </div>
+                  </div>
+                </td>
+                <td><span class="slug-chip">{{ cat.slug }}</span></td>
+                <td>
+                  <span class="count-chip">{{ cat.product_count ?? 0 }}</span>
+                </td>
+                <td class="muted">{{ cat.display_order }}</td>
+                <td>
+                  <span class="badge" [class.badge-active]="cat.status === 'active'" [class.badge-inactive]="cat.status !== 'active'">
+                    <span class="badge-dot"></span>{{ cat.status }}
+                  </span>
+                </td>
+                <td class="ta-right">
+                  <div class="action-btns">
+                    <button class="icon-btn icon-btn--edit" (click)="openEdit(cat)" title="Edit" aria-label="Edit">
+                      <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M11 2L14 5L6 13H3V10L11 2Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+                    </button>
+                    <button class="icon-btn icon-btn--delete" (click)="confirmDelete(cat)" title="Delete" aria-label="Delete">
+                      <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3 4.5H13M6 4.5V3C6 2.4 6.4 2 7 2H9C9.6 2 10 2.4 10 3V4.5M12 4.5V13C12 13.6 11.6 14 11 14H5C4.4 14 4 13.6 4 13V4.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+            @if (!visibleCategories().length) {
+              <tr><td colspan="7" class="empty-cell">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><path d="M4 10C4 7.8 5.8 6 8 6H14L18 10H28C30.2 10 32 11.8 32 14V26C32 28.2 30.2 30 28 30H8C5.8 30 4 28.2 4 26V10Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" transform="translate(-2,0)"/></svg>
+                <div>No categories found</div>
+              </td></tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+
+    <!-- Create / Edit Modal -->
+    @if (showForm()) {
+      <div class="modal-backdrop" (click)="closeForm()">
+        <div class="modal" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2>
+              <span class="card-icon"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 5C2 3.9 2.9 3 4 3H7L9 5H14C15.1 5 16 5.9 16 7V14C16 15.1 15.1 16 14 16H4C2.9 16 2 15.1 2 14V5Z" stroke="currentColor" stroke-width="1.3"/></svg></span>
+              {{ editingId() ? 'Edit Category' : 'Add Category' }}
+            </h2>
+            <button class="modal-close" (click)="closeForm()">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2L12 12M12 2L2 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="form-grid">
+              <div class="field field-full">
+                <label>Category Name *</label>
+                <input type="text" [(ngModel)]="form().name" class="form-input" placeholder="e.g. Hair Care" />
+              </div>
+              <div class="field field-full">
+                <label>Description</label>
+                <input type="text" [(ngModel)]="form().description" class="form-input" placeholder="Short description..." />
+              </div>
+              <div class="field field-full">
+                <label>Category Image</label>
+                <div class="img-upload-zone">
+                  @if (catImgPreview()) {
+                    <div class="img-preview-wrap">
+                      <img [src]="catImgPreview()" class="img-preview" alt="Category preview" />
+                      <button type="button" class="img-remove-btn" (click)="removeImage()">
+                        <svg width="11" height="11" viewBox="0 0 14 14" fill="none"><path d="M2 2L12 12M12 2L2 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                        Remove
+                      </button>
+                    </div>
+                  }
+                  <label class="img-upload-btn">
+                    <input type="file" accept="image/*" (change)="onImagePick($event)" style="display:none" />
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 3V13M3 8H13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                    {{ catImgPreview() ? 'Change Image' : 'Upload Image' }}
+                  </label>
+                </div>
+              </div>
+              <div class="field">
+                <label>Display Order</label>
+                <input type="number" [(ngModel)]="form().display_order" class="form-input" placeholder="0" />
+              </div>
+              <div class="field">
+                <label>Status</label>
+                <div class="select-wrap">
+                  <select [(ngModel)]="form().status" class="form-input form-select">
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                  </select>
+                  <svg class="select-caret" width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+              </div>
+            </div>
+            @if (formError()) { <div class="error-msg" style="margin-top:1rem">{{ formError() }}</div> }
+          </div>
+          <div class="modal-footer">
+            <button class="btn-secondary" (click)="closeForm()">Cancel</button>
+            <button class="btn-primary" (click)="saveCategory()" [disabled]="saving()">
+              {{ saving() ? 'Saving...' : (editingId() ? 'Update Category' : 'Create Category') }}
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (showBulkConfirm()) {
+      <div class="modal-backdrop" (click)="showBulkConfirm.set(false)">
+        <div class="modal" style="max-width:440px" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2>Confirm Bulk Action</h2>
+            <button class="modal-close" (click)="showBulkConfirm.set(false)">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2L12 12M12 2L2 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>Apply <strong>{{ bulkActionLabel() }}</strong> to <strong>{{ selectedIds().size }}</strong> categories?</p>
+          </div>
+          <div class="modal-footer">
+            <button class="btn-secondary" (click)="showBulkConfirm.set(false)">Cancel</button>
+            <button class="btn-primary" (click)="executeBulk()" [disabled]="bulkRunning()">
+              {{ bulkRunning() ? 'Applying...' : 'Confirm' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    }

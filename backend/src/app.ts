@@ -2,6 +2,7 @@ import express, { Application, Request, Response, NextFunction } from 'express';
 import path from 'path';
 import fs from 'fs';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import compression from 'compression';
 import morgan from 'morgan';
@@ -78,6 +79,7 @@ app.use(express.json({
   verify: (req: Request, _res, buf) => { (req as any).rawBody = buf; }
 }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(cookieParser());
 
 // ── Request logging ──────────────────────
 if (config.nodeEnv !== 'test') {
@@ -131,7 +133,6 @@ app.use(`${prefix}/auth`,          authRoutes);
 app.use(`${prefix}/products`,      productRoutes);
 app.use(`${prefix}/categories`,    categoryRoutes);
 app.use(`${prefix}/orders`,        orderRoutes);
-app.use(`${prefix}/users`,         userRoutes);
 app.use(`${prefix}/account`,       userRoutes);
 app.use(`${prefix}/reviews`,       reviewRoutes);
 app.use(`${prefix}/cart`,          cartRoutes);

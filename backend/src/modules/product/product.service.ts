@@ -307,6 +307,9 @@ export class ProductService {
     const product = await this.getById(id);
     if (!product) return null;
     this.validatePricing(data);
+    if (data.status !== undefined && !VALID_PRODUCT_STATUSES.includes(data.status)) {
+      throw new AppError('Invalid status', 400);
+    }
 
     // Process newly uploaded files
     const uploadedUrls: string[] = [];
@@ -315,22 +318,47 @@ export class ProductService {
       uploadedUrls.push(imageName);
     }
 
-    // Parse existing image URLs the admin chose to keep (sent as JSON)
+    // The field is only absent when the client isn't managing images at all
+    // (e.g. a non-multipart partial update through this endpoint) — an
+    // explicit empty array means "every image was removed", which must be
+    // honoured rather than silently falling back to the previous images.
+    const imagesManaged = data.existing_images !== undefined;
     let keptUrls: string[] = [];
     try {
-      if (data.existing_images) keptUrls = JSON.parse(data.existing_images);
+      if (imagesManaged) keptUrls = JSON.parse(data.existing_images);
     } catch { /* ignore */ }
 
     const n = (v: any) => (v === undefined || v === '') ? null : v;
 
     // Merge: kept URLs (admin-ordered) + newly uploaded appended
     const allImages = [...keptUrls, ...uploadedUrls];
-    const newPrimary = allImages.length ? allImages[0] : (n(data.primary_image) || product.primary_image);
-    const newImages = allImages.length ? JSON.stringify(allImages) : product.images;
+    const imagesChanged = imagesManaged || uploadedUrls.length > 0;
+    const newPrimary = imagesChanged ? (allImages[0] || null) : (n(data.primary_image) || product.primary_image);
+    const newImages = imagesChanged ? (allImages.length ? JSON.stringify(allImages) : null) : product.images;
+
+    // slug/sku are only touched when the caller explicitly supplies a new
+    // value — both default to the product's current value otherwise — and
+    // must stay unique across the rest of the catalogue.
+    let slug = (product as any).slug;
+    if (data.slug && data.slug.trim()) {
+      const normalized = generateSlug(data.slug);
+      if (normalized !== slug) {
+        const clash = await db.queryOne('SELECT id FROM products WHERE slug = ? AND id != ?', [normalized, id]);
+        if (clash) throw new AppError('This slug is already in use by another product', 409);
+        slug = normalized;
+      }
+    }
+
+    let sku = (product as any).sku;
+    if (data.sku && data.sku.trim() && data.sku !== sku) {
+      const clash = await db.queryOne('SELECT id FROM products WHERE sku = ? AND id != ?', [data.sku, id]);
+      if (clash) throw new AppError('This SKU is already in use by another product', 409);
+      sku = data.sku;
+    }
 
     await db.query(`
       UPDATE products SET
-        name = ?, subtitle = ?, description = ?, short_description = ?,
+        name = ?, slug = ?, sku = ?, subtitle = ?, description = ?, short_description = ?,
         how_to_use = ?, benefits = ?,
         price = ?, mrp = ?, cost_price = ?, category_id = ?,
         stock_quantity = ?, is_featured = ?, is_bestseller = ?, is_new = ?,
@@ -343,7 +371,7 @@ export class ProductService {
         updated_at = NOW()
       WHERE id = ?
     `, [
-      data.name, n(data.subtitle), n(data.description), n(data.short_description),
+      data.name, slug, sku, n(data.subtitle), n(data.description), n(data.short_description),
       n(data.how_to_use), n(data.benefits),
       Number(data.price), Number(data.mrp) || Number(data.price), n(data.cost_price) ? Number(data.cost_price) : null,
       data.category_id, data.stock_quantity ?? (product as any).stock_quantity,

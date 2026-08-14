@@ -39,9 +39,10 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       return refreshInFlight.pipe(
         switchMap(() => {
           refreshInFlight = null;
-          const token = auth.token();
-          const retried = token ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } }) : req;
-          return next(retried);
+          // The refreshed access token lives only in the httpOnly cookie the
+          // server just re-set — the browser attaches it automatically, so
+          // the original request can simply be replayed as-is.
+          return next(req);
         }),
         catchError(refreshErr => {
           refreshInFlight = null;

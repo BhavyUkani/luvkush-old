@@ -1,0 +1,308 @@
+
+    <div class="edit-page">
+
+      <!-- Top Bar -->
+      <div class="top-bar">
+        <button class="btn-back" (click)="goBack()">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Hair Patches
+        </button>
+        <div class="top-title">
+          <span>{{ isNew() ? 'Add Hair Patch' : (form().name || 'Edit Hair Patch') }}</span>
+          @if (!isNew() && !loading() && !error()) { <span class="top-title-badge">{{ form().status }}</span> }
+        </div>
+        <div class="top-actions">
+          <button class="btn-secondary" (click)="goBack()">
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2 2L12 12M12 2L2 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            Discard
+          </button>
+          <button class="btn-primary" (click)="save()" [disabled]="saving() || loading()">
+            @if (saving()) {
+              <span class="btn-spinner"></span> Saving…
+            } @else {
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7.5L5.5 10.5L11.5 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              {{ isNew() ? 'Create Patch' : 'Save Changes' }}
+            }
+          </button>
+        </div>
+      </div>
+
+      @if (loading()) {
+        <div class="center-state">Loading…</div>
+      } @else if (error()) {
+        <div class="center-state error-text"><p>{{ error() }}</p>
+          <button class="btn-secondary" (click)="goBack()">← Go Back</button>
+        </div>
+      } @else {
+        <div class="layout">
+
+          <!-- LEFT: Form Cards -->
+          <div class="cards-col">
+
+            @if (formError()) { <div class="error-banner">{{ formError() }}</div> }
+
+            <!-- General -->
+            <div class="card">
+              <div class="card-heading">
+                <span class="card-icon"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.3" stroke="currentColor" stroke-width="1.3"/><path d="M8 7.2V11.5M8 5V5.1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></span>
+                General
+              </div>
+              <div class="form-grid">
+                <div class="field field-full">
+                  <label>Name *</label>
+                  <input type="text" [(ngModel)]="form().name" class="form-input" placeholder="e.g. Natural Scalp Hair Patch" />
+                </div>
+                <div class="field field-full">
+                  <label>Short Description / Tagline</label>
+                  <input type="text" [(ngModel)]="form().short_description" class="form-input" placeholder="Brief tagline shown in listings" />
+                </div>
+                <div class="field">
+                  <label>Status</label>
+                  <div class="select-wrap">
+                    <select [(ngModel)]="form().status" class="form-input form-select">
+                      <option value="active">Active</option>
+                      <option value="draft">Draft</option>
+                      <option value="archived">Archived</option>
+                    </select>
+                    <svg class="select-caret" width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Image -->
+            <div class="card">
+              <div class="card-heading">
+                <span class="card-icon"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5" stroke="currentColor" stroke-width="1.2"/><circle cx="5.5" cy="6" r="1.2" stroke="currentColor" stroke-width="1.1"/><path d="M1.5 11L5.5 7.5L8.5 10.5L11 8.5L14.5 11.5" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg></span>
+                Image
+              </div>
+              @if (isNew()) {
+                <div class="new-img-note">Save the patch first, then upload an image from the edit page.</div>
+              } @else {
+                <div class="img-upload-area">
+                  @if (imgPreview() || form().primary_image) {
+                    <img [src]="imgPreview() || imgUrl(form().primary_image)" class="current-img" alt="Patch image" />
+                  } @else {
+                    <div class="img-placeholder">No image uploaded</div>
+                  }
+                  <label class="img-upload-btn">
+                    <input type="file" accept="image/*" (change)="onImagePick($event)" hidden />
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 3V13M3 8H13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                    {{ imgPreview() ? 'Change Image' : (form().primary_image ? 'Replace Image' : 'Upload Image') }}
+                  </label>
+                  @if (imgUploading()) { <span class="uploading-msg"><span class="btn-spinner btn-spinner--dark"></span> Uploading…</span> }
+                </div>
+              }
+            </div>
+
+            <!-- Description -->
+            <div class="card">
+              <div class="card-heading">
+                <span class="card-icon"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3.5 1.5H10L13 4.5V14.5H3.5V1.5Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M6 8H11M6 10.5H11M6 5.5H8" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg></span>
+                Description
+              </div>
+              <div class="form-grid">
+                <div class="field field-full">
+                  <label>Full Description</label>
+                  <textarea [(ngModel)]="form().description" class="form-textarea" rows="5" placeholder="Full product description — materials, base type, density…"></textarea>
+                </div>
+                <div class="field field-full">
+                  <label>How To Use / Apply</label>
+                  <textarea [(ngModel)]="form().how_to_use" class="form-textarea" rows="4" placeholder="Step 1: …&#10;Step 2: …"></textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- Variants -->
+            <div class="card">
+              <div class="card-heading">
+                <span class="card-icon"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 5C2 3.9 2.9 3 4 3H7L9 5H14C15.1 5 16 5.9 16 7V14C16 15.1 15.1 16 14 16H4C2.9 16 2 15.1 2 14V5Z" stroke="currentColor" stroke-width="1.2"/></svg></span>
+                Variants
+              </div>
+              <div class="form-grid">
+                <div class="field field-full">
+                  <label>Size Info</label>
+                  <input type="text" [(ngModel)]="form().size_info" class="form-input" placeholder="e.g. 4×4, 5×5, 6×6, Custom" />
+                </div>
+                <div class="field field-full">
+                  <label>Colour / Shades Available</label>
+                  <input type="text" [(ngModel)]="form().colour_info" class="form-input" placeholder="e.g. Natural Black, Dark Brown, Medium Brown" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Pricing -->
+            <div class="card">
+              <div class="card-heading">
+                <span class="card-icon"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="4.5" width="13" height="7.5" rx="1.4" stroke="currentColor" stroke-width="1.2"/><circle cx="8" cy="8.25" r="1.7" stroke="currentColor" stroke-width="1.1"/></svg></span>
+                Pricing
+              </div>
+              <div class="form-grid">
+                <div class="field">
+                  <label>Price *</label>
+                  <div class="input-icon-wrap">
+                    <span class="input-icon">₹</span>
+                    <input type="number" [(ngModel)]="form().base_price" class="form-input has-icon" placeholder="3000" />
+                  </div>
+                </div>
+                <div class="field">
+                  <label>MRP</label>
+                  <div class="input-icon-wrap">
+                    <span class="input-icon">₹</span>
+                    <input type="number" [(ngModel)]="form().mrp" class="form-input has-icon" placeholder="5000" />
+                  </div>
+                </div>
+                @if (form().base_price && form().mrp && +form().mrp > +form().base_price) {
+                  <div class="field-full">
+                    <div class="calc-row">
+                      <span class="calc-chip">Discount <strong>{{ getDiscount() }}%</strong></span>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Payment -->
+            <div class="card">
+              <div class="card-heading">
+                <span class="card-icon"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="3.5" width="13" height="9" rx="1.4" stroke="currentColor" stroke-width="1.2"/><path d="M1.5 6.5H14.5" stroke="currentColor" stroke-width="1.2"/><path d="M3.5 9.5H6.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></span>
+                Payment
+              </div>
+              <div class="form-grid">
+                <div class="field field-full">
+                  <label>Payment Mode</label>
+                  <div class="select-wrap">
+                    <select [(ngModel)]="form().payment_mode" class="form-input form-select">
+                      <option value="full_cod">Complete COD — Pay on delivery</option>
+                      <option value="full_online">Complete Online — No COD</option>
+                      <option value="partial">Partial — Advance + rest on delivery</option>
+                      <option value="hybrid">Hybrid — Customer chooses</option>
+                    </select>
+                    <svg class="select-caret" width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </div>
+                </div>
+                @if (form().payment_mode === 'partial') {
+                  <div class="field">
+                    <label>Advance Amount</label>
+                    <div class="input-icon-wrap">
+                      <span class="input-icon">₹</span>
+                      <input type="number" [(ngModel)]="form().advance_amount" class="form-input has-icon" placeholder="1000" />
+                    </div>
+                    <span class="hint">Paid online; balance on delivery.</span>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <div class="bottom-bar">
+              <button class="btn-secondary" (click)="goBack()">
+                <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2 2L12 12M12 2L2 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                Discard
+              </button>
+              <button class="btn-primary" (click)="save()" [disabled]="saving()">
+                @if (saving()) {
+                  <span class="btn-spinner"></span> Saving…
+                } @else {
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7.5L5.5 10.5L11.5 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  {{ isNew() ? 'Create Patch' : 'Save Changes' }}
+                }
+              </button>
+            </div>
+
+          </div><!-- /cards-col -->
+
+          <!-- RIGHT: Preview -->
+          <div class="preview-col">
+            <div class="preview-panel">
+              <div class="pv-header">
+                <span class="pv-title">Live Preview</span>
+                <div class="device-btns">
+                  <button class="dev-btn" [class.dev-active]="previewDevice() === 'mobile'" (click)="previewDevice.set('mobile')">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/></svg> Mobile
+                  </button>
+                  <button class="dev-btn" [class.dev-active]="previewDevice() === 'tablet'" (click)="previewDevice.set('tablet')">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="18" rx="2"/></svg> Tablet
+                  </button>
+                  <button class="dev-btn" [class.dev-active]="previewDevice() === 'desktop'" (click)="previewDevice.set('desktop')">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><polyline points="8 21 12 17 16 21"/></svg> Desktop
+                  </button>
+                </div>
+              </div>
+              <div class="pv-size-label">{{ previewDevice() === 'mobile' ? '375px' : previewDevice() === 'tablet' ? '768px' : '1280px' }} · {{ scalePercent() }}% zoom</div>
+              <div class="browser-chrome">
+                <div class="chrome-dots"><span></span><span></span><span></span></div>
+                <div class="chrome-url">luvkushnatural.com/hair-patches/…</div>
+              </div>
+              <div class="pv-outer">
+                <div class="pv-scaler"
+                     [style.width.px]="previewFrameWidth()"
+                     [style.transform]="'scale(' + previewScale() + ')'">
+                  <div class="pp" [class.pp-mobile]="previewDevice() === 'mobile'"
+                                  [class.pp-tablet]="previewDevice() === 'tablet'"
+                                  [class.pp-desktop]="previewDevice() === 'desktop'">
+                    <div class="pp-announce">Natural Hair Patches — Undetectable &amp; Comfortable · Free Fitting</div>
+                    <div class="pp-head">
+                      <div class="pp-logo">Luv Kush Natural</div>
+                      <div class="pp-nav-links"><span>Home</span><span>Shop</span><span>About</span></div>
+                      <div class="pp-head-icons"><span>🛒</span></div>
+                    </div>
+                    <div class="pp-breadcrumb">Home &rsaquo; Hair Patches &rsaquo; <strong>{{ form().name || '…' }}</strong></div>
+                    <div class="pp-hero">
+                      <div class="pp-gallery">
+                        <div class="pp-main-wrap">
+                          @if (imgPreview() || form().primary_image) {
+                            <img [src]="imgPreview() || imgUrl(form().primary_image)" class="pp-main-img" />
+                          } @else {
+                            <div class="pp-no-img"><span>No Image</span></div>
+                          }
+                          <span class="pp-sticker pp-patch-badge">Patch</span>
+                        </div>
+                      </div>
+                      <div class="pp-info">
+                        <h1 class="pp-name">{{ form().name || 'Hair Patch Name' }}</h1>
+                        @if (form().short_description) { <p class="pp-sub">{{ form().short_description }}</p> }
+                        <div class="pp-stars"><span class="pp-star-icons">★★★★★</span><span class="pp-review-ct">8 reviews</span></div>
+                        <div class="pp-price-row">
+                          @if (form().base_price) { <span class="pp-price">₹{{ form().base_price }}</span> }
+                          @else { <span class="pp-price pp-price-empty">₹ —</span> }
+                          @if (form().mrp && +form().mrp > +form().base_price) {
+                            <span class="pp-mrp">₹{{ form().mrp }}</span>
+                            <span class="pp-off">{{ getDiscount() }}% OFF</span>
+                          }
+                        </div>
+                        @if (form().size_info) {
+                          <div class="pp-variant-row"><strong>Sizes:</strong> {{ form().size_info }}</div>
+                        }
+                        @if (form().colour_info) {
+                          <div class="pp-variant-row"><strong>Colours:</strong> {{ form().colour_info }}</div>
+                        }
+                        <div class="pp-cart-row">
+                          <div class="pp-qty"><button>−</button><span>1</span><button>+</button></div>
+                          <button class="pp-add-btn">Add to Cart</button>
+                        </div>
+                        <button class="pp-buy-btn">Book Free Consultation</button>
+                        <div class="pp-pay-badge"><span>💳</span><span>{{ paymentLabel() }}</span></div>
+                        <div class="pp-pills">
+                          <span class="pp-pill">✓ Custom Fit</span>
+                          <span class="pp-pill">🚚 Pan India</span>
+                          <span class="pp-pill">🔒 Secure</span>
+                          <span class="pp-pill">✂️ Expert Fitting</span>
+                        </div>
+                      </div>
+                    </div>
+                    @if (form().description) {
+                      <div class="pp-desc-section">
+                        <div class="pp-desc-heading">Description</div>
+                        <div class="pp-desc-body">{{ form().description | slice:0:300 }}{{ form().description.length > 300 ? '…' : '' }}</div>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
+              <button class="btn-open-store" (click)="previewLive()">Preview on Store ↗</button>
+            </div>
+          </div>
+
+        </div>
+      }
+    </div>

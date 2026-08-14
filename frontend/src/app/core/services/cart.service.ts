@@ -22,15 +22,6 @@ export interface CartItem {
   advance_amount?: number | null;
 }
 
-export interface CartSummary {
-  subtotal: number;
-  shipping: number;
-  tax: number;
-  discount: number;
-  total: number;
-  item_count: number;
-}
-
 @Injectable({ providedIn: 'root' })
 export class CartService {
   private readonly api = inject(ApiService);
@@ -40,12 +31,10 @@ export class CartService {
 
   private _guestIdCounter = 0;
   private _items = signal<CartItem[]>(this.loadFromStorage());
-  private _summary = signal<CartSummary>({ subtotal: 0, shipping: 0, tax: 0, discount: 0, total: 0, item_count: 0 });
   private _appliedCoupon = signal<any>(null);
   private _loading = signal(false);
 
   readonly items = this._items.asReadonly();
-  readonly summary = this._summary.asReadonly();
   readonly appliedCoupon = this._appliedCoupon.asReadonly();
   readonly loading = this._loading.asReadonly();
 
@@ -216,14 +205,6 @@ export class CartService {
       advance_amount: i.advance_amount ? Number(i.advance_amount) : null
     }));
     this._items.set(items);
-    this._summary.set({
-      subtotal: data.subtotal || 0,
-      shipping: data.shipping || 0,
-      tax: data.tax || 0,
-      discount: 0,
-      total: data.total || 0,
-      item_count: data.item_count || items.length
-    });
     this.saveToStorage();
   }
 

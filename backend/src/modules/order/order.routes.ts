@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { OrderController } from './order.controller';
 import { authenticate, authorize } from '../../middleware/auth.middleware';
+import { validate } from '../../middleware/validate.middleware';
+import { createOrderValidators } from './order.validators';
 
 const router = Router();
 const ctrl = new OrderController();
@@ -9,7 +11,7 @@ const ctrl = new OrderController();
 router.get('/statuses', ctrl.getAllStatuses.bind(ctrl));
 
 // Customer routes
-router.post('/', authenticate, ctrl.create.bind(ctrl));
+router.post('/', authenticate, createOrderValidators, validate, ctrl.create.bind(ctrl));
 router.get('/my', authenticate, ctrl.getMyOrders.bind(ctrl));
 router.get('/my/:id', authenticate, ctrl.getMyOrder.bind(ctrl));
 router.get('/my/:id/status-history', authenticate, ctrl.getMyOrderStatusHistory.bind(ctrl));

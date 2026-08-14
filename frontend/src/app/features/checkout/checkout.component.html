@@ -115,7 +115,7 @@
                   <strong>Standard delivery</strong>
                   <span class="ck-opt__meta">5–7 business days</span>
                 </span>
-                <span class="ck-opt__price">{{ cart.subtotal() >= 499 ? 'Free' : '₹49' }}</span>
+                <span class="ck-opt__price">{{ shippingCostFor('standard') === 0 ? 'Free' : ('₹' + shippingCostFor('standard')) }}</span>
               </label>
               <label class="ck-opt" [class.ck-opt--sel]="shippingMethod() === 'express'">
                 <input type="radio" name="ship" value="express" [checked]="shippingMethod() === 'express'" (change)="shippingMethod.set('express')" />
@@ -127,7 +127,7 @@
                   <strong>Express delivery</strong>
                   <span class="ck-opt__meta">2–3 business days</span>
                 </span>
-                <span class="ck-opt__price">₹99</span>
+                <span class="ck-opt__price">{{ shippingCostFor('express') === 0 ? 'Free' : ('₹' + shippingCostFor('express')) }}</span>
               </label>
             </div>
             <button class="lk-btn lk-btn--solid ck-next-btn" (click)="nextFromShipping()">Continue to payment</button>

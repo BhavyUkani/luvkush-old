@@ -1,6 +1,7 @@
 import { db } from '../../utils/database';
 import { AppError } from '../../middleware/error.middleware';
 import { CouponService } from '../coupon/coupon.service';
+import { calculateShippingCost, calculateTax } from '../../config/business-rules';
 
 const couponService = new CouponService();
 
@@ -53,22 +54,20 @@ export class CartService {
     }
 
     const product = await db.queryOne<any>(
-      'SELECT id, price, stock_quantity, status FROM products WHERE id = ? AND status = "active"',
+      'SELECT id, stock_quantity, status FROM products WHERE id = ? AND status = "active"',
       [productId]
     );
     if (!product) throw new AppError('Product not found or unavailable', 404);
 
     let availableStock = product.stock_quantity;
-    let priceModifier = 0;
 
     if (variantId) {
       const variant = await db.queryOne<any>(
-        'SELECT id, price_modifier, stock_quantity, status FROM product_variants WHERE id = ? AND product_id = ? AND status = "active"',
+        'SELECT id, stock_quantity, status FROM product_variants WHERE id = ? AND product_id = ? AND status = "active"',
         [variantId, productId]
       );
       if (!variant) throw new AppError('Product variant not found', 404);
       availableStock = variant.stock_quantity;
-      priceModifier = variant.price_modifier || 0;
     }
 
     if (availableStock < quantity) {
@@ -87,11 +86,13 @@ export class CartService {
       if (newQty > availableStock) throw new AppError(`Only ${availableStock} units available`, 400);
       await db.query('UPDATE cart_items SET quantity = ? WHERE id = ?', [newQty, existing.id]);
     } else {
-      const unitPrice = product.price + priceModifier;
+      // Price is intentionally not stored here — getCart() always joins the
+      // live product/variant price, so a cart reflects current pricing
+      // rather than a stale snapshot from whenever the item was added.
       await db.query(`
-        INSERT INTO cart_items (cart_id, product_id, variant_id, quantity, unit_price)
-        VALUES (?, ?, ?, ?, ?)
-      `, [cart.id, productId, variantId || null, quantity, unitPrice]);
+        INSERT INTO cart_items (cart_id, product_id, variant_id, quantity)
+        VALUES (?, ?, ?, ?)
+      `, [cart.id, productId, variantId || null, quantity]);
     }
 
     return this.getCart(userId);
@@ -147,9 +148,15 @@ export class CartService {
       const price = item.variant_id ? item.price + (item.price_modifier || 0) : item.price;
       return sum + price * item.quantity;
     }, 0);
-    const shipping = subtotal >= 999 ? 0 : 99;
-    const tax = Math.round(subtotal * 0.18);
+    // Pre-checkout estimate: no coupon or shipping method chosen yet, so
+    // this mirrors order.service.ts's undiscounted standard-shipping case.
+    const shipping = calculateShippingCost(subtotal, 'standard', false);
+    const tax = calculateTax(subtotal);
     const total = subtotal + shipping + tax;
-    return { subtotal, shipping, tax, total, item_count: items.length };
+    // Units in the cart, not distinct line items — "3" for one line item
+    // with quantity 3, matching what a cart badge/"items in cart" label
+    // actually means to a shopper.
+    const item_count = items.reduce((sum, item) => sum + item.quantity, 0);
+    return { subtotal, shipping, tax, total, item_count };
   }
 }

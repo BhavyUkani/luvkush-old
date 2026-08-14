@@ -1,0 +1,546 @@
+
+    <div class="edit-page">
+
+      <!-- Sticky Top Bar -->
+      <div class="top-bar">
+        <div class="top-left">
+          <a class="btn-crumb-back" (click)="goBack()">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Products
+          </a>
+          <span class="top-sep"></span>
+          <div class="top-title">
+            <span class="top-title-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41L11 3.83A2 2 0 009.5 3H4a1 1 0 00-1 1v5.5a2 2 0 00.59 1.41l9.58 9.58a2 2 0 002.83 0l4.59-4.59a2 2 0 000-2.83z"/><circle cx="7.5" cy="7.5" r="1.25"/></svg></span>
+            <span class="top-title-text">{{ isNew() ? 'Add Product' : (!loading() && !error() ? (form().name || 'Edit Product') : 'Edit Product') }}</span>
+            @if (!isNew() && !loading() && !error()) {
+              <span class="top-title-badge" [class]="'ts-' + form().status">
+                <span class="ts-dot"></span>{{ form().status }}
+              </span>
+            }
+          </div>
+        </div>
+        <div class="top-actions">
+          <button class="btn-discard" (click)="goBack()">
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2 2L12 12M12 2L2 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            Discard
+          </button>
+          <button class="btn-save" (click)="saveProduct()" [disabled]="saving() || loading()">
+            @if (saving()) {
+              <span class="btn-spinner"></span> Saving…
+            } @else {
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7.5L5.5 10.5L11.5 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              {{ isNew() ? 'Create Product' : 'Save Changes' }}
+            }
+          </button>
+        </div>
+      </div>
+
+      @if (loading()) {
+        <div class="center-state">Loading product…</div>
+      } @else if (error()) {
+        <div class="center-state error-text">
+          <p>{{ error() }}</p>
+          <button class="btn-secondary" (click)="goBack()">← Go Back</button>
+        </div>
+      } @else {
+
+        <div class="layout">
+
+          <!-- ════ LEFT: Form Cards ════ -->
+          <div class="cards-col">
+
+            @if (formError()) {
+              <div class="error-banner">{{ formError() }}</div>
+            }
+
+            <!-- General -->
+            <div class="card">
+              <div class="card-heading">
+                <span class="card-icon"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.3" stroke="currentColor" stroke-width="1.3"/><path d="M8 7.2V11.5M8 5V5.1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></span>
+                General
+              </div>
+              <div class="form-grid">
+                <div class="field field-full">
+                  <label>Product Name *</label>
+                  <input type="text" [(ngModel)]="form().name" class="form-input" placeholder="e.g. Kesar Panchamrit Soap" />
+                </div>
+                <div class="field field-full">
+                  <label>Subtitle / Tagline</label>
+                  <input type="text" [(ngModel)]="form().subtitle" class="form-input" placeholder="Natural Radiant Glow | Rejuvenating & Moisturizing" />
+                </div>
+                <div class="field">
+                  <label>Category *</label>
+                  <div class="select-wrap">
+                    <select [(ngModel)]="form().category_id" class="form-input form-select">
+                      <option value="">Select category…</option>
+                      @for (cat of filteredCategories(); track cat.id) {
+                        <option [value]="cat.id">{{ cat.name }}</option>
+                      }
+                    </select>
+                    <svg class="select-caret" width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Status</label>
+                  <div class="select-wrap">
+                    <select [(ngModel)]="form().status" class="form-input form-select">
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
+                      <option value="draft">Draft</option>
+                      <option value="archived">Archived</option>
+                    </select>
+                    <svg class="select-caret" width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </div>
+                </div>
+                <div class="field field-full">
+                  <label>Product Flags</label>
+                  <div class="flag-row">
+                    <button type="button" class="flag-chip" [class.flag-chip--active]="form().is_featured" (click)="form().is_featured = !form().is_featured">
+                      <svg width="14" height="14" viewBox="0 0 16 16" [attr.fill]="form().is_featured ? 'currentColor' : 'none'"><path d="M8 1.3L9.9 5.7L14.8 6.2L11.1 9.4L12.2 14.2L8 11.6L3.8 14.2L4.9 9.4L1.2 6.2L6.1 5.7L8 1.3Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+                      Featured on Homepage
+                    </button>
+                    <button type="button" class="flag-chip" [class.flag-chip--active]="form().is_bestseller" (click)="form().is_bestseller = !form().is_bestseller">
+                      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M5 2H11V6.5C11 8.4 9.7 10 8 10C6.3 10 5 8.4 5 6.5V2Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M5 3H2.5V4.5C2.5 5.9 3.6 7 5 7M11 3H13.5V4.5C13.5 5.9 12.4 7 11 7" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/><path d="M8 10V12.5M6 14.5H10M6.5 12.5H9.5V13.3C9.5 13.9 9 14.5 8.4 14.5H7.6C7 14.5 6.5 13.9 6.5 13.3V12.5Z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></svg>
+                      Bestseller Badge
+                    </button>
+                    <button type="button" class="flag-chip" [class.flag-chip--active]="form().is_new" (click)="form().is_new = !form().is_new">
+                      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1.5L9.2 5.2L13 5.5L10.1 8L11 11.7L8 9.6L5 11.7L5.9 8L3 5.5L6.8 5.2L8 1.5Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+                      New Arrival
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Images -->
+            <div class="card">
+              <div class="card-heading">
+                <span class="card-icon"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5" stroke="currentColor" stroke-width="1.2"/><circle cx="5.5" cy="6" r="1.2" stroke="currentColor" stroke-width="1.1"/><path d="M1.5 11L5.5 7.5L8.5 10.5L11 8.5L14.5 11.5" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg></span>
+                Images <span class="card-hint">first = primary · max 5</span>
+              </div>
+              <div class="img-slots">
+                @for (slot of imgSlots(); track slot.id; let i = $index) {
+                  <div class="img-slot" [class.slot-primary]="i === 0">
+                    @if (slot.preview) {
+                      <img [src]="slot.preview" class="slot-img" alt="Image {{ i + 1 }}" />
+                      <div class="slot-actions">
+                        <button type="button" class="slot-btn slot-remove" (click)="removeSlot(i)" title="Remove">
+                          <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1.5 1.5L8.5 8.5M8.5 1.5L1.5 8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                        </button>
+                        @if (i > 0) {
+                          <button type="button" class="slot-btn slot-star" (click)="setSlotPrimary(i)" title="Set primary">
+                            <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.3L9.9 5.7L14.8 6.2L11.1 9.4L12.2 14.2L8 11.6L3.8 14.2L4.9 9.4L1.2 6.2L6.1 5.7L8 1.3Z"/></svg>
+                          </button>
+                        }
+                      </div>
+                      @if (i === 0) { <span class="primary-tag">Primary</span> }
+                    } @else {
+                      <label class="slot-empty" [for]="'img-' + i">
+                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 3V15M3 9H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                        <span class="slot-lbl">{{ i === 0 ? 'Primary' : 'Image ' + (i + 1) }}</span>
+                      </label>
+                    }
+                    <input [id]="'img-' + i" type="file" accept="image/jpeg,image/png,image/webp" hidden (change)="onSlotFile(i, $event)" />
+                  </div>
+                }
+              </div>
+              <p class="hint">JPEG, PNG or WebP — auto-converted to WebP 800×1000 px. Click ★ to set primary.</p>
+            </div>
+
+            <!-- Description -->
+            <div class="card">
+              <div class="card-heading">
+                <span class="card-icon"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3.5 1.5H10L13 4.5V14.5H3.5V1.5Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M6 8H11M6 10.5H11M6 5.5H8" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg></span>
+                Description
+              </div>
+              <div class="form-grid">
+                <div class="field field-full">
+                  <label>Short Description</label>
+                  <textarea [(ngModel)]="form().short_description" class="form-textarea" rows="2" placeholder="One or two lines shown in product listings…"></textarea>
+                </div>
+                <div class="field field-full">
+                  <label>Full Description</label>
+                  <textarea [(ngModel)]="form().description" class="form-textarea" rows="5" placeholder="Full product description — story, details, heritage…"></textarea>
+                </div>
+                <div class="field field-full">
+                  <label>Benefits</label>
+                  <textarea [(ngModel)]="form().benefits" class="form-textarea" rows="4" placeholder="• Promotes hair growth&#10;• Reduces dandruff&#10;• Strengthens roots"></textarea>
+                  <span class="hint">One benefit per line.</span>
+                </div>
+                <div class="field field-full">
+                  <label>How To Use</label>
+                  <textarea [(ngModel)]="form().how_to_use" class="form-textarea" rows="4" placeholder="Step 1: Apply to scalp&#10;Step 2: Massage for 5 minutes"></textarea>
+                </div>
+                <div class="field field-full">
+                  <label>Key Ingredients</label>
+                  <textarea [(ngModel)]="form().ingredients_list" class="form-textarea" rows="4" placeholder="Kesar (Saffron): Brightens skin tone&#10;Sandalwood: Soothes and cools"></textarea>
+                  <span class="hint">One ingredient per line — Name: Benefit format.</span>
+                </div>
+                <div class="field field-full">
+                  <label>Badges / Labels</label>
+                  <input type="text" [(ngModel)]="form().badges" class="form-input" placeholder="Herbal, Natural, Handcrafted, Cruelty-Free" />
+                  <span class="hint">Comma-separated.</span>
+                </div>
+                <div class="field field-full">
+                  <label>Search Tags</label>
+                  <input type="text" [(ngModel)]="form().tags" class="form-input" placeholder="soap, kesar, saffron, herbal, skin glow" />
+                  <span class="hint">Comma-separated.</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Inventory -->
+            <div class="card">
+              <div class="card-heading">
+                <span class="card-icon"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="4.5" width="13" height="7.5" rx="1.4" stroke="currentColor" stroke-width="1.2"/><circle cx="8" cy="8.25" r="1.7" stroke="currentColor" stroke-width="1.1"/></svg></span>
+                Inventory &amp; Pricing
+              </div>
+              <div class="form-grid">
+                <div class="field">
+                  <label>Selling Price *</label>
+                  <div class="input-icon-wrap">
+                    <span class="input-icon">₹</span>
+                    <input type="number" [(ngModel)]="form().price" class="form-input has-icon" placeholder="399" />
+                  </div>
+                </div>
+                <div class="field">
+                  <label>MRP</label>
+                  <div class="input-icon-wrap">
+                    <span class="input-icon">₹</span>
+                    <input type="number" [(ngModel)]="form().mrp" class="form-input has-icon" placeholder="499" />
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Cost Price</label>
+                  <div class="input-icon-wrap">
+                    <span class="input-icon">₹</span>
+                    <input type="number" [(ngModel)]="form().cost_price" class="form-input has-icon" placeholder="150" />
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Stock Quantity</label>
+                  <input type="number" [(ngModel)]="form().stock_quantity" class="form-input" placeholder="100" />
+                </div>
+                @if (form().price && form().mrp && +form().mrp > +form().price) {
+                  <div class="field-full">
+                    <div class="calc-row">
+                      <span class="calc-chip">Discount <strong>{{ getDiscount() }}%</strong></span>
+                      @if (form().cost_price) {
+                        <span class="calc-chip">Margin <strong>{{ getMargin() }}%</strong></span>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Physical -->
+            <div class="card">
+              <div class="card-heading">
+                <span class="card-icon"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><rect x="2" y="6" width="12" height="4" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M4 6V8M6.5 6V7.3M9 6V8M11.5 6V7.3" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg></span>
+                Physical <span class="card-hint">for Shiprocket shipping</span>
+              </div>
+              <div class="form-grid">
+                <div class="field">
+                  <label>Weight</label>
+                  <div class="input-icon-wrap">
+                    <span class="input-icon input-icon--sm">g</span>
+                    <input type="number" [(ngModel)]="form().weight" class="form-input has-icon" placeholder="100" />
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Length</label>
+                  <div class="input-icon-wrap">
+                    <span class="input-icon input-icon--sm">cm</span>
+                    <input type="number" [(ngModel)]="form().length_cm" class="form-input has-icon" placeholder="8" step="0.1" />
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Width</label>
+                  <div class="input-icon-wrap">
+                    <span class="input-icon input-icon--sm">cm</span>
+                    <input type="number" [(ngModel)]="form().width_cm" class="form-input has-icon" placeholder="6" step="0.1" />
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Height</label>
+                  <div class="input-icon-wrap">
+                    <span class="input-icon input-icon--sm">cm</span>
+                    <input type="number" [(ngModel)]="form().height_cm" class="form-input has-icon" placeholder="3" step="0.1" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Payment -->
+            <div class="card">
+              <div class="card-heading">
+                <span class="card-icon"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="3.5" width="13" height="9" rx="1.4" stroke="currentColor" stroke-width="1.2"/><path d="M1.5 6.5H14.5" stroke="currentColor" stroke-width="1.2"/><path d="M3.5 9.5H6.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></span>
+                Payment
+              </div>
+              <div class="form-grid">
+                <div class="field field-full">
+                  <label>Payment Mode</label>
+                  <div class="select-wrap">
+                    <select [(ngModel)]="form().payment_mode" class="form-input form-select">
+                      <option value="full_cod">Complete COD — Pay on delivery</option>
+                      <option value="full_online">Complete Online — No COD</option>
+                      <option value="partial">Partial — Advance + rest on delivery</option>
+                      <option value="hybrid">Hybrid — Customer chooses COD / Online</option>
+                    </select>
+                    <svg class="select-caret" width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </div>
+                </div>
+                @if (form().payment_mode === 'partial') {
+                  <div class="field">
+                    <label>Advance Amount</label>
+                    <div class="input-icon-wrap">
+                      <span class="input-icon">₹</span>
+                      <input type="number" [(ngModel)]="form().advance_amount" class="form-input has-icon" placeholder="500" />
+                    </div>
+                    <span class="hint">Paid online upfront; balance on delivery.</span>
+                  </div>
+                }
+              </div>
+              <div class="payment-guide">
+                <div class="pg-item"><span class="pg-tag">full_cod</span> Standard products, local delivery</div>
+                <div class="pg-item"><span class="pg-tag">full_online</span> High-value / pre-order</div>
+                <div class="pg-item"><span class="pg-tag">partial</span> Hair wigs, patches, custom orders</div>
+                <div class="pg-item"><span class="pg-tag">hybrid</span> Both COD and online acceptable</div>
+              </div>
+            </div>
+
+            <!-- SEO -->
+            <div class="card">
+              <div class="card-heading">
+                <span class="card-icon"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5.2" stroke="currentColor" stroke-width="1.3"/><path d="M10.7 10.7L14 14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></span>
+                SEO
+              </div>
+              <div class="form-grid">
+                <div class="field field-full">
+                  <label>SEO Title</label>
+                  <input type="text" [(ngModel)]="form().seo_title" class="form-input" placeholder="Kesar Panchamrit Soap — Natural Glow | Luv Kush Natural" />
+                  <span class="hint char-hint" [class.over]="form().seo_title.length > 60">{{ form().seo_title.length }}/60</span>
+                </div>
+                <div class="field field-full">
+                  <label>Meta Description</label>
+                  <textarea [(ngModel)]="form().seo_description" class="form-textarea" rows="3" placeholder="Buy natural Kesar Panchamrit Soap online…"></textarea>
+                  <span class="hint char-hint" [class.over]="form().seo_description.length > 160">{{ form().seo_description.length }}/160</span>
+                </div>
+                <div class="field field-full">
+                  <label>Meta Keywords</label>
+                  <input type="text" [(ngModel)]="form().seo_keywords" class="form-input" placeholder="kesar soap, saffron soap, herbal soap india" />
+                  <span class="hint">Comma-separated. 5–10 specific phrases.</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="bottom-bar">
+              <button class="btn-secondary" (click)="goBack()">
+                <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2 2L12 12M12 2L2 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                Discard
+              </button>
+              <button class="btn-primary" (click)="saveProduct()" [disabled]="saving()">
+                @if (saving()) {
+                  <span class="btn-spinner"></span> Saving…
+                } @else {
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7.5L5.5 10.5L11.5 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  {{ isNew() ? 'Create Product' : 'Save Changes' }}
+                }
+              </button>
+            </div>
+
+          </div><!-- /cards-col -->
+
+          <!-- ════ RIGHT: Live Preview ════ -->
+          <div class="preview-col">
+            <div class="preview-panel">
+
+              <!-- Panel header -->
+              <div class="pv-header">
+                <span class="pv-title">Live Preview</span>
+                <div class="device-btns">
+                  <button class="dev-btn" [class.dev-active]="previewDevice() === 'mobile'"
+                          (click)="previewDevice.set('mobile')" title="Mobile (375px)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18"/></svg>
+                    Mobile
+                  </button>
+                  <button class="dev-btn" [class.dev-active]="previewDevice() === 'tablet'"
+                          (click)="previewDevice.set('tablet')" title="Tablet (768px)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="18" rx="2"/><line x1="19" y1="12" x2="19" y2="12"/></svg>
+                    Tablet
+                  </button>
+                  <button class="dev-btn" [class.dev-active]="previewDevice() === 'desktop'"
+                          (click)="previewDevice.set('desktop')" title="Desktop (1280px)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><polyline points="8 21 12 17 16 21"/><line x1="12" y1="17" x2="12" y2="17"/></svg>
+                    Desktop
+                  </button>
+                </div>
+              </div>
+
+              <!-- Size label -->
+              <div class="pv-size-label">{{ previewDevice() === 'mobile' ? '375px' : previewDevice() === 'tablet' ? '768px' : '1280px' }} · {{ scalePercent() }}% zoom</div>
+
+              <!-- Browser chrome -->
+              <div class="browser-chrome">
+                <div class="chrome-dots"><span></span><span></span><span></span></div>
+                <div class="chrome-url">luvkushnatural.com/products/{{ productSlug() || '...' }}</div>
+              </div>
+
+              <!-- Scaled product page -->
+              <div class="pv-outer">
+                <div class="pv-scaler"
+                     [style.width.px]="previewFrameWidth()"
+                     [style.transform]="'scale(' + previewScale() + ')'">
+
+                  <!-- ── Simulated Product Page (mirrors live storefront design) ── -->
+                  <div class="pp" [class.pp-mobile]="previewDevice() === 'mobile'"
+                                  [class.pp-tablet]="previewDevice() === 'tablet'"
+                                  [class.pp-desktop]="previewDevice() === 'desktop'">
+
+                    <!-- Announcement bar -->
+                    <div class="pp-announce">🌿 Free Pan-India Delivery on orders above ₹499</div>
+
+                    <!-- Header -->
+                    <div class="pp-head">
+                      <span class="pp-burger"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg></span>
+                      <div class="pp-logo">
+                        <span class="pp-logo-main">Luv Kush</span>
+                        <span class="pp-logo-sub">NATURAL</span>
+                      </div>
+                      <div class="pp-head-icons">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+                      </div>
+                    </div>
+
+                    <!-- Breadcrumb -->
+                    <div class="pp-breadcrumb">
+                      Home <span class="pp-crumb-sep">/</span> {{ selectedCategoryName() || 'Category' }} <span class="pp-crumb-sep">/</span> <strong>{{ form().name || 'Product name' }}</strong>
+                    </div>
+
+                    <!-- Product Hero -->
+                    <div class="pp-hero">
+
+                      <!-- Image Gallery -->
+                      <div class="pp-gallery">
+                        <div class="pp-main-wrap">
+                          @if (firstPreview()) {
+                            <img [src]="firstPreview()" class="pp-main-img" />
+                          } @else {
+                            <div class="pp-no-img">
+                              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                            </div>
+                          }
+                        </div>
+                        <!-- Thumbnail row -->
+                        @if (imgSlots()[1].preview || imgSlots()[2].preview) {
+                          <div class="pp-thumbs">
+                            @for (slot of imgSlots(); track slot.id) {
+                              @if (slot.preview) {
+                                <div class="pp-thumb" [class.pp-thumb-sel]="slot.id === 0">
+                                  <img [src]="slot.preview" />
+                                </div>
+                              }
+                            }
+                          </div>
+                        }
+                      </div>
+
+                      <!-- Product Info -->
+                      <div class="pp-info">
+
+                        <!-- Badges row (matches real pd__badges) -->
+                        @if (form().is_bestseller || form().is_new || getDiscount() > 0) {
+                          <div class="pp-badge-row">
+                            @if (form().is_bestseller) { <span class="pp-badge pp-badge--best">Bestseller</span> }
+                            @if (form().is_new) { <span class="pp-badge pp-badge--new">New arrival</span> }
+                            @if (getDiscount() > 0) { <span class="pp-badge pp-badge--sale">{{ getDiscount() }}% off</span> }
+                          </div>
+                        }
+
+                        <h1 class="pp-name">{{ form().name || 'Product name' }}</h1>
+
+                        @if (form().subtitle) {
+                          <p class="pp-sub">{{ form().subtitle }}</p>
+                        }
+
+                        <!-- Stars -->
+                        <div class="pp-stars">
+                          <span class="pp-star-icons">★★★★★</span>
+                          <span class="pp-review-ct">24 reviews</span>
+                        </div>
+
+                        <!-- Price row -->
+                        <div class="pp-price-row">
+                          @if (form().price) {
+                            <span class="pp-price">{{ +form().price | inr }}</span>
+                          } @else {
+                            <span class="pp-price pp-price-empty">₹ —</span>
+                          }
+                          @if (form().mrp && +form().mrp > +form().price) {
+                            <span class="pp-mrp">{{ +form().mrp | inr }}</span>
+                            <span class="pp-off">{{ getDiscount() }}% off</span>
+                          }
+                        </div>
+                        <p class="pp-tax-note">Inclusive of all taxes &middot; Free delivery above ₹499</p>
+
+                        <!-- Short description -->
+                        @if (form().short_description) {
+                          <p class="pp-short">{{ form().short_description }}</p>
+                        }
+
+                        <!-- Stock -->
+                        @if (form().stock_quantity !== '' && +form().stock_quantity === 0) {
+                          <p class="pp-stock pp-stock--oos">Out of stock</p>
+                        } @else if (form().stock_quantity !== '' && +form().stock_quantity < 10) {
+                          <p class="pp-stock pp-stock--low">Only {{ form().stock_quantity }} left — order soon</p>
+                        }
+
+                        <!-- Qty + Cart -->
+                        <div class="pp-cart-row">
+                          <div class="pp-qty"><button>−</button><span>1</span><button>+</button></div>
+                          <button class="pp-add-btn">Add to cart</button>
+                          <button class="pp-buy-btn">Buy now</button>
+                        </div>
+
+                        <!-- Payment note -->
+                        @if (form().payment_mode !== 'full_cod') {
+                          <p class="pp-pay-note">{{ paymentLabel() }}</p>
+                        }
+
+                        <!-- Trust badges -->
+                        <div class="pp-trust">
+                          <span class="pp-trust-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> 100% authentic</span>
+                          <span class="pp-trust-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M8 12l3 3 5-5"/></svg> Ayurvedic certified</span>
+                          <span class="pp-trust-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 12H2l10-10 10 10h-3v9H5v-9z"/></svg> 7-day free returns</span>
+                          <span class="pp-trust-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg> 5–7 day delivery</span>
+                        </div>
+
+                      </div><!-- /pp-info -->
+                    </div><!-- /pp-hero -->
+
+                    <!-- Description section (mirrors real numbered-rail section) -->
+                    <div class="pp-section">
+                      <div class="pp-section-rail"><span class="pp-section-dot"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span></div>
+                      <div class="pp-section-col">
+                        <span class="pp-section-n">01</span>
+                        <span class="pp-eyebrow">About this formula</span>
+                        <h2 class="pp-section-title">Description</h2>
+                        <p class="pp-prose">{{ (form().description || 'Product description will appear here after you fill in the Full Description field above.') | slice:0:220 }}{{ form().description && form().description.length > 220 ? '…' : '' }}</p>
+                      </div>
+                    </div>
+
+                  </div><!-- /pp -->
+                </div><!-- /pv-scaler -->
+              </div><!-- /pv-outer -->
+
+              <!-- Open on store -->
+              <button class="btn-open-store" (click)="previewLive()">Preview on Store ↗</button>
+
+            </div><!-- /preview-panel -->
+          </div><!-- /preview-col -->
+
+        </div><!-- /layout -->
+      }
+    </div>

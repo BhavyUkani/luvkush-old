@@ -1,0 +1,252 @@
+
+    <div class="page">
+      <div class="page-header">
+        <h1>Products <span class="count">{{ total() }}</span></h1>
+      </div>
+
+      <!-- Status Cards -->
+      <div class="status-cards">
+        <div class="status-card" [class.card-active]="statusFilter === ''" (click)="filterStatus('')">
+          <div class="card-icon card-icon--info">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="7" height="7" rx="1.3" stroke="currentColor" stroke-width="1.3"/><rect x="11" y="2" width="7" height="7" rx="1.3" stroke="currentColor" stroke-width="1.3"/><rect x="2" y="11" width="7" height="7" rx="1.3" stroke="currentColor" stroke-width="1.3"/><rect x="11" y="11" width="7" height="7" rx="1.3" stroke="currentColor" stroke-width="1.3"/></svg>
+          </div>
+          <div class="card-stats">
+            <div class="card-val">{{ stats()?.total ?? 0 }}</div>
+            <div class="card-label">Total Products</div>
+          </div>
+        </div>
+        <div class="status-card" [class.card-active]="statusFilter === 'active'" (click)="filterStatus('active')">
+          <div class="card-icon card-icon--success">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7.5" stroke="currentColor" stroke-width="1.3"/><path d="M6.5 10L8.7 12.2L13.5 7.3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="card-stats">
+            <div class="card-val">{{ stats()?.active ?? 0 }}</div>
+            <div class="card-label">Active</div>
+          </div>
+        </div>
+        <div class="status-card" [class.card-active]="statusFilter === 'inactive'" (click)="filterStatus('inactive')">
+          <div class="card-icon card-icon--warn">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7.5" stroke="currentColor" stroke-width="1.3"/><path d="M6.8 10H13.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          </div>
+          <div class="card-stats">
+            <div class="card-val">{{ stats()?.inactive ?? 0 }}</div>
+            <div class="card-label">Inactive</div>
+          </div>
+        </div>
+        <div class="status-card" [class.card-active]="statusFilter === 'draft'" (click)="filterStatus('draft')">
+          <div class="card-icon card-icon--purple">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M12.5 3.5L16.5 7.5L7 17H3V13L12.5 3.5Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M10.5 5.5L14.5 9.5" stroke="currentColor" stroke-width="1.3"/></svg>
+          </div>
+          <div class="card-stats">
+            <div class="card-val">{{ stats()?.draft ?? 0 }}</div>
+            <div class="card-label">Drafts</div>
+          </div>
+        </div>
+        <div class="status-card" [class.card-active]="statusFilter === 'archived'" (click)="filterStatus('archived')">
+          <div class="card-icon card-icon--muted">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2.5" y="4" width="15" height="4" rx="1" stroke="currentColor" stroke-width="1.3"/><path d="M3.5 8V15C3.5 15.8 4.2 16.5 5 16.5H15C15.8 16.5 16.5 15.8 16.5 15V8" stroke="currentColor" stroke-width="1.3"/><path d="M8 11H12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          </div>
+          <div class="card-stats">
+            <div class="card-val">{{ stats()?.archived ?? 0 }}</div>
+            <div class="card-label">Archived</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <div class="search-wrap">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5.2" stroke="currentColor" stroke-width="1.4"/><path d="M11 11L14.5 14.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          <input type="text" class="search-input" placeholder="Search by name or SKU..." [(ngModel)]="searchQ" (input)="onSearch()" />
+        </div>
+        <div class="select-wrap">
+          <select class="filter-select" [(ngModel)]="statusFilter" (change)="load()">
+            <option value="">All Statuses</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+            <option value="draft">Draft</option>
+            <option value="archived">Archived</option>
+          </select>
+          <svg class="select-caret" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="select-wrap">
+          <select class="filter-select" [(ngModel)]="categoryFilter" (change)="onCategoryChange()">
+            <option value="">All Categories</option>
+            @for (cat of filteredCategories(); track cat.id) {
+              <option [value]="cat.id">{{ cat.name }}</option>
+            }
+          </select>
+          <svg class="select-caret" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <button class="btn-primary" (click)="createProduct()">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1V13M1 7H13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          Add Product
+        </button>
+      </div>
+
+      @if (selectedIds().size > 0) {
+        <div class="bulk-bar">
+          <div class="bulk-count">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.5L13 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            {{ selectedIds().size }} selected
+          </div>
+          <div class="select-wrap select-wrap--bulk">
+            <select class="bulk-select" [(ngModel)]="bulkAction">
+              <option value="">Bulk Action...</option>
+              <option value="active">Activate Selected</option>
+              <option value="draft">Deactivate Selected</option>
+              <option value="delete">Delete Selected</option>
+            </select>
+            <svg class="select-caret" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <button class="btn-bulk-apply" [disabled]="!bulkAction" (click)="applyBulk()">Apply</button>
+          <button class="btn-bulk-clear" (click)="clearSelection()">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 2L10 10M10 2L2 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            Clear
+          </button>
+        </div>
+      }
+
+      @if (loading()) {
+        <table class="data-table">
+          <tbody>
+            @for (i of [1,2,3,4,5,6]; track i) {
+              <tr class="skel-row">
+                <td style="width:36px"></td>
+                <td><div class="prod-cell"><div class="skel-thumb"></div><div style="flex:1"><div class="skel-line" style="width:70%;margin-bottom:6px"></div><div class="skel-line" style="width:40%;height:8px"></div></div></div></td>
+                <td><div class="skel-line" style="width:50%"></div></td>
+                <td><div class="skel-line" style="width:40%"></div></td>
+                <td><div class="skel-line" style="width:30%"></div></td>
+                <td><div class="skel-line" style="width:60%"></div></td>
+                <td><div class="skel-line" style="width:30%"></div></td>
+                <td><div class="skel-line" style="width:70%"></div></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      } @else if (error()) {
+        <div class="error-msg">{{ error() }} <button (click)="load()">Retry</button></div>
+      } @else {
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width:36px"><input type="checkbox" class="cb" [checked]="allSelected()" (change)="toggleSelectAll()" /></th>
+              <th>Product</th><th>Category</th><th>Price</th>
+              <th>Stock</th><th>Status</th><th class="ta-center">Featured</th><th class="ta-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of products(); track p.id) {
+              <tr [class.row-selected]="selectedIds().has(p.id)" [class.row-draft]="p.status === 'draft'">
+                <td><input type="checkbox" class="cb" [checked]="selectedIds().has(p.id)" (change)="toggleSelect(p.id)" /></td>
+                <td>
+                  <div class="prod-cell">
+                    @if (p.primary_image) {
+                      <img [src]="imgUrl(p.primary_image)" class="thumb" [alt]="p.name" />
+                    } @else {
+                      <div class="thumb-empty">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 2H14V14H2V2Z" stroke="currentColor" stroke-width="1.2"/><path d="M2 10.5L5.5 7L8.5 10L11 7.5L14 10.5" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><circle cx="5.5" cy="5" r="1.2" stroke="currentColor" stroke-width="1.1"/></svg>
+                      </div>
+                    }
+                    <div class="prod-info">
+                      <div class="product-name">{{ p.name }}</div>
+                      @if (p.subtitle) { <div class="product-sub">{{ p.subtitle }}</div> }
+                      <div class="product-sku">{{ p.sku }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  @if (p.category_name) {
+                    <span class="cat-chip">{{ p.category_name }}</span>
+                  } @else {
+                    <span class="muted">—</span>
+                  }
+                </td>
+                <td>
+                  <div class="price-cell">₹{{ p.price ?? 0 | inr:false }}</div>
+                  @if (p.mrp > p.price) {
+                    <div class="price-sub">
+                      <span class="mrp">₹{{ p.mrp ?? 0 | inr:false }}</span>
+                      <span class="discount-chip">{{ discountPct(p) }}% off</span>
+                    </div>
+                  }
+                </td>
+                <td>
+                  <span class="stock-chip"
+                    [class.stock-chip--low]="p.stock_quantity > 0 && p.stock_quantity <= 5"
+                    [class.stock-chip--out]="p.stock_quantity === 0">
+                    <span class="stock-dot"></span>{{ p.stock_quantity }}
+                  </span>
+                </td>
+                <td>
+                  <div class="select-wrap select-wrap--status" [class]="'status-' + p.status">
+                    <select class="inline-select" [(ngModel)]="p.status" (change)="changeStatus(p)">
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
+                      <option value="draft">Draft</option>
+                      <option value="archived">Archived</option>
+                    </select>
+                    <svg class="select-caret" width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </div>
+                </td>
+                <td class="ta-center">
+                  <button class="star-btn" [class.star-btn--active]="p.is_featured" (click)="toggleFeatured(p)"
+                    [attr.aria-label]="p.is_featured ? 'Remove from featured' : 'Mark as featured'"
+                    [attr.title]="p.is_featured ? 'Featured' : 'Not featured'">
+                    <svg width="17" height="17" viewBox="0 0 20 20" [attr.fill]="p.is_featured ? 'currentColor' : 'none'"><path d="M10 1.5L12.4 7.1L18.5 7.7L13.9 11.7L15.3 17.7L10 14.5L4.7 17.7L6.1 11.7L1.5 7.7L7.6 7.1L10 1.5Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+                  </button>
+                </td>
+                <td class="ta-right">
+                  <div class="action-btns">
+                    <button class="icon-btn icon-btn--edit" (click)="editProduct(p.id)" title="Edit" aria-label="Edit">
+                      <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M11 2L14 5L6 13H3V10L11 2Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+                    </button>
+                    <button class="icon-btn icon-btn--delete" (click)="confirmDelete(p)" title="Delete" aria-label="Delete">
+                      <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3 4.5H13M6 4.5V3C6 2.4 6.4 2 7 2H9C9.6 2 10 2.4 10 3V4.5M12 4.5V13C12 13.6 11.6 14 11 14H5C4.4 14 4 13.6 4 13V4.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+            @if (!products().length) {
+              <tr><td colspan="8" class="empty-cell">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><path d="M4 9L16 4L28 9V23L16 28L4 23V9Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M4 9L16 14L28 9M16 14V28" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+                <div>No products found</div>
+              </td></tr>
+            }
+          </tbody>
+        </table>
+
+        @if (pages() > 1) {
+          <div class="pagination">
+            <button [disabled]="page() === 1" (click)="goPage(page() - 1)">← Prev</button>
+            <span>Page {{ page() }} of {{ pages() }}</span>
+            <button [disabled]="page() === pages()" (click)="goPage(page() + 1)">Next →</button>
+          </div>
+        }
+      }
+    </div>
+
+    <!-- Bulk Confirm Modal -->
+    @if (showBulkConfirm()) {
+      <div class="modal-backdrop" (click)="showBulkConfirm.set(false)">
+        <div class="modal confirm-modal" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2>Confirm Bulk Action</h2>
+            <button class="modal-close" (click)="showBulkConfirm.set(false)">✕</button>
+          </div>
+          <div class="modal-body">
+            <p>Apply <strong>{{ bulkActionLabel() }}</strong> to <strong>{{ selectedIds().size }}</strong> products?
+              @if (bulkAction === 'delete') {
+                <br/><span style="color:#DC2626;font-size:0.8rem">This permanently deletes the products and their images.</span>
+              }
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button class="btn-secondary" (click)="showBulkConfirm.set(false)">Cancel</button>
+            <button class="btn-primary" [class.btn-danger]="bulkAction === 'delete'" (click)="executeBulk()" [disabled]="bulkRunning()">
+              {{ bulkRunning() ? 'Applying...' : 'Confirm' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    }

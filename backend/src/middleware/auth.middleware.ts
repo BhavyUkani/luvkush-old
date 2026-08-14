@@ -20,13 +20,24 @@ declare global {
   }
 }
 
-export const authenticate = async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
+function extractToken(req: Request): string | undefined {
+  // The browser client sends the httpOnly cookie automatically; the
+  // Authorization header remains a fallback for non-browser API clients
+  // (mobile apps, scripts) that can't rely on cookie storage.
+  const cookieToken = req.cookies?.['lk_access_token'];
+  if (cookieToken) return cookieToken;
+
   const authHeader = req.headers.authorization;
-  if (!authHeader?.startsWith('Bearer ')) {
+  if (authHeader?.startsWith('Bearer ')) return authHeader.split(' ')[1];
+  return undefined;
+}
+
+export const authenticate = async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
+  const token = extractToken(req);
+  if (!token) {
     return next(new AppError('Authentication required', 401));
   }
 
-  const token = authHeader.split(' ')[1];
   try {
     const payload = jwt.verify(token, config.jwt.accessSecret) as JwtPayload;
 
@@ -71,12 +82,11 @@ export const authorize = (...roles: string[]) => {
 };
 
 export const optionalAuth = (req: Request, _res: Response, next: NextFunction): void => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader?.startsWith('Bearer ')) {
+  const token = extractToken(req);
+  if (!token) {
     return next();
   }
 
-  const token = authHeader.split(' ')[1];
   try {
     const payload = jwt.verify(token, config.jwt.accessSecret) as JwtPayload;
     req.user = payload;

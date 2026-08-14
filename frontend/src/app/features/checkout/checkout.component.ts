@@ -102,10 +102,15 @@ export class CheckoutComponent implements OnInit {
     return Math.min(capped, this.cart.subtotal());
   }
   get isFreeShippingCoupon(): boolean { return this.cart.appliedCoupon()?.discount_type === "free_shipping"; }
-  get shippingCost() {
+  // Mirrors calculateShippingCost() in backend/src/config/business-rules.ts —
+  // both must agree on the exact same rule (LK-M24/LK-M25) or the price
+  // shown at checkout diverges from the price actually charged.
+  shippingCostFor(method: "standard" | "express"): number {
     if (this.isFreeShippingCoupon) return 0;
+    if (method === "express") return 99;
     return (this.cart.subtotal() - this.discount) >= 999 ? 0 : 99;
   }
+  get shippingCost() { return this.shippingCostFor(this.shippingMethod()); }
   get taxAmount() { return Math.round((this.cart.subtotal() - this.discount) * 0.18); }
   get orderTotal() { return Math.max(0, this.cart.subtotal() - this.discount) + this.shippingCost + this.taxAmount; }
 

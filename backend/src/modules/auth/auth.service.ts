@@ -9,7 +9,7 @@ import { EmailService } from '../../shared/email.service';
 
 /** Parses jsonwebtoken-style duration strings ("15m", "8h", "30d") into
  * milliseconds. Falls back to 7 days for anything unrecognised. */
-function parseDurationMs(duration: string): number {
+export function parseDurationMs(duration: string): number {
   const match = /^(\d+)\s*(s|m|h|d)$/.exec(duration.trim());
   if (!match) return 7 * 24 * 60 * 60 * 1000;
   const value = Number(match[1]);
