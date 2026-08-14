@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, DOCUMENT } from '@angular/core';
 import { Title, Meta } from '@angular/platform-browser';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
@@ -18,6 +18,7 @@ export class SeoService {
   private title = inject(Title);
   private meta = inject(Meta);
   private router = inject(Router);
+  private document = inject(DOCUMENT);
 
   private readonly BASE_TITLE = 'Luv Kush Natural';
   private readonly BASE_URL = 'https://luvkushnatural.com';
@@ -111,22 +112,22 @@ export class SeoService {
   }
 
   private setCanonical(url: string): void {
-    let link: HTMLLinkElement | null = document.querySelector('link[rel="canonical"]');
+    let link: HTMLLinkElement | null = this.document.querySelector('link[rel="canonical"]');
     if (!link) {
-      link = document.createElement('link');
+      link = this.document.createElement('link');
       link.setAttribute('rel', 'canonical');
-      document.head.appendChild(link);
+      this.document.head.appendChild(link);
     }
     link.setAttribute('href', url);
   }
 
   private injectSchema(id: string, schema: object): void {
-    let script = document.getElementById(id);
+    let script = this.document.getElementById(id);
     if (!script) {
-      script = document.createElement('script');
+      script = this.document.createElement('script');
       script.setAttribute('type', 'application/ld+json');
       script.id = id;
-      document.head.appendChild(script);
+      this.document.head.appendChild(script);
     }
     script.textContent = JSON.stringify(schema);
   }

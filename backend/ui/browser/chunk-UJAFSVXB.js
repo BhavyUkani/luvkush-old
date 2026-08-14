@@ -1,0 +1,1 @@
+import{a as i}from"./chunk-PZPJ24LQ.js";import{h as n}from"./chunk-JERKCC54.js";import{R as r}from"./chunk-IOYDYTDD.js";var f=(u,o)=>{let e=r(i),t=r(n);return e.isAdmin()?!0:e.isLoggedIn()?t.createUrlTree(["/403"]):t.createUrlTree(["/login"],{queryParams:{returnUrl:o.url}})};export{f as a};

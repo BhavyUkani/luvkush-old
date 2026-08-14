@@ -1,9 +1,10 @@
 import { Injectable, signal, computed, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { Observable, of } from 'rxjs';
-import { tap, catchError } from 'rxjs/operators';
+import { Observable, of, forkJoin } from 'rxjs';
+import { tap, catchError, switchMap } from 'rxjs/operators';
 import { ApiService } from './api.service';
 import { AuthService } from './auth.service';
+import { ToastService } from './toast.service';
 import { imageUrl } from '../../shared/utils/image-url';
 
 export interface CartItem {
@@ -34,8 +35,10 @@ export interface CartSummary {
 export class CartService {
   private readonly api = inject(ApiService);
   private readonly auth = inject(AuthService);
+  private readonly toast = inject(ToastService);
   private readonly platformId = inject(PLATFORM_ID);
 
+  private _guestIdCounter = 0;
   private _items = signal<CartItem[]>(this.loadFromStorage());
   private _summary = signal<CartSummary>({ subtotal: 0, shipping: 0, tax: 0, discount: 0, total: 0, item_count: 0 });
   private _appliedCoupon = signal<any>(null);
@@ -59,7 +62,8 @@ export class CartService {
   loadFromServer(): Observable<any> {
     if (!this.auth.isLoggedIn()) return of(null);
     this._loading.set(true);
-    return this.api.get('/cart').pipe(
+    return this.mergeGuestCart().pipe(
+      switchMap(() => this.api.get('/cart')),
       tap((res: any) => {
         if (res.data) {
           this.syncFromServer(res.data);
@@ -70,6 +74,30 @@ export class CartService {
     );
   }
 
+  /** Pushes any items added while logged out onto the now-authenticated
+   * server cart before the first post-login sync overwrites local state —
+   * otherwise a guest who fills a cart and then logs in loses it outright. */
+  private mergeGuestCart(): Observable<any> {
+    if (!isPlatformBrowser(this.platformId)) return of(null);
+    let guestItems: CartItem[] = [];
+    try {
+      const stored = localStorage.getItem('lk_cart');
+      guestItems = stored ? JSON.parse(stored) : [];
+    } catch { guestItems = []; }
+    if (!guestItems.length) return of(null);
+
+    try { localStorage.removeItem('lk_cart'); } catch { /* ignore */ }
+
+    const requests = guestItems.map(item =>
+      this.api.post('/cart/items', {
+        product_id: item.productId,
+        variant_id: item.variantId,
+        quantity: item.quantity
+      }).pipe(catchError(() => of(null)))
+    );
+    return forkJoin(requests);
+  }
+
   addItem(item: Omit<CartItem, 'id'>): Observable<any> {
     if (this.auth.isLoggedIn()) {
       return this.api.post('/cart/items', {
@@ -78,8 +106,11 @@ export class CartService {
         quantity: item.quantity
       }).pipe(
         tap((res: any) => { if (res.data) this.syncFromServer(res.data); }),
-        catchError(() => {
-          this.addToLocal(item);
+        catchError((err) => {
+          // A server rejection (e.g. "only 2 units available") must not be
+          // papered over by silently adding the item locally — that leaves
+          // the customer with a cart the server doesn't agree with.
+          this.toast.error(err?.userMessage ?? 'Could not add item to cart');
           return of(null);
         })
       );
@@ -93,7 +124,10 @@ export class CartService {
       if (quantity <= 0) return this.removeItem(itemId);
       return this.api.put(`/cart/items/${itemId}`, { quantity }).pipe(
         tap((res: any) => { if (res.data) this.syncFromServer(res.data); }),
-        catchError(() => of(null))
+        catchError((err) => {
+          this.toast.error(err?.userMessage ?? 'Could not update quantity');
+          return of(null);
+        })
       );
     }
     if (quantity <= 0) {
@@ -109,7 +143,10 @@ export class CartService {
     if (this.auth.isLoggedIn()) {
       return this.api.delete(`/cart/items/${itemId}`).pipe(
         tap((res: any) => { if (res.data) this.syncFromServer(res.data); }),
-        catchError(() => of(null))
+        catchError((err) => {
+          this.toast.error(err?.userMessage ?? 'Could not remove item');
+          return of(null);
+        })
       );
     }
     this._items.update(items => items.filter(i => i.id !== itemId));
@@ -155,7 +192,10 @@ export class CartService {
             : i
         );
       }
-      return [...items, { ...item, id: Date.now(), quantity: item.quantity || 1, payment_mode: item.payment_mode || 'full_cod', advance_amount: item.advance_amount ?? null }];
+      // A counter suffix avoids collisions between two items added within
+      // the same millisecond, which Date.now() alone can't distinguish.
+      const id = Date.now() * 1000 + (this._guestIdCounter++ % 1000);
+      return [...items, { ...item, id, quantity: item.quantity || 1, payment_mode: item.payment_mode || 'full_cod', advance_amount: item.advance_amount ?? null }];
     });
     this.saveToStorage();
   }

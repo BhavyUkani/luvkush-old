@@ -1,11 +1,9 @@
 import { Injectable, inject, signal, computed, PLATFORM_ID } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { tap, catchError } from 'rxjs/operators';
 import { Observable, Subject, throwError, of } from 'rxjs';
 import { ApiService } from './api.service';
-import { environment } from '../../../environments/environment';
 
 export interface User {
   id: number;
@@ -102,7 +100,7 @@ export class AuthService {
     const refreshToken = this.getStoredRefreshToken();
     if (!refreshToken) return throwError(() => ({ userMessage: 'No refresh token' }));
 
-    return this.api.post('/auth/refresh', { refreshToken }).pipe(
+    return this.api.post('/auth/refresh-token', { refreshToken }).pipe(
       tap((res: any) => this.setSession(res.data)),
       catchError(err => {
         this.logout();
@@ -117,6 +115,14 @@ export class AuthService {
   }
 
   logout(): void {
+    // Best-effort: tell the server to invalidate the refresh token row too,
+    // so "logging out" actually ends the server-side session instead of
+    // just clearing the browser's copy of it. Local state is cleared
+    // unconditionally below regardless of whether this call succeeds.
+    if (this._token()) {
+      this.api.post('/auth/logout', {}).pipe(catchError(() => of(null))).subscribe();
+    }
+
     this._user.set(null);
     this._token.set(null);
     if (isPlatformBrowser(this.platformId)) {

@@ -11,31 +11,48 @@ import { logger } from './utils/logger';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware';
 
 // Route imports
-import authRoutes from './routes/auth.routes';
-import productRoutes from './routes/product.routes';
-import categoryRoutes from './routes/category.routes';
-import orderRoutes from './routes/order.routes';
-import userRoutes from './routes/user.routes';
-import reviewRoutes from './routes/review.routes';
-import cartRoutes from './routes/cart.routes';
-import wishlistRoutes from './routes/wishlist.routes';
-import couponRoutes from './routes/coupon.routes';
-import hairSolutionRoutes from './routes/hair-solution.routes';
-import hairSolutionAdminRoutes from './routes/hair-solution-admin.routes';
-import blogRoutes from './routes/blog.routes';
-import contactRoutes from './routes/contact.routes';
-import adminRoutes from './routes/admin.routes';
-import mediaRoutes from './routes/media.routes';
-import seoRoutes from './routes/seo.routes';
-import newsletterRoutes from './routes/newsletter.routes';
-import paymentRoutes from './routes/payment.routes';
+import authRoutes from './modules/auth/auth.routes';
+import productRoutes from './modules/product/product.routes';
+import categoryRoutes from './modules/category/category.routes';
+import orderRoutes from './modules/order/order.routes';
+import userRoutes from './modules/user/user.routes';
+import reviewRoutes from './modules/review/review.routes';
+import cartRoutes from './modules/cart/cart.routes';
+import wishlistRoutes from './modules/wishlist/wishlist.routes';
+import couponRoutes from './modules/coupon/coupon.routes';
+import hairSolutionRoutes from './modules/hair-solution/hair-solution.routes';
+import hairSolutionAdminRoutes from './modules/hair-solution/hair-solution-admin.routes';
+import blogRoutes from './modules/blog/blog.routes';
+import contactRoutes from './modules/contact/contact.routes';
+import adminRoutes from './modules/admin/admin.routes';
+import mediaRoutes from './modules/media/media.routes';
+import seoRoutes from './modules/seo/seo.routes';
+import newsletterRoutes from './modules/newsletter/newsletter.routes';
+import paymentRoutes from './modules/payment/payment.routes';
 
 const app: Application = express();
+
+// Trust the first hop (nginx). Without this, X-Forwarded-For is ignored and
+// every request appears to come from 127.0.0.1, which collapses rate
+// limiting into a single shared bucket for the entire internet.
+app.set('trust proxy', 1);
 
 // ── Security headers ─────────────────────
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
-  contentSecurityPolicy: false
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", 'https://checkout.razorpay.com'],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", 'data:', 'https:'],
+      fontSrc: ["'self'", 'data:'],
+      connectSrc: ["'self'", 'https://api.razorpay.com', 'https://lumberjack.razorpay.com'],
+      frameSrc: ["'self'", 'https://api.razorpay.com', 'https://checkout.razorpay.com'],
+      objectSrc: ["'none'"],
+      baseUri: ["'self'"]
+    }
+  }
 }));
 
 // ── CORS ────────────────────────────────
@@ -52,7 +69,14 @@ app.use(cors({
 app.use(compression());
 
 // ── Body parsing ─────────────────────────
-app.use(express.json({ limit: '10mb' }));
+// The `verify` hook stashes the exact raw bytes on the request before
+// JSON-parsing them. The Razorpay webhook needs those exact bytes (not a
+// re-serialised JSON.stringify) to validate its HMAC signature — see
+// payment.service.ts#handleWebhook.
+app.use(express.json({
+  limit: '10mb',
+  verify: (req: Request, _res, buf) => { (req as any).rawBody = buf; }
+}));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // ── Request logging ──────────────────────
@@ -76,12 +100,18 @@ const limiter = rateLimit({
 app.use(`${config.apiPrefix}`, limiter);
 
 // ── Static files ─────────────────────────
-app.use('/uploads', express.static('uploads', {
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads'), {
   maxAge: '7d',
   setHeaders: (res) => {
     res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
   }
 }));
+// A missing upload should 404, not fall through to the SPA's index.html —
+// the wildcard handler below only serves non-API, non-upload routes.
+app.use('/uploads', (_req: Request, res: Response) => {
+  res.status(404).json({ success: false, message: 'File not found' });
+});
 
 // ── Health check ─────────────────────────
 app.get(`${config.apiPrefix}/health`, (_req: Request, res: Response) => {

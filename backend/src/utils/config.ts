@@ -36,6 +36,7 @@ interface Config {
   razorpay: {
     keyId: string;
     keySecret: string;
+    webhookSecret: string;
   };
 }
 
@@ -82,7 +83,24 @@ export const config: Config = {
   rateLimitMax:      parseInt(process.env['RATE_LIMIT_MAX']        || '100', 10),
 
   razorpay: {
-    keyId:     process.env['RAZORPAY_KEY_ID']     || '',
-    keySecret: process.env['RAZORPAY_KEY_SECRET'] || '',
+    keyId:         process.env['RAZORPAY_KEY_ID']         || '',
+    keySecret:     process.env['RAZORPAY_KEY_SECRET']     || '',
+    webhookSecret: process.env['RAZORPAY_WEBHOOK_SECRET'] || '',
   }
 };
+
+// Refuse to boot in production with default/placeholder secrets — a forgotten
+// default JWT secret lets anyone who knows it mint a valid admin token.
+const DEFAULT_SECRETS = ['change-this-in-production', 'change-refresh-in-production'];
+if (config.nodeEnv === 'production') {
+  const problems: string[] = [];
+  if (DEFAULT_SECRETS.includes(config.jwt.accessSecret)) problems.push('JWT_SECRET');
+  if (DEFAULT_SECRETS.includes(config.jwt.refreshSecret)) problems.push('JWT_REFRESH_SECRET');
+  if (!config.razorpay.webhookSecret) problems.push('RAZORPAY_WEBHOOK_SECRET');
+  if (problems.length) {
+    throw new Error(
+      `Refusing to start in production with insecure/missing configuration: ${problems.join(', ')}. ` +
+      'Set strong, unique values for these environment variables.'
+    );
+  }
+}

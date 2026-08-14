@@ -14,7 +14,10 @@ class Database {
       password: config.db.password,
       waitForConnections: true,
       connectionLimit: config.db.poolMax,
-      queueLimit: 0,
+      // Bounded so a stalled DB fails fast under load instead of piling up
+      // unbounded latency (queued requests beyond this reject immediately).
+      queueLimit: config.db.poolMax * 10,
+      connectTimeout: 10000,
       enableKeepAlive: true,
       keepAliveInitialDelay: 0,
       timezone: '+05:30',
@@ -30,6 +33,10 @@ class Database {
 
   async getConnection(): Promise<PoolConnection> {
     return this.pool.getConnection();
+  }
+
+  async end(): Promise<void> {
+    await this.pool.end();
   }
 
   async query<T = any>(sql: string, params?: any[]): Promise<T> {
@@ -50,7 +57,11 @@ class Database {
       await conn.commit();
       return result;
     } catch (error) {
-      await conn.rollback();
+      try {
+        await conn.rollback();
+      } catch (rollbackError) {
+        logger.error('Rollback failed after transaction error:', rollbackError);
+      }
       throw error;
     } finally {
       conn.release();

@@ -5,7 +5,6 @@ import { Router, RouterLink } from "@angular/router";
 import { CartService } from "../../core/services/cart.service";
 import { ApiService } from "../../core/services/api.service";
 import { ToastService } from "../../core/services/toast.service";
-import { environment } from "../../../environments/environment";
 
 declare const Razorpay: any;
 
@@ -90,15 +89,25 @@ export class CheckoutComponent implements OnInit {
 
   stepIndex = computed(() => this.STEPS.indexOf(this.step()));
 
-  get shippingCost() { return this.shippingMethod() === "express" ? 99 : (this.cart.subtotal() >= 499 ? 0 : 49); }
-  get discount() {
+  // Mirrors the backend's own formula exactly (order.service.ts#createFromCart)
+  // so the total shown here is the total that actually gets charged —
+  // divergence here was directly responsible for undercharging customers.
+  get discount(): number {
     const c = this.cart.appliedCoupon();
     if (!c) return 0;
-    return c.discount_type === "percentage"
-      ? Math.round(this.cart.subtotal() * c.discount_value / 100)
-      : c.discount_value;
+    if (c.discount_type === "free_shipping") return 0;
+    if (c.discount_type === "fixed") return Math.min(c.discount_value, this.cart.subtotal());
+    const raw = Math.floor(this.cart.subtotal() * c.discount_value / 100);
+    const capped = c.max_discount_amount ? Math.min(raw, c.max_discount_amount) : raw;
+    return Math.min(capped, this.cart.subtotal());
   }
-  get orderTotal() { return Math.max(0, this.cart.subtotal() - this.discount) + this.shippingCost; }
+  get isFreeShippingCoupon(): boolean { return this.cart.appliedCoupon()?.discount_type === "free_shipping"; }
+  get shippingCost() {
+    if (this.isFreeShippingCoupon) return 0;
+    return (this.cart.subtotal() - this.discount) >= 999 ? 0 : 99;
+  }
+  get taxAmount() { return Math.round((this.cart.subtotal() - this.discount) * 0.18); }
+  get orderTotal() { return Math.max(0, this.cart.subtotal() - this.discount) + this.shippingCost + this.taxAmount; }
 
   ngOnInit(): void {
     if (this.cart.isEmpty()) { this.router.navigate(["/cart"]); return; }
@@ -152,6 +161,8 @@ export class CheckoutComponent implements OnInit {
       shipping_method: this.shippingMethod(),
       payment_method:  backendPaymentMethod
     };
+    const coupon = this.cart.appliedCoupon();
+    if (coupon?.code) payload.coupon_code = coupon.code;
     if (addrId) {
       payload.address_id = addrId;
     } else {
@@ -165,11 +176,11 @@ export class CheckoutComponent implements OnInit {
         const oid = orderData?.order_number ?? orderData?.id ?? "LK" + Date.now();
 
         if (pm === "online") {
-          this.openRazorpay(orderData, null);
+          this.openRazorpay(orderData, false);
           return;
         }
         if (pm === "partial") {
-          this.openRazorpay(orderData, this.advanceAmount());
+          this.openRazorpay(orderData, true);
           return;
         }
 
@@ -184,19 +195,17 @@ export class CheckoutComponent implements OnInit {
     });
   }
 
-  private openRazorpay(orderData: any, advanceAmount: number | null): void {
+  private openRazorpay(orderData: any, isPartial: boolean): void {
     if (!isPlatformBrowser(this.platformId)) return;
 
     this.placing.set(true);
-    const body: any = { order_id: orderData.id };
-    if (advanceAmount != null) body.advance_amount = advanceAmount;
+    const body: any = { order_id: orderData.id, is_partial: isPartial };
 
     this.api.post<any>("/payment/create-order", body).subscribe({
       next: (res: any) => {
         const rzp = res.data;
-        const isPartial = advanceAmount != null;
         const options: any = {
-          key: environment.razorpayKeyId,
+          key: rzp.key_id,
           amount: rzp.amount,
           currency: rzp.currency || 'INR',
           name: "Luv Kush Natural",
@@ -205,7 +214,7 @@ export class CheckoutComponent implements OnInit {
             : `Order ${rzp.order_number}`,
           order_id: rzp.razorpay_order_id,
           handler: (response: any) => {
-            this.verifyPayment(orderData.id, response, advanceAmount);
+            this.verifyPayment(orderData.id, response);
           },
           prefill: {},
           theme: { color: "#B87333" },
@@ -233,7 +242,7 @@ export class CheckoutComponent implements OnInit {
     });
   }
 
-  private verifyPayment(orderId: number, response: any, advanceAmount: number | null): void {
+  private verifyPayment(orderId: number, response: any): void {
     this.placing.set(true);
     const payload: any = {
       razorpay_order_id: response.razorpay_order_id,
@@ -241,7 +250,6 @@ export class CheckoutComponent implements OnInit {
       razorpay_signature: response.razorpay_signature,
       order_id: orderId,
     };
-    if (advanceAmount != null) payload.advance_amount = advanceAmount;
     this.api.post<any>("/payment/verify", payload).subscribe({
       next: (res: any) => {
         this.placing.set(false);

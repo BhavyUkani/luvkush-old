@@ -19,8 +19,6 @@
       "@routes/*": ["./src/routes/*"],
       "@controllers/*": ["./src/controllers/*"],
       "@services/*": ["./src/services/*"],
-      "@repositories/*": ["./src/repositories/*"],
-      "@models/*": ["./src/models/*"],
       "@middleware/*": ["./src/middleware/*"],
       "@utils/*": ["./src/utils/*"]
     }

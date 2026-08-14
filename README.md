@@ -24,15 +24,12 @@ luvkush/
 │   └── package.json
 ├── backend/           Node.js + Express + TypeScript API
 │   ├── src/
-│   │   ├── controllers/
-│   │   ├── services/
-│   │   ├── repositories/
-│   │   ├── routes/
+│   │   ├── modules/           One folder per domain — <name>.controller.ts, .service.ts, .routes.ts
+│   │   ├── shared/            Cross-module integrations (email, Shiprocket)
 │   │   ├── middleware/
 │   │   └── utils/
+│   ├── database_creation.sql  Complete database schema (no data)
 │   └── package.json
-└── database/
-    └── schema.sql    Complete production MySQL schema
 ```
 
 ---
@@ -72,8 +69,10 @@ luvkush/
 
 ### 1. Database Setup
 ```bash
-mysql -u root -p < database/schema.sql
+mysql -u root -p < backend/database_creation.sql
 ```
+This creates an empty schema only (no seed data). Default order statuses are
+seeded automatically the first time the backend boots against it.
 
 ### 2. Backend
 ```bash

@@ -63,17 +63,22 @@ export class CartComponent implements OnInit {
 
   removeCoupon(): void { this.cart.removeCoupon(); this.couponCode.set(""); this.couponError.set(""); }
 
+  // Mirrors order.service.ts#createFromCart's discount formula so the
+  // preview shown here never overstates the discount the order will get.
   get discount(): number {
     const c = this.cart.appliedCoupon();
     if (!c) return 0;
-    if (c.discount_type === "percentage") return Math.round(this.cart.subtotal() * c.discount_value / 100);
-    return c.discount_value;
+    if (c.discount_type === "free_shipping") return 0;
+    if (c.discount_type === "fixed") return Math.min(c.discount_value, this.cart.subtotal());
+    const raw = Math.floor(this.cart.subtotal() * c.discount_value / 100);
+    const capped = c.max_discount_amount ? Math.min(raw, c.max_discount_amount) : raw;
+    return Math.min(capped, this.cart.subtotal());
   }
 
   get total(): number { return Math.max(0, this.cart.subtotal() - this.discount); }
 
   get shippingProgress(): number {
-    return Math.min(100, Math.round((this.total / 499) * 100));
+    return Math.min(100, Math.round((this.total / 999) * 100));
   }
 
   checkout(): void {

@@ -1,0 +1,16 @@
+import { Router } from 'express';
+import { BlogController } from './blog.controller';
+import { authenticate, authorize } from '../../middleware/auth.middleware';
+
+const router = Router();
+const ctrl = new BlogController();
+
+router.get('/', ctrl.getAll.bind(ctrl));
+router.get('/:slug', ctrl.getBySlug.bind(ctrl));
+
+// Admin CRUD
+router.post('/', authenticate, authorize('super_admin', 'admin'), ctrl.create.bind(ctrl));
+router.put('/:id', authenticate, authorize('super_admin', 'admin'), ctrl.update.bind(ctrl));
+router.delete('/:id', authenticate, authorize('super_admin', 'admin'), ctrl.delete.bind(ctrl));
+
+export default router;

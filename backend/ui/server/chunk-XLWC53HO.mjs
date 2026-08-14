@@ -1,0 +1,2 @@
+import './polyfills.server.mjs';
+import{M as i,da as r}from"./chunk-QTLPBTTA.mjs";import{a as o,b as a}from"./chunk-3266DV63.mjs";var e=class e{constructor(){this.state=r(null)}confirm(t){return new Promise(n=>{this.state.set(a(o({confirmLabel:"Confirm",cancelLabel:"Cancel",danger:!1},t),{resolve:n}))})}resolve(t){this.state()?.resolve(t),this.state.set(null)}};e.\u0275fac=function(n){return new(n||e)},e.\u0275prov=i({token:e,factory:e.\u0275fac,providedIn:"root"});var s=e;export{s as a};
