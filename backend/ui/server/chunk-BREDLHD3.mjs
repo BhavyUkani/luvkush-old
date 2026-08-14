@@ -1,2 +1,0 @@
-import './polyfills.server.mjs';
-import{Ta as i}from"./chunk-QTLPBTTA.mjs";var t=class t{transform(e,r=!0){let n=Math.round(e??0).toLocaleString("en-IN",{maximumFractionDigits:0});return r?`\u20B9${n}`:n}};t.\u0275fac=function(r){return new(r||t)},t.\u0275pipe=i({name:"inr",type:t,pure:!0});var o=t;export{o as a};
