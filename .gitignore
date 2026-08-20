@@ -8,8 +8,6 @@ backend-run.log
 **/node_modules/
 
 # Build outputs
-dist/
-**/dist/
 .angular/
 **/.angular/
 # Angular SSR build output (frontend's `ng build` writes here per

@@ -1,0 +1,267 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ShiprocketService = void 0;
+const axios_1 = __importDefault(require("axios"));
+const logger_1 = require("../utils/logger");
+class ShiprocketService {
+    token = null;
+    tokenExpiry = null; // timestamp in ms
+    async getAuthToken() {
+        const email = process.env.SHIPROCKET_EMAIL;
+        const password = process.env.SHIPROCKET_PASSWORD;
+        if (!email || !password) {
+            throw new Error('Shiprocket API credentials are not configured in backend/.env file.');
+        }
+        // Check cached token
+        const cachedToken = this.token;
+        if (cachedToken && this.tokenExpiry && Date.now() < this.tokenExpiry) {
+            return cachedToken;
+        }
+        try {
+            logger_1.logger.info('Authenticating with Shiprocket API...');
+            const response = await axios_1.default.post('https://apiv2.shiprocket.in/v1/external/auth/login', {
+                email,
+                password
+            }, {
+                headers: { 'Content-Type': 'application/json' },
+                timeout: 5000
+            });
+            if (response.data && response.data.token) {
+                const tokenVal = response.data.token;
+                this.token = tokenVal;
+                // Shiprocket tokens are valid for 10 days, cache for 23 hours
+                this.tokenExpiry = Date.now() + 23 * 60 * 60 * 1000;
+                logger_1.logger.info('Shiprocket authentication successful.');
+                return tokenVal;
+            }
+            else {
+                throw new Error('Authentication response did not contain a token.');
+            }
+        }
+        catch (err) {
+            const errMsg = err.response?.data?.message || err.message;
+            throw new Error(`Shiprocket Login failed: ${errMsg}`);
+        }
+    }
+    async getServiceableCouriers(params) {
+        const deliveryPincode = (params.delivery_pincode || '').toString().trim();
+        // Validate delivery pincode format
+        if (!/^\d{6}$/.test(deliveryPincode)) {
+            throw new Error(`Invalid delivery pincode: "${deliveryPincode}". Must be a 6-digit number.`);
+        }
+        const token = await this.getAuthToken();
+        const pickupPincode = params.pickup_pincode || process.env.SHIPROCKET_PICKUP_PINCODE || '360002';
+        try {
+            logger_1.logger.info(`Fetching real Shiprocket rates for pickup: ${pickupPincode}, delivery: ${deliveryPincode}`);
+            const response = await axios_1.default.get('https://apiv2.shiprocket.in/v1/external/courier/serviceability/', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                params: {
+                    pickup_postcode: pickupPincode,
+                    delivery_postcode: deliveryPincode,
+                    weight: params.weight,
+                    cod: params.cod ? 1 : 0,
+                    declared_value: params.declared_value,
+                    is_document: 0,
+                    length: params.length || 10,
+                    width: params.width || 10,
+                    height: params.height || 10
+                },
+                timeout: 10000
+            });
+            console.log("response", response.data);
+            if (response.data && response.data.status === 200 && response.data.data && response.data.data.available_courier_companies) {
+                let companies = response.data.data.available_courier_companies;
+                // Filter companies by mode if shipment_mode is provided
+                if (params.shipment_mode) {
+                    const targetMode = params.shipment_mode === 'air' ? 'air' : 'surface';
+                    const matched = companies.filter((c) => {
+                        const m = String(c.mode || '').toLowerCase();
+                        return targetMode === 'air'
+                            ? (m.includes('air') || m.includes('express'))
+                            : (m.includes('surface') || m.includes('road'));
+                    });
+                    if (matched.length > 0) {
+                        companies = matched;
+                    }
+                }
+                const rates = companies.map((c) => ({
+                    courier_company_id: c.courier_company_id,
+                    courier_name: c.courier_name,
+                    rate: parseFloat(c.rate),
+                    expected_delivery_date: c.expected_delivery_date,
+                    etd: c.etd || '2-4 days',
+                    rating: c.rating || '4.0',
+                    cod: c.cod || 0,
+                    charge_weight: c.charge_weight ? parseFloat(c.charge_weight) : undefined,
+                    etd_hours: c.etd_hours ? parseInt(c.etd_hours, 10) : undefined,
+                    delivery_performance: c.delivery_performance !== undefined ? String(c.delivery_performance) : undefined,
+                    rto_charge: c.rto_charge !== undefined ? parseFloat(c.rto_charge) : undefined,
+                    freight_charge: c.freight_charge !== undefined ? parseFloat(c.freight_charge) : parseFloat(c.rate),
+                    cod_charges: c.cod_charges !== undefined ? parseFloat(c.cod_charges) : 0,
+                    raw_details: c
+                }));
+                // Sort by rate ascending
+                return rates.sort((a, b) => a.rate - b.rate);
+            }
+            else {
+                const msg = response.data?.message || 'Courier serviceability query did not return any courier options.';
+                throw new Error(msg);
+            }
+        }
+        catch (err) {
+            const errMsg = err.response?.data?.message || err.message;
+            throw new Error(`Shiprocket Serviceability Error: ${errMsg}`);
+        }
+    }
+    async bookShipment(order, params) {
+        const token = await this.getAuthToken();
+        // Parse shipping address
+        let address = {};
+        try {
+            address = typeof order.shipping_address === 'string'
+                ? JSON.parse(order.shipping_address)
+                : order.shipping_address;
+        }
+        catch (err) {
+            throw new Error('Failed to parse order shipping address.');
+        }
+        // Format date as YYYY-MM-DD HH:MM
+        const formatShiprocketDate = (dStr) => {
+            const d = new Date(dStr);
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            const hh = String(d.getHours()).padStart(2, '0');
+            const min = String(d.getMinutes()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd} ${hh}:${min}`;
+        };
+        // Prepare order items
+        let orderItems = (order.items || []).map((item) => ({
+            name: item.product_name,
+            sku: item.sku || `SKU-${item.product_id}`,
+            units: item.quantity,
+            selling_price: Number(item.unit_price)
+        }));
+        if (params.order_items_text) {
+            orderItems = [{
+                    name: params.order_items_text.substring(0, 50),
+                    sku: 'LKN-CUSTOM',
+                    units: 1,
+                    selling_price: params.invoice_value !== undefined ? Number(params.invoice_value) : Number(order.total_amount)
+                }];
+        }
+        if (orderItems.length === 0) {
+            orderItems.push({
+                name: 'Luv Kush Natural Product',
+                sku: 'LKN-GENERIC',
+                units: 1,
+                selling_price: Number(order.total_amount)
+            });
+        }
+        // Step 1: Create custom adhoc order in Shiprocket
+        let shipmentId = null;
+        try {
+            logger_1.logger.info(`Creating Shiprocket adhoc order for Luv Kush Order #${order.order_number}`);
+            const payload = {
+                order_id: params.client_order_id || order.order_number,
+                order_date: formatShiprocketDate(order.created_at),
+                pickup_location: params.pickup_location || "Primary", // Must match registered pickup location name
+                billing_customer_name: params.billing_customer_name || order.first_name,
+                billing_last_name: params.billing_last_name || order.last_name || "",
+                billing_address: params.billing_address || address.address_line1,
+                billing_address_2: params.billing_address_2 || address.address_line2 || "",
+                billing_city: params.billing_city || address.city,
+                billing_pincode: params.billing_pincode || address.pincode,
+                billing_state: params.billing_state || address.state,
+                billing_country: params.billing_country || address.country || "India",
+                billing_email: params.billing_email || order.email,
+                billing_phone: params.billing_phone || address.phone || order.phone || order.user_phone || "9999999999",
+                billing_alternate_phone: params.billing_alt_phone || "",
+                shipping_is_billing: true,
+                order_items: orderItems,
+                payment_method: params.payment_method || (order.payment_method === 'cod' ? "COD" : "Prepaid"),
+                sub_total: params.sub_total !== undefined ? Number(params.sub_total) : Number(order.subtotal),
+                length: params.length !== undefined ? Number(params.length) : 10,
+                width: params.width !== undefined ? Number(params.width) : (params.breadth !== undefined ? Number(params.breadth) : 10),
+                height: params.height !== undefined ? Number(params.height) : 10,
+                weight: params.weight !== undefined ? Number(params.weight) / 1000 : 0.5
+            };
+            if (params.invoice_no) {
+                payload.invoice_number = params.invoice_no;
+            }
+            if (params.invoice_date) {
+                payload.invoice_date = params.invoice_date;
+            }
+            const response = await axios_1.default.post('https://apiv2.shiprocket.in/v1/external/orders/create/adhoc', payload, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                timeout: 12000
+            });
+            if (response.data && response.data.shipment_id) {
+                shipmentId = response.data.shipment_id;
+                logger_1.logger.info(`Shiprocket order created. Shipment ID: ${shipmentId}`);
+            }
+            else {
+                const msg = response.data?.message || 'Failed to create order in Shiprocket.';
+                throw new Error(msg);
+            }
+        }
+        catch (err) {
+            const errMsg = err.response?.data?.message || err.message;
+            throw new Error(`Shiprocket Order Creation Error: ${errMsg}`);
+        }
+        // Step 2: Assign AWB to shipment
+        try {
+            logger_1.logger.info(`Assigning AWB for Shipment ID ${shipmentId} with Courier ID ${params.courier_company_id}`);
+            const response = await axios_1.default.post('https://apiv2.shiprocket.in/v1/external/courier/assign/awb', {
+                shipment_id: shipmentId,
+                courier_id: params.courier_company_id
+            }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                timeout: 12000
+            });
+            const responseData = response.data;
+            const awbResponse = responseData?.response?.data || responseData?.data || {};
+            if (awbResponse && awbResponse.awb_code) {
+                const awbCode = awbResponse.awb_code;
+                const labelUrl = awbResponse.label_url || `https://shiprocket.co/tracking/${awbCode}`;
+                logger_1.logger.info(`AWB successfully assigned. AWB Code: ${awbCode}`);
+                return {
+                    success: true,
+                    awb_code: awbCode,
+                    label_url: labelUrl
+                };
+            }
+            else {
+                const msg = responseData?.response?.message || responseData?.message || 'AWB assignment failed or did not return an AWB code.';
+                throw new Error(msg);
+            }
+        }
+        catch (err) {
+            const errMsg = err.response?.data?.message || err.message;
+            throw new Error(`Shiprocket AWB Assignment Error: ${errMsg}`);
+        }
+    }
+    async getTrackingStatus(awb) {
+        const token = await this.getAuthToken();
+        try {
+            const response = await axios_1.default.get(`https://apiv2.shiprocket.in/v1/external/courier/track/awb/${awb}`, { headers: { 'Authorization': `Bearer ${token}` }, timeout: 10000 });
+            return response.data;
+        }
+        catch (err) {
+            throw new Error(`Shiprocket Tracking Error: ${err.response?.data?.message || err.message}`);
+        }
+    }
+}
+exports.ShiprocketService = ShiprocketService;
+//# sourceMappingURL=shiprocket.service.js.map
